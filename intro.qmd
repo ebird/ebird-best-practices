@@ -23,7 +23,7 @@ Despite the strengths of eBird data, species observations collected through citi
 
 The remainder of this book will demonstrate how to address these challenges using real data from eBird to produce reliable estimates of species distributions. In general, we'll take a two-pronged approach to dealing with unstructured data and maximizing the value of citizen science data: imposing more structure onto the data via data filtering and including covariates in models to account for the remaining variation.
 
-The next chapter demonstrates how to access and prepare [eBird data](#ebird) for modeling. The following chapter covers preparing [environmental variables](#environment) to be used as model predictors. The remaining three chapters provide examples of different species distribution models that can be fit using these data: [encounter rate models](#encounter), [occupancy models](#occupancy), and [abundance models](#abundance). Although these examples focus on the use of eBird data, in many cases the techniques they illustrate also apply to similar citizen science datasets.
+The next chapter demonstrates how to access and prepare [eBird data](#ebird) for modeling. The following chapter covers preparing [environmental variables](#envvar) to be used as model predictors. The remaining three chapters provide examples of different species distribution models that can be fit using these data: [encounter rate models](#encounter), [relative abundance models](#abundance), and [occupancy models](#occupancy). Although these examples focus on the use of eBird data, in many cases the techniques they illustrate also apply to similar citizen science datasets.
 
 ## Prerequisites {#intro-pre}
 

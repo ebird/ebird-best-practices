@@ -6,7 +6,11 @@ book:
   chapters:
     - index.qmd
     - intro.qmd
-    - ebird-data.qmd
+    - ebird.qmd
+    - envvar.qmd
+    - encounter.qmd
+    - abundance.qmd
+    - occupancy.qmd
     - references.qmd
 
   page-footer:

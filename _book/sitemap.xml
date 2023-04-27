@@ -22,7 +22,7 @@
   </url>
   <url>
     <loc>https://ebird.github.io/ebird-best-practices/intro.html</loc>
-    <lastmod>2023-04-27T04:25:43.157Z</lastmod>
+    <lastmod>2023-04-27T04:54:39.894Z</lastmod>
   </url>
   <url>
     <loc>https://ebird.github.io/ebird-best-practices/index.html</loc>
@@ -31,5 +31,25 @@
   <url>
     <loc>https://ebird.github.io/ebird-best-practices/ebird-data.html</loc>
     <lastmod>2023-04-27T04:25:47.628Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/ebird.html</loc>
+    <lastmod>2023-04-27T05:51:38.159Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/envvar.html</loc>
+    <lastmod>2023-04-27T04:54:39.895Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/encounter.html</loc>
+    <lastmod>2023-04-27T04:54:39.895Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/abundance.html</loc>
+    <lastmod>2023-04-27T04:54:39.896Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/occupancy.html</loc>
+    <lastmod>2023-04-27T04:54:39.896Z</lastmod>
   </url>
 </urlset>

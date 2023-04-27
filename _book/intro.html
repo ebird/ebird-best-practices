@@ -113,7 +113,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./ebird-data.html" rel="next">
+<link href="./ebird.html" rel="next">
 <link href="./index.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -191,7 +191,27 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./ebird-data.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">eBird Data</span></a>
+  <a href="./ebird.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">eBird Data</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./envvar.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environmental Variables</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./encounter.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Modeling Encounter Rate</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./abundance.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Modeling Relative Abundance</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./occupancy.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Modeling Occupancy</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -258,7 +278,7 @@ div.csl-indent {
 <li><strong>Variation in detectability:</strong> detectability describes the probability of a species that is present in an area being detected and identified. Detectability varies by season, habitat, and species <span class="citation" data-cites="johnstonSpeciesTraitsExplain2014 johnstonEstimatesObserverExpertise2018">(<a href="references.html#ref-johnstonSpeciesTraitsExplain2014" role="doc-biblioref">Johnston et al. 2014</a>, <a href="references.html#ref-johnstonEstimatesObserverExpertise2018" role="doc-biblioref">2018</a>)</span>. Furthermore, eBird data are collected with high variation in effort, time of day, number of observers, and external conditions such as weather, all of which can affect the detectability of species <span class="citation" data-cites="ellisEffectsWeatherTime2018 oliveiraObservationDiurnalSoaring2018">(<a href="references.html#ref-ellisEffectsWeatherTime2018" role="doc-biblioref">Ellis and Taylor 2018</a>; <a href="references.html#ref-oliveiraObservationDiurnalSoaring2018" role="doc-biblioref">Oliveira et al. 2018</a>)</span>. Therefore, detectability is particularly important to consider when comparing between seasons, habitats or species. Since eBird uses a semi-structured protocol, that collects variables associated with variation in detectability, we’ll be able to account for a larger proportion of this variation in our analyses.</li>
 </ul>
 <p>The remainder of this book will demonstrate how to address these challenges using real data from eBird to produce reliable estimates of species distributions. In general, we’ll take a two-pronged approach to dealing with unstructured data and maximizing the value of citizen science data: imposing more structure onto the data via data filtering and including covariates in models to account for the remaining variation.</p>
-<p>The next chapter demonstrates how to access and prepare <a href="ebird-data.html">eBird data</a> for modeling. The following chapter covers preparing <a href="#environment">environmental variables</a> to be used as model predictors. The remaining three chapters provide examples of different species distribution models that can be fit using these data: <a href="#encounter">encounter rate models</a>, <a href="#occupancy">occupancy models</a>, and <a href="#abundance">abundance models</a>. Although these examples focus on the use of eBird data, in many cases the techniques they illustrate also apply to similar citizen science datasets.</p>
+<p>The next chapter demonstrates how to access and prepare <a href="ebird.html">eBird data</a> for modeling. The following chapter covers preparing <a href="envvar.html">environmental variables</a> to be used as model predictors. The remaining three chapters provide examples of different species distribution models that can be fit using these data: <a href="encounter.html">encounter rate models</a>, <a href="abundance.html">relative abundance models</a>, and <a href="occupancy.html">occupancy models</a>. Although these examples focus on the use of eBird data, in many cases the techniques they illustrate also apply to similar citizen science datasets.</p>
 </section>
 <section id="intro-pre" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="intro-pre"><span class="header-section-number">1.2</span> Prerequisites</h2>
@@ -337,7 +357,7 @@ div.csl-indent {
 <section id="intro-setup-ebird" class="level3" data-number="1.3.4">
 <h3 data-number="1.3.4" class="anchored" data-anchor-id="intro-setup-ebird"><span class="header-section-number">1.3.4</span> eBird data access</h3>
 <p>Access to the eBird database is provided via the <a href="https://science.ebird.org/en/use-ebird-data/download-ebird-data-products">eBird Basic Dataset (EBD)</a> as tab-separated text files. To access the EBD, begin by <a href="https://secure.birds.cornell.edu/cassso/account/create">creating an eBird account and signing in</a>. Then visit the <a href="https://ebird.org/data/download">eBird Data Access page</a> and fill out the data access request form. eBird data access is free for most uses; however, you will need to request access in order to download the EBD. Filling out the access request form allows eBird to keep track of the number of people using the data and obtain information on the applications for which the data are used.</p>
-<p>Once you’ve granted access to the EBD, you will be able to download either the entire eBird dataset or subsets for specific species, regions, or time periods. This is covered in more detail in the <a href="ebird-data.html">next chapter</a>.</p>
+<p>Once you’ve granted access to the EBD, you will be able to download either the entire eBird dataset or subsets for specific species, regions, or time periods. This is covered in more detail in the <a href="ebird.html">next chapter</a>.</p>
 <p>To use eBird data in R, you’ll need to reference the full path to the text files, for example <code>~/data/ebird/ebd_relMarch-2023.txt</code>. In general, it’s best to avoid using absolute paths in R scripts because it makes them less portable–if you’re sharing the files with someone else, they’ll need to change the file paths to point to the location where they’ve stored the eBird data. The R package auk provides a workaround for this, by allowing users to set an environment variable (<code>EBD_PATH</code>) that points to the directory where you’ve stored the eBird data. We suggest choosing a sensible central location for all eBird data files such as <code>~/data/ebird/</code>. Then set the environment variable using <code>auk_set_ebd_path()</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set EBD_PATH environment variable</span></span>
@@ -347,7 +367,7 @@ div.csl-indent {
 <section id="intro-setup-gis" class="level3" data-number="1.3.5">
 <h3 data-number="1.3.5" class="anchored" data-anchor-id="intro-setup-gis"><span class="header-section-number">1.3.5</span> GIS data</h3>
 <p>Throughout this book, we’ll be producing maps of species distributions. To provide context for these distributions, we’ll need GIS data for political boundaries. <a href="https://www.naturalearthdata.com/">Natural Earth</a> is the best source for a range of tightly integrated vector and raster GIS data for producing professional cartographic maps. The R package, <a href="https://github.com/ropensci/rnaturalearth"><code>rnaturalearth</code></a> provides a convenient method for accessing these data from within R.</p>
-<p>In the <a href="ebird-data.html">next chapter</a>, we provide a link to download a data package that will include all the necessary GIS data. However, for reference, the following code was used to generate the GIS dataset. Running this code will create a GeoPackage containing the necessary spatial layers in <code>data/gis-data.gpkg</code>.</p>
+<p>In the <a href="ebird.html">next chapter</a>, we provide a link to download a data package that will include all the necessary GIS data. However, for reference, the following code was used to generate the GIS dataset. Running this code will create a GeoPackage containing the necessary spatial layers in <code>data/gis-data.gpkg</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
@@ -588,7 +608,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./ebird-data.html" class="pagination-link">
+      <a href="./ebird.html" class="pagination-link">
         <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">eBird Data</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
