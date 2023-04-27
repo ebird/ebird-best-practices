@@ -1,0 +1,1 @@
+Sitemap: https://ebird.github.io/ebird-best-practices/sitemap.xml

@@ -1,0 +1,13 @@
+*Matthew Strimas-Mackey, Wesley M. Hochachka, Viviana Ruiz-Gutierrez, Orin J. Robinson, Eliot T. Miller, Tom Auer, Steve Kelling, Daniel Fink, Alison Johnston*
+
+*Version 2.0*
+
+# Welcome {.unnumbered}
+
+**Best Practices for Using eBird Data** is a supplement to *Analytical guidelines to increase the value of community science data: An example using eBird data to estimate species distributions* ([Johnston et al. 2021](https://onlinelibrary.wiley.com/doi/10.1111/ddi.13271)). This paper describes the challenges associated with making inferences from biological citizen science data and proposes a set of best practices for making reliable estimates of species distributions from these data. Throughout, the paper uses [eBird](https://ebird.org/), the world's largest biological citizen science project, as a case study to illustrate the best practices. This book acts as a supplement to the paper, showing readers how to implement these best practices within [R](https://www.r-project.org/) using real data from eBird. After completing this book, readers should be able to process eBird data to prepare them for robust analyses, train models to estimate encounter rate, occupancy, and relative abundance, and assess the performance of these models . Readers should be comfortable with the R programming language, and read the [Prerequisites](#intro-pre) and [Setup](#intro-setup) sections of the introduction, before diving into this book.
+
+To submit fixes or suggest additions and improvements to this book, please file an [issue on GitHub](https://github.com/ebird/ebird-best-practices/issues).
+
+Please cite this book as:
+
+> Strimas-Mackey, M., W.M. Hochachka, V. Ruiz-Gutierrez, O.J. Robinson, E.T. Miller, T. Auer, S. Kelling, D. Fink, A. Johnston. 2023. Best Practices for Using eBird Data. Version 2.0. https://ebird.github.io/ebird-best-practices/. Cornell Lab of Ornithology, Ithaca, New York. https://doi.org/10.5281/zenodo.3620739

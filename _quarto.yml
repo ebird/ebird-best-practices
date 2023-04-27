@@ -1,0 +1,45 @@
+project:
+  type: book
+
+book:
+  title: "Best Practices for Using eBird Data"
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - ebird-data.qmd
+    - references.qmd
+
+  page-footer:
+    left: "Best Practices for Using eBird Data (v2.0)"
+  site-url: https://ebird.github.io/ebird-best-practices/
+  repo-url: https://github.com/ebird/ebird-best-practices/
+  repo-branch: main
+  repo-actions: [edit, issue]
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    author-meta: "Matthew Strimas-Mackey, Wesley M. Hochachka, Viviana Ruiz-Gutierrez, Orin J. Robinson, Eliot T. Miller, Tom Auer, Steve Kelling, Daniel Fink, Alison Johnston"
+
+editor: visual
+
+knitr:
+  opts_chunk:
+    comment: "#>"
+    collapse: true
+    cache: false
+    warn: false
+    error: false
+    message: false
+    out.width: "\\textwidth"
+    fig.align: "center"
+    fig.show: "hold"
+    R.options:
+      digits: 3
+      knitr.kable.NA: ""
+      dplyr.print_min: 6
+      dplyr.print_max: 6
