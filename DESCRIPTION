@@ -2,46 +2,47 @@ Package: ebirdbestpractices
 Title: Best Practices for Using eBird Data
 Version: 2.0
 Authors@R: c(
- .
-   )
+  person("Matthew", "Strimas-Mackey", role = c("aut", "cre"),
+    email = "mes335@cornell.edu",
+    comment = c(ORCID = "0000-0001-8929-7776"),
+  person("Wesley", Hochachka", "M.", email = "wmh6@cornell.edu", role = "aut"),
+  person("Viviana", "Ruiz-Gutierrez", email = "vr45@cornell.edu", role = "aut"),
+  person("Orin", "Robinson", "J.", email = "ojr7@cornell.edu", role = "aut"),
+  person("Eliot", "Miller", "T.", email = "etm45@cornell.edu", role = "aut"),
+  person("Tom", "Auer", email = "mta45@cornell.edu", role = "aut"),
+  person("Steve", "Kelling", email = "stk2@cornell.edu", role = "aut"),
+  person("Daniel", "Fink", , "garrett@cornell.edu", role = "aut"),
+  person("Alison", "Johnston", email = "aj327@cornell.edu", role = "aut",
+         comment = c(ORCID = "0000-0001-8221-013X"))
+  )
 License: GPL-3
 URL: https://github.com/ebird/ebird-best-practices
 Depends: 
-    R (>= 3.5.0)
+    R (>= 4.0.0)
 Imports:
     AICcmodavg,
-    auk (>= 0.3.3),
-    data.table,
-    dplyr (>= 0.8.3),
-    ebirdst,
+    auk (>= 0.6.0),
+    dplyr (>= 1.0.0),
+    ebirdst (>= 2.2021.2),
     exactextractr,
     fields,
-    fitdistrplus,
-    forcats,
     ggplot2,
-    ggthemes,
     gridExtra,
-    hexbin,
-    janitor,
     knitr,
     lubridate,
-    lwgeom,
-    mgcv,
     MuMIn,
-    pdp,
     PresenceAbsence,
     purrr,
     ranger (>= 0.11.2),
-    raster (>= 2.9-5),
     readr,
     rlang (>= 0.4.1),
     rnaturalearth,
-    rvest,
     scales,
     scam,
-    sf (>= 0.8-0),
+    sf (>= 1.0-0),
     smoothr,
     stringr,
+    terra (>= 1.6-3),
     tibble,
     tidyr (>= 1.2.1),
     tidyverse,

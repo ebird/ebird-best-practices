@@ -21,6 +21,25 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1.6em;
   vertical-align: middle;
 }
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
 </style>
 
 
@@ -142,7 +161,13 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#envvar-intro" id="toc-envvar-intro" class="nav-link active" data-scroll-target="#envvar-intro"><span class="toc-section-number">3.1</span>  Introduction</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/ebird/ebird-best-practices/edit/main/envvar.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/ebird/ebird-best-practices/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -164,8 +189,132 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
+<section id="envvar-intro" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="envvar-intro"><span class="header-section-number">3.1</span> Introduction</h2>
+<p>Species distribution models work by finding associations between species occurrence or abundance and environmental variables. Using these relationships, it’s possible to predict the distribution in areas that aren’t sampled, provided we know the value of the environmental variables in these areas. Therefore, to proceed with the modeling in the next several chapters, we’ll need a suite of environmental variables to be used as predictors in our models. The particular set of environmental variables that’s most suitable for a given study will depend on the focal species, region, and time period, as well as the availability of data. When species distributions are well defined by the environmental variables, extrapolations to unsurveyed areas will be more accurate. So, it’s worth considering which variables are important for your species and region.</p>
+<p>Scientists can use many variables to characterize a species distribution–for example, climate, weather, tidal cycles, and soil type. Fortunately, there are an abundance of freely available, satellite-based environmental datasets that are suitable for species distribution modeling. A small subset of possible data sources includes,</p>
+<ul>
+<li><a href="https://lpdaac.usgs.gov/products/mcd12q1v006/">MODIS landcover</a></li>
+<li><a href="https://lpdaac.usgs.gov/products/astgtmv003/">ASTER global digital elevation model</a></li>
+<li><a href="https://www.earthenv.org/topography">Global topography metrics</a></li>
+<li><a href="https://global-surface-water.appspot.com/download">Global surface water</a></li>
+<li><a href="https://www.intertidal.app/download">Distribution of intertidal habitat</a></li>
+</ul>
+<p>Since there are such a wide range of available datasets, and the distribution mechanisms and formats for each are different and often changing, we will not cover the specifics of how to download and pre-processing satellite-derived data products. Instead, we have downloaded and prepared landcover and elevation datasets and will demonstrate how environmental data can be extracted from these datasets. The prepared data are available in <a href="https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip">data package</a>.</p>
+<p>For the examples in this book, we’ll use land cover covariates derived from the <a href="https://lpdaac.usgs.gov/products/mcd12q1v006/">MODIS MCD12Q1 v006</a> land cover product <span class="citation" data-cites="friedlMCD12Q1MODISTerra2015">(<a href="references.html#ref-friedlMCD12Q1MODISTerra2015" role="doc-biblioref">Friedl and Sulla-Menashe 2015</a>)</span>. This product has global coverage at 500 m spatial resolution and annual temporal resolution from 2001-2018. These data are available for several different classification schemes. We’ll use the University of Maryland (UMD) land cover classification, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 16 different land cover classes:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<colgroup>
+<col style="width: 3%">
+<col style="width: 22%">
+<col style="width: 74%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Class</th>
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">Water bodies</td>
+<td style="text-align: left;">At least 60% of area is covered by permanent water bodies.</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Evergreen Needleleaf Forests</td>
+<td style="text-align: left;">Dominated by evergreen conifer trees (canopy &gt;2m). Tree cover &gt;60%.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Evergreen Broadleaf Forests</td>
+<td style="text-align: left;">Dominated by evergreen broadleaf and palmate trees (canopy &gt;2m). Tree cover &gt;60%.</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Deciduous Needleleaf Forests</td>
+<td style="text-align: left;">Dominated by deciduous needleleaf (e.g.&nbsp;larch) trees (canopy &gt;2m). Tree cover &gt;60%.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">Deciduous Broadleaf Forests</td>
+<td style="text-align: left;">Dominated by deciduous broadleaf trees (canopy &gt;2m). Tree cover &gt;60%.</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Mixed Forests</td>
+<td style="text-align: left;">Dominated by neither deciduous nor evergreen (40-60% of each) tree type (canopy &gt;2m). Tree cover &gt;60%.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">Closed Shrublands</td>
+<td style="text-align: left;">Dominated by woody perennials (1-2m height) &gt;60% cover.</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">Open Shrublands</td>
+<td style="text-align: left;">Dominated by woody perennials (1-2m height) 10-60% cover.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">Woody Savannas</td>
+<td style="text-align: left;">Tree cover 30-60% (canopy &gt;2m).</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">Savannas</td>
+<td style="text-align: left;">Tree cover 10-30% (canopy &gt;2m).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">Grasslands</td>
+<td style="text-align: left;">Dominated by herbaceous annuals (&lt;2m).</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">11</td>
+<td style="text-align: left;">Permanent Wetlands</td>
+<td style="text-align: left;">Permanently inundated lands with 30-60% water cover and &gt;10% vegetated cover.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">Croplands</td>
+<td style="text-align: left;">At least 60% of area is cultivated cropland.</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">Urban and Built-up Lands</td>
+<td style="text-align: left;">At least 30% impervious surface area including building materials, asphalt, and vehicles.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">14</td>
+<td style="text-align: left;">Cropland/Natural Vegetation Mosaics</td>
+<td style="text-align: left;">Mosaics of small-scale cultivation 40-60% with natural tree, shrub, or herbaceous vegetation.</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">15</td>
+<td style="text-align: left;">Non-Vegetated Lands</td>
+<td style="text-align: left;">At least 60% of area is non-vegetated barren (sand, rock, soil) or permanent snow and ice with less than 10% vegetation.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">255</td>
+<td style="text-align: left;">Unclassified</td>
+<td style="text-align: left;">Has not received a map label because of missing inputs.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
+<div id="ref-friedlMCD12Q1MODISTerra2015" class="csl-entry" role="doc-biblioentry">
+Friedl, Mark, and Damien Sulla-Menashe. 2015. <span>“<span>MCD12Q1 MODIS</span>/<span>Terra</span>+<span>Aqua Land Cover Type Yearly L3 Global</span> 500m <span>SIN Grid V006</span>.”</span> <span>NASA EOSDIS Land Processes DAAC</span>. <a href="https://doi.org/10.5067/MODIS/MCD12Q1.006">https://doi.org/10.5067/MODIS/MCD12Q1.006</a>.
+</div>
+</div>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
