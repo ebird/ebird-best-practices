@@ -6,8 +6,6 @@ editor_options:
 
 # Introduction and Setup {#intro}
 
-**This is a development version of Best Practices for Using eBird Data v2. It is a work in progress and should be treated as experimental.**
-
 ## Introduction {#intro-intro}
 
 Citizen science data are increasingly making important contributions to ecological research and conservation. One of the most common forms of citizen science data is derived from members of the public recording species observations. [eBird](https://ebird.org/) [@sullivanEBirdEnterpriseIntegrated2014] is the largest of these biological citizen science programs. The eBird database contains well over one billion bird observations from every country in the world, with observations of nearly every bird species on Earth. The eBird database is valuable to researchers across the globe, due to its year-round, broad spatial coverage, high volumes of [open access](https://en.wikipedia.org/wiki/Open_data) data, and applications to many ecological questions. These data have been widely used in scientific research to study phenology, species distributions, population trends, evolution, behavior, global change, and conservation. However, robust inference with eBird data requires careful processing of the data to address the challenges associated with citizen science datasets. This book, and the [associated paper](https://onlinelibrary.wiley.com/doi/10.1111/ddi.13271), outlines a set of best practices for addressing these challenges and making reliable estimates of species distributions from eBird data.
