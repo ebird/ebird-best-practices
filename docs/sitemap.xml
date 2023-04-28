@@ -1,7 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ebird.github.io/ebird-best-practices/index.html</loc>
+    <lastmod>2023-04-28T15:54:36.022Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/intro.html</loc>
+    <lastmod>2023-04-28T15:54:36.025Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/ebird.html</loc>
+    <lastmod>2023-04-28T15:54:36.033Z</lastmod>
+  </url>
+  <url>
     <loc>https://ebird.github.io/ebird-best-practices/envvar.html</loc>
-    <lastmod>2023-04-28T15:50:55.081Z</lastmod>
+    <lastmod>2023-04-28T15:54:36.034Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/encounter.html</loc>
+    <lastmod>2023-04-28T15:54:36.034Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/abundance.html</loc>
+    <lastmod>2023-04-28T15:54:36.035Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/occupancy.html</loc>
+    <lastmod>2023-04-28T15:54:36.035Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ebird.github.io/ebird-best-practices/references.html</loc>
+    <lastmod>2023-04-28T15:54:36.036Z</lastmod>
   </url>
 </urlset>
