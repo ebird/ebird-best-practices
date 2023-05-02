@@ -1,0 +1,18 @@
+class,name,label,description
+1,Barren,barren,"At least of area 60% is non-vegetated barren (sand, rock, soil) or permanent snow/ice with less than 10% vegetation."
+2,Permanent Snow and Ice,snow,At least of area 60% is covered by snow and ice for at least 10 months of the year.
+3,Water Bodies,water,At least 60% of area is covered by permanent water bodies.
+11,Evergreen Needleleaf Forests,evergreen_needleleaf,Dominated by evergreen conifer trees (>2m). Tree cover >60%.
+12,Evergreen Broadleaf Forests,evergreen_breadleaf,Dominated by evergreen broadleaf and palmate trees (>2m). Tree cover >60%.
+13,Deciduous Needleleaf Forests,deciduous_needleleaf,Dominated by deciduous needleleaf (larch) trees (>2m). Tree cover >60%.
+14,Deciduous Broadleaf Forests,deciduous_broadleaf,Dominated by deciduous broadleaf trees (>2m). Tree cover >60%.
+15,Mixed Broadleaf/Needleleaf Forests ,mixed_broadleaf_needleleaf,Co-dominated (40-60%) by broadleaf deciduous and evergreen needleleaf tree (>2m) types. Tree cover >60%.
+16,Mixed Broadleaf Evergreen/Deciduous Forests,mixed_evergreen_deciduous,Co-dominated (40-60%) by broadleaf evergreen and deciduous tree (>2m) types. Tree cover >60%.
+21,Open Forests,open_forest,Tree cover 30-60% (canopy >2m).
+22,Sparse Forests,sparse_forest,Tree cover 10-30% (canopy >2m).
+31,Dense Herbaceous,dense_herbaceous,Dominated by herbaceous annuals (<2m) at least 60% cover.
+32,Sparse Herbaceous,sparse_herbaceous,Dominated by herbaceous annuals (<2m) 10-60% cover.
+41,Dense Shrublands,dense_shrublands,Dominated by woody perennials (1-2m) >60% cover.
+42,Shrubland/Grassland Mosaics,shrubland_mosaic,Dominated by woody perennials (1-2m) 10-60% cover with dense herbaceous annual understory.
+43,Sparse Shrublands,sparse_shrublands,Dominated by woody perennials (1-2m) 10-60% cover with minimal herbaceous understory.
+255,Unclassified,unclassified,Has not received a map label because of missing inputs.

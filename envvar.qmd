@@ -10,17 +10,274 @@ editor_options:
 
 Species distribution models work by finding associations between species occurrence or abundance and environmental variables. Using these relationships, it's possible to predict the distribution in areas that aren't sampled, provided we know the value of the environmental variables in these areas. Therefore, to proceed with the modeling in the next several chapters, we'll need a suite of environmental variables to be used as predictors in our models. The particular set of environmental variables that's most suitable for a given study will depend on the focal species, region, and time period, as well as the availability of data. When species distributions are well defined by the environmental variables, extrapolations to unsurveyed areas will be more accurate. So, it's worth considering which variables are important for your species and region. 
 
-Fortunately, there are an abundance of freely available, satellite-based environmental datasets that are suitable for species distribution modeling. A small subset of possible data sources available globally includes data describing [landcover](https://lpdaac.usgs.gov/products/mcd12q1v006/), [elevation](https://lpdaac.usgs.gov/products/astgtmv003/), [topography](https://www.earthenv.org/topography), [surface water](https://global-surface-water.appspot.com/download), and [intertidal habitat]((https://www.intertidal.app/download). The reader is encourage to search for datasets suitable for their region and species of interest.
+Fortunately, there are an abundance of freely available, satellite-based environmental datasets that are suitable for species distribution modeling. A small subset of possible data sources available globally includes data describing [landcover](https://lpdaac.usgs.gov/products/mcd12q1v006/), [elevation](https://lpdaac.usgs.gov/products/astgtmv003/), [topography](https://www.earthenv.org/topography), [surface water](https://global-surface-water.appspot.com/download), and [intertidal habitat](https://www.intertidal.app/download). However, the reader is encouraged to search for datasets suitable for their region and species of interest.
 
-Since there are such a wide range of available environmental datasets, and the distribution mechanisms and formats for each are different and often changing, we will not cover the specifics of how to download and pre-processing satellite-derived data products. Instead, we have downloaded and prepared landcover and elevation datasets and will demonstrate how environmental data can be extracted from these datasets. The prepared data are available in [data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip).
+Since there are such a wide range of available environmental datasets, and the distribution mechanisms and formats for each are different and often changing, we will not cover the specifics of how to download and pre-processing satellite-derived data products. Instead, we have downloaded and prepared example landcover and elevation datasets and will demonstrate how environmental variables can be extracted from these datasets in the following sections. This will provide examples of assigning environmental variables based on both categorical (landcover) and continuous (elevation) raster data sets.
+
+To gain access to the example raster datasets, download the data package for by following the [instructions in the Introduction](#intro-setup-data).
 
 ## Landcover {#envvar-landcover}
 
-For the examples in this book, we'll use land cover variables derived from the [MODIS MCD12Q1 v006](https://lpdaac.usgs.gov/products/mcd12q1v006/) land cover product [@friedlMCD12Q1MODISTerra2015]. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We'll use the University of Maryland (UMD) land cover classification, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 16 different land cover classes:
+For the examples in this book, we'll use land cover variables derived from the [MODIS MCD12Q1 v006](https://lpdaac.usgs.gov/products/mcd12q1v006/) land cover product [@friedlMCD12Q1MODISTerra2015]. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We'll use the FAO Land Cover Classification System (LCCS1), which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 16 different land cover classes:
 
 ```{r}
 #| echo: false
-lc_classes <- readr::read_csv("data/mcd12q1_classes.csv")
-names(lc_classes) <- stringr::str_to_title(names(lc_classes))
+lc_classes <- readr::read_csv("data/mcd12q1_fao_classes.csv")
+lc_classes$label <- NULL
 knitr::kable(lc_classes)
+```
+
+The 2013-2021 data for our focal region (i.e. Georgia) is the data package in the file `data/modis_mcd12q1_fao_2013-2021.tif`. This is multi-band [GeoTIFF](https://en.wikipedia.org/wiki/GeoTIFF) in which each band corresponds to a year of landcover data. In R, we'll use the [`terra` package](https://rspatial.github.io/terra/) package to work with [raster datasets](https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/).
+
+```{r}
+#| label: envvar-landcover-map
+library(dplyr)
+library(exactextractr)
+library(landscapemetrics)
+library(readr)
+library(sf)
+library(stringr)
+library(terra)
+library(tidyr)
+library(units)
+library(viridis)
+
+# load and inspect the landcover data
+landcover <- rast("data/modis_mcd12q1_fao_2013-2021.tif")
+print(landcover)
+
+# map the data for 2021
+plot(as.factor(landcover[["2021"]]), 
+     main = "MODIS Landcover 2021",
+     axes = FALSE)
+```
+
+
+```{r}
+#| eval: false
+#| include: false
+# load cached objects for faster interactive processing
+buffers <- knitr::load_cache("envvar-landcover-buffer", object = "buffers")
+lsm <- knitr::load_cache("envvar-landcover-lsm", object = "lsm")
+buffers_ps <- knitr::load_cache("envvar-pred-buffer", object = "buffers_ps")
+lsm_ps <- knitr::load_cache("envvar-pred-lsm", object = "lsm_ps")
+```
+
+At this point we could use the MODIS land cover data directly, simply extracting the land cover class for each checklist location. However, we instead advocate summarizing the land cover data within a neighborhood around the checklist locations. As discussed in Section \@ref(intro-intro), checklist locations are not precise, so it's more appropriate to use the habitat in the surrounding area, rather than only at the checklist location. More fundamentally, organisms interact with their environment not at a single point, but at the scale of a landscape, so it's important to include habitat information characterizing a suitably-sized landscape around the observation location. Based on our experience working with eBird data, a 3 km diameter circular neighborhood centered on each checklist location is sufficient to account for the spatial precision in the data when the maximum distance of travelling counts has been limited to 10 km, while also being a relevant ecological scale for many bird species.
+
+There are a variety of **landscape metrics** that can be used to characterize the composition (what habitat is available) and configuration (how that habitat is arranged spatially) of landscapes. Many of these metrics can be calculated using the R package [`landscapemetrics`](https://r-spatialecology.github.io/landscapemetrics/). We'll use two simple metrics to summarize landcover data in this book: percent landcover, a measure of composition, and edge density, a measure of configuration. For each landcover class, [Percent landcover](https://r-spatialecology.github.io/landscapemetrics/reference/lsm_c_cpland.html) (abbreviated as `pland`) is the percent of the landscape that is composed of that class and [edge density](https://r-spatialecology.github.io/landscapemetrics/reference/lsm_c_ed.html) (abbreviated as `ed`) is the total boundary length of all patches of that class per unit area. For a broad range of scenarios, these two metrics are a reliable choice for calculating environmental covariates in distribution modeling.
+
+We'll start by finding the full set of unique checklists locations for each year in the eBird data and buffer the points by 1.5km to generate 3km diameter circular neighborhoods centered on each checklist location. Note that the landcover data are not available for 2022, so we use the 2021 landcover data for 2022 checklists.
+
+```{r}
+#| label: envvar-landcover-buffer
+#| cache: true
+#| cahce-path: "cache"
+# ebird checklist locations
+checklists <- read_csv("data/checklists-zf_woothr_june_us-ga.csv") %>% 
+  # landcover data not availble for the full period, so we use the closest year
+  mutate(year_lc = as.character(pmin(year, 2021)))
+
+# generate circular neighborhoods for all checkists
+buffers <- checklists %>% 
+  # identify unique location/year combinations
+  distinct(locality_id, year_lc, latitude, longitude) %>% 
+  # generate a 3km neighborhoods
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% 
+  st_buffer(dist = set_units(1.5, "km"))
+```
+
+Next, for each location, we crop and mask the landcover layer corresponding to the checklist year to the circular neighborhood around that checklist. Then we use `calculate_lsm()` from `landscapemetrics` to calculate `pland` and `ed` metrics within each neighborhood. **This step may take 30 minute or longer to run.**
+
+```{r}
+#| label: envvar-landcover-lsm
+#| cache: true
+lsm <- NULL
+for (i in seq_len(nrow(buffers))) {
+  buffer_i <- st_transform(buffers[i, ], crs = crs(landcover))
+  year <- as.character(buffer_i$year_lc)
+  
+  # crop and mask landcover raster so all values outside buffer are missing
+  lsm[[i]] <- crop(landcover[[year]], buffer_i) %>% 
+    mask(buffer_i) %>% 
+    # calcualte landscape metrics
+    calculate_lsm(level = "class", metric = c("pland", "ed")) %>% 
+    # add variables to uniquely identify each point
+    mutate(locality_id = buffer_i$locality_id, 
+           year_lc = buffer_i$year_lc)
+}
+lsm <- bind_rows(lsm) %>% 
+  select(locality_id, year_lc, class, metric, value)
+```
+
+Finally, we'll transform the data frame so there's one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don't appear within the buffer will not have associated `pland` and `ed` metrics; at this stage, we replace these implicit missing values with zeros.
+
+```{r}
+lsm_wide <- lsm %>% 
+  pivot_wider(values_from = value,
+              names_from = c(class, metric),
+              names_glue = "landcover_c{str_pad(class, 2, pad = '0')}_{metric}",
+              names_sort = TRUE,
+              values_fill = 0) %>% 
+  arrange(locality_id, year_lc)
+```
+
+## Elevation {#envvar-elevation}
+
+In this section we'll demonstrate how to assign elevation to each checklist, which frequently plays an important role in shaping species distributions. Amatulli et al. [-@amatulliSuiteGlobalCrossscale2018] provide a suite of global, 1km resolution topographic variables designed for use in distribution modeling. A range of variables are available, including elevation, slope, roughness, and many others; we'll focus on elevation here, but the approach can easily be applied to other variables.
+
+To access the data, visit [the website for these data](http://www.earthenv.org/topography), download the 1 km resolution median elevation product, and save the file (`elevation_1KMmd_GMTEDmd.tif`) in the `data/` subdirectory of your RStudio project. If you're unable to download the data, we've also provided a small subset of the data covering our study extent in the [data package](#intro-setup-data).
+
+Analogous to how we assigned landcover variables, we'll calculate the mean and standard deviation of the elevation within 3km diameter circular neighborhoods centered on each checklist location.
+
+```{r}
+# elevation raster
+elevation <- rast("data/elevation_1KMmd_GMTEDmd.tif")
+
+# mean and standard deviation within each circular neighborhood
+elev_buffer <- exact_extract(elevation, buffers, fun = c("mean", "stdev"),
+                             progress = FALSE) %>% 
+  # add variables to uniquely identify each point
+  mutate(locality_id = buffers$locality_id, year_lc = buffers$year_lc) %>% 
+  select(locality_id, year_lc, 
+         elevation_mean = mean,
+         elevation_sd = stdev)
+```
+
+Now, let's combine the landcover and elevation variables together, join them back to the checklist data, and save them as model predictors in the upcoming chapters.
+
+```{r}
+# combine elevation and landcover
+env_variables <- inner_join(elev_buffer, lsm_wide,
+                            by = c("locality_id", "year_lc"))
+
+# attach and expand to checklists
+env_variables <- checklists %>% 
+  select(checklist_id, locality_id, year_lc) %>% 
+  inner_join(env_variables, by = c("locality_id", "year_lc")) %>% 
+  select(-locality_id, -year_lc)
+
+# save to csv
+write_csv(env_variables, 
+          "data/environmental-variables_checklists.csv", 
+          na = "")
+```
+
+## Prediction surface {#envvar-pred}
+
+After training a species distribution model, the goal is typically to make predictions throughout the study area. To do this, we'll need a **prediction surface**: a regular grid of habitat covariates over which to make predictions. In this section, we'll create such a prediction surface for our study region (Georgia) using the MODIS land cover data from the most recent year for which they're available in addition to elevation data. To start, we'll create a template raster with cells equal in dimension to the diameter of the circular neighborhoods we used above. It's important to use an equal area coordinate reference system for the prediction surface; we'll use a [Lambert's azimuthal equal area projection](https://en.wikipedia.org/wiki/Lambert_azimuthal_equal-area_projection) centered on our study region.
+
+```{r}
+# lambert's azimuthal equal area projection for georgia
+laea_crs <- st_crs("+proj=laea +lat_0=32.5 +lon_0=-83.5")
+
+# study region: georgia
+study_region <- read_sf("data/gis-data.gpkg", layer = "ne_states") %>% 
+  filter(state_code == "US-GA") %>% 
+  st_transform(crs = laea_crs)
+
+# create a raster template covering the region with 3km resolution
+r <- rast(study_region, res = c(3000, 3000))
+
+# fill the raster with 1s inside the study region
+r <- rasterize(study_region, r, values = 1) %>% 
+  setNames("study_region")
+
+# save for later use
+r <- writeRaster(r, "data/prediction-surface.tif",
+                 overwrite = TRUE,
+                 gdal = c("COMPRESS=DEFLATE",
+                          "TILED=YES",
+                          "COPY_SRC_OVERVIEWS=YES"))
+```
+
+Next, we extract the coordinates of the cell centers from the raster we just created, convert these to `sf` point features, and buffer these to generate 3km circular neighborhoods.
+
+```{r}
+#| label: envvar-pred-buffer
+#| cache: true
+# generate neighborhoods for the prediction surface cell centers
+buffers_ps <- as.data.frame(r, cells = TRUE, xy = TRUE) %>% 
+  select(cell_id = cell, x, y) %>% 
+  st_as_sf(coords = c("x", "y"), crs = laea_crs, remove = FALSE) %>% 
+  st_transform(crs = 4326) %>% 
+  st_buffer(set_units(3, "km"))
+```
+
+Now we can calculate the landcover and elevation variables exactly as we did for the eBird checklists in the previous two sections. First, the landscape metrics `pland` and `ed` from the landcover data. Note that we use the most recent year of landcover data (i.e. 2021) in this case.
+
+```{r}
+#| label: envvar-pred-lsm
+#| cache: true
+# estimate landscape metrics for each cell in the prediction surface
+lsm_ps <- NULL
+for (i in seq_len(nrow(buffers_ps))) {
+  buffer_i <- st_transform(buffers_ps[i, ], crs = crs(landcover))
+  
+  # crop and mask landcover raster so all values outside buffer are missing
+  lsm_ps[[i]] <- crop(landcover[["2021"]], buffer_i) %>% 
+    mask(buffer_i) %>% 
+    # calcualte landscape metrics
+    calculate_lsm(level = "class", metric = c("pland", "ed")) %>% 
+    # add variable to uniquely identify each point
+    mutate(cell_id = buffer_i$cell_id)
+}
+lsm_ps <- bind_rows(lsm_ps) %>% 
+  select(cell_id, class, metric, value)
+
+# transform to wide format
+lsm_wide_ps <- lsm_ps %>% 
+  pivot_wider(values_from = value,
+              names_from = c(class, metric),
+              names_glue = "landcover_c{str_pad(class, 2, pad = '0')}_{metric}",
+              names_sort = TRUE,
+              values_fill = 0) %>% 
+  arrange(cell_id)
+```
+
+And now the mean and standard deviation of elevation.
+
+```{r}
+elev_buffer_ps <- exact_extract(elevation, buffers_ps, 
+                                fun = c("mean", "stdev"),
+                                progress = FALSE) %>% 
+  # add variables to uniquely identify each point
+  mutate(cell_id = buffers_ps$cell_id) %>% 
+  select(cell_id, elevation_mean = mean, elevation_sd = stdev)
+```
+
+Finally, we combine the landcover and elevation variables together and save to CSV.
+
+```{r}
+# combine landcover and elevation
+env_variables_ps <- inner_join(elev_buffer_ps, lsm_wide_ps, by = "cell_id")
+
+# attach the xy coordinates of the cell centers
+env_variables_ps <- buffers_ps %>% 
+  st_drop_geometry() %>% 
+  select(cell_id, x, y) %>% 
+  inner_join(env_variables_ps, by = "cell_id")
+
+# save as csv
+write_csv(env_variables_ps, 
+          "data/environmental-variables_prediction-surface.csv", 
+          na = "")
+```
+
+Keeping these data in a data frame is a compact way to store them and will be required once we make model predictions in later chapters. However, we can always use the raster template to convert these environmental variables into a spatial format, for example, if we want to map them. Let's look at how this works for percent landcover of class 14: deciduous broadleaf forest.
+
+```{r}
+#| label: envvar-pred-map
+forest_cover <- env_variables_ps %>% 
+  # convert to spatial features
+  st_as_sf(coords = c("x", "y"), crs = laea_crs) %>% 
+  # rasterize points
+  rasterize(r, field = "landcover_c14_pland")
+
+# make a map
+par(mar = c(0.25, 0.25, 2, 0.25))
+plot(forest_cover, 
+     axes = FALSE, box = FALSE, col = viridis(10), 
+     main = paste("Percent Deciduous Broadleaf Forest\n",
+                  "2021 MODIS Landcover"))
 ```

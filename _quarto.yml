@@ -43,6 +43,7 @@ knitr:
     out.width: "\\textwidth"
     fig.align: "center"
     fig.show: "hold"
+    cache.path: "cache/"
     R.options:
       digits: 3
       knitr.kable.NA: ""

@@ -8,3 +8,6 @@ data-raw/
 .Rdata
 .httr-oauth
 .DS_Store
+
+*cache/
+*_files/

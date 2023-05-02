@@ -43,10 +43,13 @@ Before running any of the following code, create an [RStudio project](https://r4
 Downloading and extracting eBird data in this section can be time consuming and laborious. If you would prefer to skip to the next section, download the [data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip) mentioned in the Introduction and jump to the {next section}(#ebird-zf). Just make sure you load the packages in the first code chunk before proceeding.
 
 ```{r}
-library(sf)
-library(gridExtra)
-library(tidyverse)
 library(auk)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(lubridate)
+library(readr)
+library(sf)
 
 # setup data directory
 dir.create("data", showWarnings = FALSE, recursive = TRUE)
@@ -118,6 +121,8 @@ zf <- zf %>%
     # effort_distance_km to 0 for non-travelling counts
     effort_distance_km = if_else(protocol_type != "Traveling", 
                                  0, effort_distance_km),
+    # convert duration to hours
+    effort_hours = duration_minutes / 60,
     # convert time to decimal hours since midnight
     hours_of_day = time_to_decimal(time_observations_started),
     # split date into year and day of year
@@ -128,18 +133,17 @@ zf <- zf %>%
 
 ## Accounting for variation in detectability {#ebird-detect}
 
-As discussed in the [Introduction](#intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to less than 5 hours long and 5 km in length, and with 10 or fewer observers. Furthermore, we'll only consider data from the past 10 years (2013-2022).
+As discussed in the [Introduction](#intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to less than 24 hours in duration and 10 km in length, and with 10 or fewer observers. Furthermore, we'll only consider data from the past 10 years (2013-2022).
 
 ```{r ebird-detect}
 # additional filtering
 zf_filtered <- zf %>% 
   filter(
-    # effort filters
-    duration_minutes <= 5 * 60,
-    effort_distance_km <= 5,
     # last 10 years of data
     year >= 2013,
-    # 10 or fewer observers
+    # effort filters
+    effort_hours <= 24,
+    effort_distance_km <= 10,
     number_observers <= 10)
 ```
 
@@ -154,7 +158,7 @@ checklists <- zf_filtered %>%
          protocol_type, all_species_reported,
          observation_date, year, day_of_year,
          hours_of_day, 
-         duration_minutes, effort_distance_km,
+         effort_hours, effort_distance_km,
          number_observers)
 write_csv(checklists, "data/checklists-zf_woothr_june_us-ga.csv", na = "")
 ```
@@ -163,11 +167,11 @@ If you'd like to ensure you're using exactly the same data as was used to genera
 
 ## Exploratory analysis and visualization {#ebird-explore}
 
-Before proceeding to fitting species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip). Place the contents of the zip file in the `data/` subdirectory of your project directory. We'll use an [USA Albers contiguous equal area conic](https://spatialreference.org/ref/esri/usa-contiguous-albers-equal-area-conic/) projection for all the maps throughout this book.
+Before proceeding to fitting species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip). Place the contents of the zip file in the `data/` subdirectory of your project directory.
 
 ```{r}
 #| label: ebird-explore-map
-# load and project gis data 
+# load and project gis data to albers equal area conic projection
 map_proj <- st_crs("ESRI:102003")
 ne_land <- read_sf("data/gis-data.gpkg", "ne_land") %>% 
   st_transform(crs = map_proj) %>% 
@@ -274,16 +278,16 @@ As expected, Wood Thrush detectability is highest early in the morning and quick
 
 ### Checklist duration {#ebird-explore-duration}
 
-When we initially extracted the eBird data in Section \@ref(ebird-extract), we restricted observations to those from checklists 5 hours in duration or shorter to reduce variability. Let's see what sort of variation remains in checklist duration.
+When we initially extracted the eBird data in Section \@ref(ebird-extract), we restricted observations to those from checklists 24 hours in duration or shorter to reduce variability. Let's see what sort of variation remains in checklist duration.
 
 ```{r}
 #| label: ebird-explore-duration
 #| fig-asp: 1
-# summarize data by 30 minute bins
-breaks <- seq(0, 5, by = 0.5)
+# summarize data by hour long bins
+breaks <- seq(0, 24)
 labels <- breaks[-length(breaks)] + diff(breaks) / 2
 checklists_duration <- checklists %>% 
-  mutate(duration_bins = cut(duration_minutes / 60, 
+  mutate(duration_bins = cut(effort_hours, 
                              breaks = breaks, 
                              labels = labels,
                              include.lowest = TRUE),
@@ -320,17 +324,17 @@ g_duration_freq <- ggplot(checklists_duration %>% filter(n_checklists > 100)) +
 grid.arrange(g_duration_hist, g_duration_freq)
 ```
 
-The majority of checklists are half an hour or shorter and there is a rapid decline in the frequency of checklists with increasing duration. In addition, longer searches yield a higher chance of detecting a Wood Thrush. In many cases, there is a saturation effect, with searches beyond a given length producing little additional benefit; however, here there appears to be a drop off in detection for checklists longer than 3.5 hours.
+The majority of checklists are an hour or shorter and there is a rapid decline in the frequency of checklists with increasing duration. In addition, longer searches yield a higher chance of detecting a Wood Thrush. In many cases, there is a saturation effect, with searches beyond a given length producing little additional benefit; however, here there appears to be a drop off in detection for checklists longer than 3.5 hours.
 
 ### Distance traveled {#ebird-explore-distance}
 
-As with checklist duration, we expect *a priori* that the greater the distance someone travels, the greater the probability of encountering at least one Wood Thrush. Let's see if this expectation is met. Note that we have already truncated the data to checklists less than 5 km in length.
+As with checklist duration, we expect *a priori* that the greater the distance someone travels, the greater the probability of encountering at least one Wood Thrush. Let's see if this expectation is met. Note that we have already truncated the data to checklists less than 10 km in length.
 
 ```{r}
 #| label: ebird-explore-distance
 #| fig-asp: 1
-# summarize data by 500m bins
-breaks <- seq(0, 5, by = 0.5)
+# summarize data by 1 km bins
+breaks <- seq(0, 10)
 labels <- breaks[-length(breaks)] + diff(breaks) / 2
 checklists_dist <- checklists %>% 
   mutate(dist_bins = cut(effort_distance_km, 
@@ -370,18 +374,18 @@ g_dist_freq <- ggplot(checklists_dist %>% filter(n_checklists > 100)) +
 grid.arrange(g_dist_hist, g_dist_freq)
 ```
 
-As with duration, the majority of observations are from short checklists (less than half a kilometer). One fortunate consequence of this is that most checklists will be contained within a small area within which habitat is not likely to show high variability. In chapter \@ref{envvar}, we will summarize land cover data within circles 2.5 km in diameter, centered on each checklist, and it appears that the vast majority of checklists will stay contained within this area.
+As with duration, the majority of observations are from short checklists (less than half a kilometer). One fortunate consequence of this is that most checklists will be contained within a small area within which habitat is not likely to show high variability. In chapter \@ref{envvar}, we will summarize land cover data within circles 3 km in diameter, centered on each checklist, and it appears that the vast majority of checklists will stay contained within this area.
 
 ### Number of observers {#ebird-explore-observers}
 
-Finally, let's consider the number of observers whose observation are being reported in each checklist. We expect that at least up to some number of observers, reporting rates will increase; however, in working with these data we have found cases of declining detection rates for very large groups. With this in mind we have already restricted checklists to those with 10 or fewer observers, thus removing the very largest groups (prior to filtering, some checklists had as many as 180 observers!).
+Finally, let's consider the number of observers whose observation are being reported in each checklist. We expect that at least up to some number of observers, reporting rates will increase; however, in working with these data we have found cases of declining detection rates for very large groups. With this in mind we have already restricted checklists to those with 30 or fewer observers, thus removing the very largest groups (prior to filtering, some checklists had as many as 180 observers!).
 
 ```{r ebird-explore-observers, fig.asp = 1}
 #| label: ebird-explore-observers
 #| fig-asp: 1
 # summarize data
-breaks <- 0:10
-labels <- 1:10
+breaks <- seq(0, 10)
+labels <- seq(1, 10)
 checklists_obs <- checklists %>% 
   mutate(obs_bins = cut(number_observers, 
                         breaks = breaks, 
@@ -399,7 +403,7 @@ g_obs_hist <- ggplot(checklists_obs) +
   geom_segment(aes(xend = obs_bins, y = 0, yend = n_checklists),
                color = "grey50") +
   geom_point() +
-  scale_x_continuous(breaks = 1:10) +
+  scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::comma) +
   labs(x = "# observers",
        y = "# checklists",
@@ -410,7 +414,7 @@ g_obs_freq <- ggplot(checklists_obs %>% filter(n_checklists > 100)) +
   aes(x = obs_bins, y = det_freq) +
   geom_line() +
   geom_point() +
-  scale_x_continuous(breaks = 1:10) +
+  scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::percent) +
   labs(x = "# observers",
        y = "% checklists with detections",
@@ -420,4 +424,4 @@ g_obs_freq <- ggplot(checklists_obs %>% filter(n_checklists > 100)) +
 grid.arrange(g_obs_hist, g_obs_freq)
 ```
 
-There is no discernable pattern amongst the noise here, likely because there are so few checklists with more than 3 observers.
+The majority of checklists have one or two observers and there appears to be an increase in detection frequency with more observers. However, it's hard to distinguish a discernible pattern in the noise here, likely because there are so few checklists with more than 3 observers.

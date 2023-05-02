@@ -29,6 +29,7 @@ Imports:
     ggplot2,
     gridExtra,
     knitr,
+    landscapemetrics,
     lubridate,
     MuMIn,
     PresenceAbsence,
@@ -46,6 +47,7 @@ Imports:
     tibble,
     tidyr (>= 1.2.1),
     tidyverse,
+    units,
     unmarked,
     verification,
     viridis

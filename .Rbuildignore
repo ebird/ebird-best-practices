@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^data/
+^data-raw/
+^docs/
+^cache/
+^*_files/

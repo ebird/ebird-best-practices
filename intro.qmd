@@ -111,9 +111,9 @@ In the [next chapter](#ebird), we provide a link to download a data package that
 
 ```{r}
 #| eval: false
-library(sf)
-library(rnaturalearth)
 library(dplyr)
+library(rnaturalearth)
+library(sf)
 
 # file to save spatial data
 gpkg_file <- "data/gis-data.gpkg"
