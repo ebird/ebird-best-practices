@@ -4,4 +4,10 @@
 ^data-raw/
 ^docs/
 ^cache/
-^*_files/
+^images/
+
+^.*\.qmd$
+^.*\.yml$
+^references.bib$
+^\.nojekyll$
+^\.quarto$

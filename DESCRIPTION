@@ -14,6 +14,12 @@ Authors@R: c(
     person("Alison", "Johnston", , "aj327@cornell.edu", role = "aut",
            comment = c(ORCID = "0000-0001-8221-013X"))
   )
+Description: A supplement to the paper Analytical guidelines to increase the 
+  value of community science data: An example using eBird data to estimate 
+  species distributions. Best practices for processing eBird data to prepare 
+  them for robust analyses, including training models to estimate encounter 
+  rate, relative abundance, and occupancy, and assessing the performance of 
+  these models.
 License: GPL-3
 URL: https://github.com/ebird/ebird-best-practices
 Depends: 
@@ -51,3 +57,4 @@ Imports:
     verification,
     viridis
 Encoding: UTF-8
+RoxygenNote: 7.2.3
