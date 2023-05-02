@@ -4,7 +4,7 @@ Version: 2.0
 Authors@R: c(
   person("Matthew", "Strimas-Mackey", role = c("aut", "cre"),
     email = "mes335@cornell.edu",
-    comment = c(ORCID = "0000-0001-8929-7776"),
+    comment = c(ORCID = "0000-0001-8929-7776")),
   person("Wesley", Hochachka", "M.", email = "wmh6@cornell.edu", role = "aut"),
   person("Viviana", "Ruiz-Gutierrez", email = "vr45@cornell.edu", role = "aut"),
   person("Orin", "Robinson", "J.", email = "ojr7@cornell.edu", role = "aut"),
