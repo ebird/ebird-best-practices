@@ -5,6 +5,7 @@
 ^docs/
 ^cache/
 ^images/
+^results/
 
 ^.*\.qmd$
 ^.*\.yml$

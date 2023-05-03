@@ -18,14 +18,7 @@ To gain access to the example raster datasets, download the data package for by 
 
 ## Landcover {#envvar-landcover}
 
-For the examples in this book, we'll use land cover variables derived from the [MODIS MCD12Q1 v006](https://lpdaac.usgs.gov/products/mcd12q1v006/) land cover product [@friedlMCD12Q1MODISTerra2015]. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We'll use the FAO Land Cover Classification System (LCCS1), which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 16 different land cover classes:
-
-```{r}
-#| echo: false
-lc_classes <- readr::read_csv("data/mcd12q1_fao_classes.csv")
-lc_classes$label <- NULL
-knitr::kable(lc_classes)
-```
+For the examples in this book, we'll use land cover variables derived from the [MODIS MCD12Q1 v006](https://lpdaac.usgs.gov/products/mcd12q1v006/) land cover product [@friedlMCD12Q1MODISTerra2015]. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We'll use the FAO Land Cover Classification System (LCCS1), which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 16 different land cover classes.
 
 The 2013-2021 data for our focal region (i.e. Georgia) is the data package in the file `data/modis_mcd12q1_fao_2013-2021.tif`. This is multi-band [GeoTIFF](https://en.wikipedia.org/wiki/GeoTIFF) in which each band corresponds to a year of landcover data. In R, we'll use the [`terra` package](https://rspatial.github.io/terra/) package to work with [raster datasets](https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/).
 
@@ -52,7 +45,6 @@ plot(as.factor(landcover[["2021"]]),
      axes = FALSE)
 ```
 
-
 ```{r}
 #| eval: false
 #| include: false
@@ -61,6 +53,15 @@ buffers <- knitr::load_cache("envvar-landcover-buffer", object = "buffers")
 lsm <- knitr::load_cache("envvar-landcover-lsm", object = "lsm")
 buffers_ps <- knitr::load_cache("envvar-pred-buffer", object = "buffers_ps")
 lsm_ps <- knitr::load_cache("envvar-pred-lsm", object = "lsm_ps")
+```
+
+We've also included a lookup table in the data package (`data/mcd12q1_fao_classes.csv`) that provides descriptions of each of these classes.
+
+```{r}
+lc_classes <- read_csv("data/mcd12q1_fao_classes.csv") %>% 
+  select(class, name, description)
+lc_classes$label <- NULL
+knitr::kable(lc_classes)
 ```
 
 At this point we could use the MODIS land cover data directly, simply extracting the land cover class for each checklist location. However, we instead advocate summarizing the land cover data within a neighborhood around the checklist locations. As discussed in Section \@ref(intro-intro), checklist locations are not precise, so it's more appropriate to use the habitat in the surrounding area, rather than only at the checklist location. More fundamentally, organisms interact with their environment not at a single point, but at the scale of a landscape, so it's important to include habitat information characterizing a suitably-sized landscape around the observation location. Based on our experience working with eBird data, a 3 km diameter circular neighborhood centered on each checklist location is sufficient to account for the spatial precision in the data when the maximum distance of travelling counts has been limited to 10 km, while also being a relevant ecological scale for many bird species.
@@ -110,15 +111,20 @@ lsm <- bind_rows(lsm) %>%
   select(locality_id, year_lc, class, metric, value)
 ```
 
-Finally, we'll transform the data frame so there's one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don't appear within the buffer will not have associated `pland` and `ed` metrics; at this stage, we replace these implicit missing values with zeros.
+Finally, we'll transform the data frame so there's one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don't appear within the buffer will not have associated `pland` and `ed` metrics; at this stage, we replace these implicit missing values with zeros using the complete list of classes in `lc_classes`.
 
 ```{r}
 lsm_wide <- lsm %>% 
+  # fill missing classes with zeros
+  complete(nesting(locality_id, year_lc),
+           class = lc_classes$class,
+           metric = c("ed", "pland"),
+           fill = list(value = 0)) %>% 
+  # transform from long to wide format
   pivot_wider(values_from = value,
               names_from = c(class, metric),
               names_glue = "landcover_c{str_pad(class, 2, pad = '0')}_{metric}",
-              names_sort = TRUE,
-              values_fill = 0) %>% 
+              names_sort = TRUE) %>% 
   arrange(locality_id, year_lc)
 ```
 
@@ -186,9 +192,7 @@ r <- rasterize(study_region, r, values = 1) %>%
 # save for later use
 r <- writeRaster(r, "data/prediction-surface.tif",
                  overwrite = TRUE,
-                 gdal = c("COMPRESS=DEFLATE",
-                          "TILED=YES",
-                          "COPY_SRC_OVERVIEWS=YES"))
+                 gdal = "COMPRESS=DEFLATE")
 ```
 
 Next, we extract the coordinates of the cell centers from the raster we just created, convert these to `sf` point features, and buffer these to generate 3km circular neighborhoods.
@@ -227,6 +231,12 @@ lsm_ps <- bind_rows(lsm_ps) %>%
 
 # transform to wide format
 lsm_wide_ps <- lsm_ps %>% 
+  # fill missing classes with zeros
+  complete(cell_id,
+           class = lc_classes$class,
+           metric = c("ed", "pland"),
+           fill = list(value = 0)) %>% 
+  # transform from long to wide format
   pivot_wider(values_from = value,
               names_from = c(class, metric),
               names_glue = "landcover_c{str_pad(class, 2, pad = '0')}_{metric}",

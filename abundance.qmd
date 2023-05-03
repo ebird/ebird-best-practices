@@ -5,3 +5,265 @@ editor_options:
 ---
 
 # Modeling Relative Abundance {#abundance}
+
+The [previous chapter](#encounter) focused on modeling encounter rate, the probability of detecting a specis on a standard eBird checklist. However, in addition to recording which species they observed, most eBirders also specify how many individuals of each species were observed. So, in this chapter, we'll take advantage of these counts to model a relative measure of species abundance.
+
+To motivate this chapter, we will focus on the specific goal of estimating a map of relative abundance. This type of map would help us to identify areas with higher or lower abundance. The metric we'll use to estimate abundance is the expected number of individuals observed on a standardized eBird checklist. Like the encounter rate model, the abundance model we present in this section accounts for variation in detection rates but it does not directly estimate the absolute detection probability. For this reason, the estimates of abundance we make can only be interpreted as a measure of relative abundance; an index of the *count* of individuals of the species present in the search area. To match the common terminology in the literature, we refer to this as an estimate of *relative* abundance.
+
+The relative abundance model presented here is similar to and a natural extension of the encounter rate model of Chapter \@ref(encounter). In particular, we use a two-step hurdle model following Fink et al. [`@keyserSnowCoverDynamics2023]. In the first step, we estimate encounter rate using exactly the same method as in Chapter \@ref(encounter). In the second step, we estimate the expected count of individuals on eBird checklists where the species was detected. Finally, we multiple encounter rate by median count to produce an estimate of relative abundance. We use random forests for both steps on the hurdle.
+
+## Data preparation {#encounter-data}
+
+Let's get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to [download the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip), and unzip it to your project directory, to ensure you're working with exactly the same data as was used in the creation of this book.
+
+```{r}
+library(ebirdst)
+library(fields)
+library(gridExtra)
+library(mccf1)
+library(ranger)
+library(scam)
+library(sf)
+library(terra)
+library(tidyverse)
+
+# set random number seed to insure fully repeatable results
+set.seed(1)
+
+# setup results directory for saved results
+dir.create("results/", showWarnings = FALSE, recursive = TRUE)
+
+# habitat variables: landcover and elevation
+habitat <- read_csv("data/environmental-variables_checklists.csv")
+
+# zero-filled ebird data combined with habitat data
+checklists <- read_csv("data/checklists-zf_woothr_june_us-ga.csv") %>% 
+  inner_join(habitat, by = "checklist_id")
+
+# prediction surface
+pred_surface <- read_csv("data/environmental-variables_prediction-surface.csv")
+r <- rast("data/prediction-surface.tif") %>% 
+  # this second rast() call removes all the values from the raster template
+  rast()
+crs <- st_crs(r)
+
+# load gis data for making maps
+study_region <- read_sf("data/gis-data.gpkg", "ne_states") %>% 
+  filter(state_code == "US-GA") %>% 
+  st_transform(crs = crs) %>% 
+  st_geometry()
+ne_land <- read_sf("data/gis-data.gpkg", "ne_land") %>% 
+  st_transform(crs = crs) %>% 
+  st_geometry()
+ne_country_lines <- read_sf("data/gis-data.gpkg", "ne_country_lines") %>% 
+  st_transform(crs = crs) %>% 
+  st_geometry()
+ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") %>% 
+  st_transform(crs = crs) %>% 
+  st_geometry()
+```
+
+Next we'll perform a round of spatiotemporal subsampling on the data to reduce bias.
+
+```{r}
+# sample one checklist per 3km x 3km x 1 week grid for each year
+# sample detection/non-detection independently 
+checklists_ss <- grid_sample_stratified(checklists,
+                                        obs_column = "species_observed")
+```
+
+Finally, we'll split the data into 80% of checklists for training and 20% for testing and select only the columns we intend to use as predictors in the model training.
+
+```{r}
+train_test <- checklists_ss %>% 
+  # select only the columns to be used in the model
+  select(species_observed, observation_count,
+         year, day_of_year, hours_of_day,
+         effort_hours, effort_distance_km, number_observers, 
+         starts_with("landcover_"),
+         starts_with("elevation_")) %>% 
+  drop_na() %>% 
+  # split into 80/20 test/train
+  split(if_else(runif(nrow(.)) <= 0.8, "train", "test"))
+```
+
+## Hurdle model
+
+For this two-step hurdle model, we'll start by training exactly the same encounter rate model as in the [previous chapter](#encounter). Then we'll subset the eBird checklist to only those where the species was detected or predicted to occur by the encounter rate model. We'll use this subset of the data to train a second random forest model for expected count. Finally we'll combine the results of the two steps together to produce estimates of relative abundance.
+
+### Step 1: Encounter rate
+
+If you haven't done so, read Chapter \@ref(encounter) for details on the calibrated encounter rate model. Here we repeat the process of modeling encounter rate in a compressed form.
+
+```{r}
+#| results: "hold"
+# calculate detection frequency for the balance random forest
+detection_freq <- mean(train_test$train$species_observed)
+
+# train a random forest model for encounter rate
+train_er <- select(train_test$train, -observation_count)
+er_model <- ranger(formula =  as.factor(species_observed) ~ ., 
+                   data = train_er,
+                   importance = "impurity",
+                   probability = TRUE,
+                   replace = TRUE,
+                   sample.fraction = c(detection_freq, detection_freq))
+
+# select the mcc-f1 optimizing occurrence threshold
+obs_pred <- tibble(obs = as.integer(train_er$species_observed), 
+                   pred = er_model$predictions[, 2]) %>% 
+  drop_na()
+mcc_f1 <- mccf1(response = obs_pred$obs, predictor = obs_pred$pred)
+mcc_f1_summary <- summary(mcc_f1)
+threshold <- mcc_f1_summary$best_threshold[1]
+
+# calibration model
+calibration_model <- scam(obs ~ s(pred, k = 6, bs = "mpi"), 
+                          gamma = 2,
+                          data = obs_pred)
+```
+
+### Step 2: Expected count
+
+For the second step, we train a random forests model to estimate the expected count of individuals on eBird checklists where the species was detected or predicted to be detected by the encounter rate model. So, we'll start by subsetting the data to just these checklists. In addition, we'll remove any observations for which the observer reported that Wood Thrush was present, but didn't report a count of the number of individuals (coded as a count of "X" in the eBird database, but converted to `NA` in our dataset).
+
+```{r}
+# attach the predicted encounter rate based on out of bag samples
+train_er <- train_test$train
+train_er$pred_er <- er_model$predictions[, 2]
+# subset to only observed or predicted detections
+train_count <- train_er %>% 
+  filter(!is.na(observation_count),
+         observation_count > 0 | pred_er > threshold) %>% 
+  select(-species_observed, -pred_er)
+```
+
+We've found that including predicted encounter rate as a predictor in the count model improves predictive performance. So, with this in mind, we predict encounter rate for the training dataset and add it as an additional column. 
+
+```{r}
+predicted_er <- predict(er_model, data = train_count, type = "response")
+predicted_er <- predicted_er$predictions[, 2]
+train_count$predicted_er <- predicted_er
+```
+
+Finally, we train a random forests model to estimate count. This is superficially very similar to the random forests model for encounter rate; however, for count we're using a regression random forest while for encounter rate we used a balanced classification random forest.
+
+```{r}
+count_model <- ranger(formula = observation_count ~ .,
+                      data = train_count,
+                      importance = "impurity",
+                      replace = TRUE)
+```
+
+### Assessment {#abundance-assess}
+
+TODO
+
+## Prediction {#abundance-predict}
+
+Just as we did in the [previous chapter](#encounter-predict) for encounter rate, we can estimate relative abundance over our prediction surface. First we estimate encounter rate and count, then we multiply these together to get an estimate of relative abundance. Let's start by added the effort variables to the prediction grid for a standard eBird checklist at the optimal time of day for detecting Wood Thrush. Recall from the [previous chapter](#encounter-predict) that we determined the optimal time of day for detecting Wood Thrush was around 6:15AM.
+
+```{r}
+pred_surface_eff <- pred_surface %>% 
+  mutate(observation_date = ymd("2022-06-15"),
+         year = year(observation_date),
+         day_of_year = yday(observation_date),
+         # determined as optimal time for detection in previous chapter
+         hours_of_day = 6.2,
+         effort_hours = 1,
+         effort_distance_km = 1,
+         number_observers = 1)
+```
+
+Now we can estimate calibrated encounter rate and count for each point on the prediction surface.
+
+```{r}
+# encounter rate estimate
+pred_er <- predict(er_model, data = pred_surface_eff, type = "response")
+pred_er <- pred_er$predictions[, 2]
+# apply calibration
+pred_er_cal <- predict(calibration_model, 
+                       data.frame(pred = pred_er), 
+                       type = "response") %>% 
+  as.numeric()
+
+# add predicted encounter rate required for count estimates
+pred_surface_eff$predicted_er <- pred_er
+# count estimate
+pred_count <- predict(count_model, data = pred_surface_eff, type = "response")
+pred_count <- pred_count$predictions
+
+# add estimates to prediction surface
+predictions <- bind_cols(pred_surface_eff, 
+                         encounter_rate = pred_er_cal,
+                         count = pred_count) %>% 
+  select(cell_id, x, y, encounter_rate, count) %>% 
+  mutate(encounter_rate = pmin(pmax(encounter_rate, 0), 1))
+```
+
+Next, we add a column for the relative abundance estimate (the product of the encounter rate and count estimates), and convert these estimates to raster format.
+
+```{r}
+r_pred <- predictions %>% 
+  # estimate relative abundance
+  mutate(abundance = encounter_rate * count) %>% 
+  # convert to spatial features
+  st_as_sf(coords = c("x", "y"), crs = crs) %>% 
+  select(encounter_rate, count, abundance) %>% 
+  # rasterize
+  rasterize(r, field = c("encounter_rate", "count", "abundance"),
+            fun = "mean") %>% 
+  setNames(c("encounter_rate", "count", "abundance"))
+
+# save the raster
+# 3 bands: encounter_rate, count, and relative abundance
+r_pred <- writeRaster(r_pred, "results/abundance_woothr.tif", 
+                      overwrite = TRUE,
+                      gdal = "COMPRESS=DEFLATE")
+```
+
+Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 1 hour, 1 km checklist for which counting started at about 6:15AM on June 15, 2022. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
+
+```{r}
+#| label: abundance-predict-map
+par(mar = c(3.5, 0.25, 0.25, 0.25))
+# set up plot area
+plot(study_region, col = NA, border = NA)
+plot(ne_land, col = "#dddddd", border = "#888888", lwd = 0.5, add = TRUE)
+
+# define quantile breaks
+brks <- global(r_pred[["abundance"]], fun = quantile, 
+               probs = seq(0, 1, 0.1), na.rm = TRUE) %>% 
+  as.numeric() %>% 
+  unique()
+# label the bottom, middle, and top value
+lbls <- round(c(0, median(brks), max(brks)), 2)
+# ebird status and trends color palette
+pal <- abundance_palette(length(brks) - 1)
+plot(r_pred[["abundance"]], 
+     col = pal, breaks = brks, 
+     maxpixels = ncell(r_pred),
+     legend = FALSE, axes = FALSE, bty = "n",
+     add = TRUE)
+
+# borders
+plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
+plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
+plot(study_region, border = "#000000", col = NA, lwd = 1, add = TRUE)
+box()
+
+# legend
+par(new = TRUE, mar = c(0, 0, 0, 0))
+title <- "Wood Thrush Relative Abundance (June 2022)"
+image.plot(zlim = c(0, 1), legend.only = TRUE, 
+           col = pal, breaks = seq(0, 1, length.out = length(brks)),
+           smallplot = c(0.25, 0.75, 0.06, 0.09),
+           horizontal = TRUE,
+           axis.args = list(at = c(0, 0.5, 1), labels = lbls,
+                            fg = "black", col.axis = "black",
+                            cex.axis = 0.75, lwd.ticks = 0.5,
+                            padj = -1.5),
+           legend.args = list(text = title,
+                              side = 3, col = "black",
+                              cex = 1, line = 0))
+```
