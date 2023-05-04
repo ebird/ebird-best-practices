@@ -211,6 +211,11 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./occupancy.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Occupancy</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
   </div>
 </li>
@@ -259,7 +264,7 @@ div.csl-indent {
 </section>
 <section id="envvar-landcover" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="envvar-landcover"><span class="header-section-number">3.2</span> Landcover</h2>
-<p>For the examples in this book, we’ll use land cover variables derived from the <a href="https://lpdaac.usgs.gov/products/mcd12q1v006/">MODIS MCD12Q1 v006</a> land cover product <span class="citation" data-cites="friedlMCD12Q1MODISTerra2015">(<a href="#ref-friedlMCD12Q1MODISTerra2015" role="doc-biblioref">Friedl and Sulla-Menashe 2015</a>)</span>. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We’ll use the University of Maryland classification system, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 15 different land cover classes. The <code>terra</code> package includes a <a href="https://rspatial.org/modis/1-introduction.html">nice tutorial</a> for how to download and pre-processing MODIS data like this using the <a href="https://github.com/rspatial/luna"><code>luna</code> R package</a>.</p>
+<p>For the examples in this book, we’ll use land cover variables derived from the <a href="https://lpdaac.usgs.gov/products/mcd12q1v006/">MODIS MCD12Q1 v006</a> land cover product <span class="citation" data-cites="friedlMCD12Q1MODISTerra2015">(<a href="references.html#ref-friedlMCD12Q1MODISTerra2015" role="doc-biblioref">Friedl and Sulla-Menashe 2015</a>)</span>. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We’ll use the University of Maryland classification system, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 15 different land cover classes. The <code>terra</code> package includes a <a href="https://rspatial.org/modis/1-introduction.html">nice tutorial</a> for how to download and pre-processing MODIS data like this using the <a href="https://github.com/rspatial/luna"><code>luna</code> R package</a>.</p>
 <p>The 2013-2021 data for our focal region (i.e.&nbsp;Georgia) is the data package in the file <code>data/modis_mcd12q1_umd_2013-2021.tif</code>. This is multi-band <a href="https://en.wikipedia.org/wiki/GeoTIFF">GeoTIFF</a> in which each band corresponds to a year of landcover data. In R, we’ll use the <a href="https://rspatial.github.io/terra/"><code>terra</code> package</a> package to work with <a href="https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/">raster datasets</a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
@@ -469,7 +474,7 @@ div.csl-indent {
 </section>
 <section id="envvar-elevation" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="envvar-elevation"><span class="header-section-number">3.3</span> Elevation</h2>
-<p>In this section we’ll demonstrate how to assign elevation to each checklist, which frequently plays an important role in shaping species distributions. Amatulli et al. <span class="citation" data-cites="amatulliSuiteGlobalCrossscale2018">(<a href="#ref-amatulliSuiteGlobalCrossscale2018" role="doc-biblioref">2018</a>)</span> provide a suite of global, 1km resolution topographic variables designed for use in distribution modeling. A range of variables are available, including elevation, slope, roughness, and many others; we’ll focus on elevation here, but the approach can easily be applied to other variables.</p>
+<p>In this section we’ll demonstrate how to assign elevation to each checklist, which frequently plays an important role in shaping species distributions. Amatulli et al. <span class="citation" data-cites="amatulliSuiteGlobalCrossscale2018">(<a href="references.html#ref-amatulliSuiteGlobalCrossscale2018" role="doc-biblioref">2018</a>)</span> provide a suite of global, 1km resolution topographic variables designed for use in distribution modeling. A range of variables are available, including elevation, slope, roughness, and many others; we’ll focus on elevation here, but the approach can easily be applied to other variables.</p>
 <p>To access the data, visit <a href="http://www.earthenv.org/topography">the website for these data</a>, download the 1 km resolution median elevation product, and save the file (<code>elevation_1KMmd_GMTEDmd.tif</code>) in the <code>data/</code> subdirectory of your RStudio project. If you’re unable to download the data, we’ve also provided a small subset of the data covering our study extent in the <a href="#intro-setup-data">data package</a>.</p>
 <p>Analogous to how we assigned landcover variables, we’ll calculate the mean and standard deviation of the elevation within 3km diameter circular neighborhoods centered on each checklist location.</p>
 <div class="cell" data-layout-align="center">
@@ -608,8 +613,7 @@ div.csl-indent {
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="dv">2</span>, <span class="fl">0.25</span>))</span>
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(forest_cover, </span>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>     <span class="at">axes =</span> <span class="cn">FALSE</span>, <span class="at">box =</span> <span class="cn">FALSE</span>, <span class="at">col =</span> <span class="fu">viridis</span>(<span class="dv">10</span>), </span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">paste</span>(<span class="st">"Percent Deciduous Broadleaf Forest</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"2021 MODIS Landcover"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Deciduous Broadleaf Forest (% cover)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -620,7 +624,7 @@ div.csl-indent {
 </div>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
 <div id="ref-amatulliSuiteGlobalCrossscale2018" class="csl-entry" role="doc-biblioentry">
 Amatulli, Giuseppe, Sami Domisch, Mao-Ning Tuanmu, Benoit Parmentier, Ajay Ranipeta, Jeremy Malczyk, and Walter Jetz. 2018. <span>“A Suite of Global, Cross-Scale Topographic Variables for Environmental and Biodiversity Modeling.”</span> <em>Scientific Data</em> 5 (March): 180040. <a href="https://doi.org/10.1038/sdata.2018.40">https://doi.org/10.1038/sdata.2018.40</a>.
 </div>

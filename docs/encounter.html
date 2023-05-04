@@ -212,6 +212,11 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./occupancy.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Occupancy</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
   </div>
 </li>
@@ -370,14 +375,14 @@ div.csl-indent {
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># after sampling</span></span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(checklists_ss)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 19170</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 18992</span></span>
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(checklists_ss, species_observed) <span class="sc">%&gt;%</span> </span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">percent =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n))</span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   species_observed     n percent</span></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;lgl&gt;            &lt;int&gt;   &lt;dbl&gt;</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 FALSE            16622   0.867</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 TRUE              2548   0.133</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 FALSE            16472   0.867</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 TRUE              2520   0.133</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So, the subsampling <em>decreased</em> the overall number of checklists by a factor of about four, but <em>increased</em> the prevalence of detections from 10.0% to 13.3%. This increase in detections will help the random forest model distinguish where birds are being observed; however, this does affect the prevalence rate of the detections in the data. As a result, the estimated probability of occurrence based on these subsampled data will be larger than the true occurrence rate. When examining the outputs from the models it will be important to recall that we altered the prevalence rate at this stage. Now let’s look at how the subsampling affects the spatial distribution of the observations.</p>
 <div class="cell" data-layout-align="center">
@@ -540,7 +545,7 @@ div.csl-indent {
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># identify best threshold</span></span>
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>mcc_f1_summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(mcc_f1)</span>
 <span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  mccf1_metric best_threshold</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          0.39           0.58</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         0.394          0.544</span></span>
 <span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>threshold <span class="ot">&lt;-</span> mcc_f1_summary<span class="sc">$</span>best_threshold[<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -618,27 +623,27 @@ div.csl-indent {
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">mse</td>
-<td style="text-align: right;">0.080</td>
+<td style="text-align: right;">0.079</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">spearman</td>
-<td style="text-align: right;">0.387</td>
+<td style="text-align: right;">0.383</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">sensitivity</td>
-<td style="text-align: right;">0.616</td>
+<td style="text-align: right;">0.654</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">specificity</td>
-<td style="text-align: right;">0.870</td>
+<td style="text-align: right;">0.852</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">kappa</td>
-<td style="text-align: right;">0.383</td>
+<td style="text-align: right;">0.375</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">pr_auc</td>
-<td style="text-align: right;">0.302</td>
+<td style="text-align: right;">0.299</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">mcc</td>
@@ -646,7 +651,7 @@ div.csl-indent {
 </tr>
 <tr class="even">
 <td style="text-align: left;">f1</td>
-<td style="text-align: right;">0.470</td>
+<td style="text-align: right;">0.467</td>
 </tr>
 </tbody>
 </table>
@@ -686,12 +691,12 @@ div.csl-indent {
 </div>
 </div>
 <p>The most important predictors of detection/non-detection are often effort variables. Indeed, that’s the case here: checklist duration, distance traveled, and start time (<code>hours_of_day</code>) all appear in the top 5 predictors. This is not suprising: going out at the right time of day and expending more effort searching will lead to a higher probabilty of detecting Wood Thrush. Focusing on the habitat variables, both elevation variables have high importance, and the top habitat variables are from deciduous broadleaf forest and woody savanna. Note however, that high importance doesn’t tell us the direction of the relationship with detection, for that we’ll have to look at partial dependence plots.</p>
-<p>Let’s grab the top 9 most important predictors, which we’ll need in the next section.</p>
+<p>Let’s grab the top 15 most important predictors, which we’ll need in the next section.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># top 9 predictors other than date</span></span>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># top predictors other than date</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>top_pred <span class="ot">&lt;-</span> pi <span class="sc">%&gt;%</span> </span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>predictor <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"year"</span>, <span class="st">"day_of_year"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(<span class="at">order_by =</span> importance, <span class="at">n =</span> <span class="dv">9</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(<span class="at">order_by =</span> importance, <span class="at">n =</span> <span class="dv">15</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(importance))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -762,18 +767,17 @@ div.csl-indent {
 <span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> encounter_rate) <span class="sc">+</span></span>
 <span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
 <span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> <span class="fu">as_factor</span>(predictor), <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Encounter Rate"</span>) <span class="sc">+</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> <span class="fu">as_factor</span>(predictor), <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Encounter Rate"</span>) <span class="sc">+</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
 <span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"grey60"</span>),</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks  =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"grey60"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"grey60"</span>),</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks  =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"grey60"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="encounter_files/figure-html/encounter-habitat-pd-calculate-1.png" class="img-fluid figure-img"></p>
+<p><img src="encounter_files/figure-html/encounter-habitat-pd-calculate-1.png" style="width:100.0%" height="600" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -841,12 +845,12 @@ div.csl-indent {
 <span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(<span class="at">order_by =</span> encounter_rate) <span class="sc">%&gt;%</span> </span>
 <span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(hours_of_day)</span>
 <span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>t_peak</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 6.17</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 6.24</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
 
 </div>
-<p>Based on this analysis, the best time for detecting Wood Thrush is at 6:10 AM. Now we use this time to make predictions. This is equivalent to many eBirders all conducting a checklist within different grid cells on June 15 at 6:10 AM. We also add the other effort variables to the prediction dataset.</p>
+<p>Based on this analysis, the best time for detecting Wood Thrush is at 6:14 AM. Now we use this time to make predictions. This is equivalent to many eBirders all conducting a checklist within different grid cells on June 15 at 6:14 AM. We also add the other effort variables to the prediction dataset.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># add effort covariates to prediction </span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>pred_surface_eff <span class="ot">&lt;-</span> pred_surface <span class="sc">%&gt;%</span> </span>
@@ -884,7 +888,7 @@ div.csl-indent {
 <span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setNames</span>(<span class="st">"encounter_rate"</span>)</span>
 <span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="co"># save the raster</span></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>r_pred <span class="ot">&lt;-</span> <span class="fu">writeRaster</span>(r_pred, <span class="st">"results/encounter-rate_woothr.tif"</span>, </span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>r_pred <span class="ot">&lt;-</span> <span class="fu">writeRaster</span>(r_pred, <span class="st">"results/encounter-rate_woothr_june-2022.tif"</span>, </span>
 <span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>                      <span class="at">overwrite =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>                      <span class="at">gdal =</span> <span class="st">"COMPRESS=DEFLATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>

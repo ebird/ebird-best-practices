@@ -398,14 +398,14 @@ ggplot(pi) +
 
 The most important predictors of detection/non-detection are often effort variables. Indeed, that's the case here: checklist duration, distance traveled, and start time (`hours_of_day`) all appear in the top 5 predictors. This is not suprising: going out at the right time of day and expending more effort searching will lead to a higher probabilty of detecting Wood Thrush. Focusing on the habitat variables, both elevation variables have high importance, and the top habitat variables are from deciduous broadleaf forest and woody savanna. Note however, that high importance doesn't tell us the direction of the relationship with detection, for that we'll have to look at partial dependence plots.
 
-Let's grab the top 9 most important predictors, which we'll need in the next section.
+Let's grab the top 15 most important predictors, which we'll need in the next section.
 
 ```{r}
-#| label: encounter-habitat-pi-top9
-# top 9 predictors other than date
+#| label: encounter-habitat-pi-top
+# top predictors other than date
 top_pred <- pi %>% 
   filter(!predictor %in% c("year", "day_of_year")) %>% 
-  slice_max(order_by = importance, n = 9) %>% 
+  slice_max(order_by = importance, n = 15) %>% 
   arrange(desc(importance))
 ```
 
@@ -461,6 +461,8 @@ Now we'll use this function to calculate partial dependence for the top 9 predic
 
 ```{r}
 #| label:  encounter-habitat-pd-calculate
+#| out-width: 100%
+#| out-height: 600px
 # calculate partial dependence for each predictor
 # map is used to iteratively apply calculate_pd to each predictor
 pd <- NULL
@@ -480,8 +482,7 @@ ggplot(pd) +
   aes(x = x, y = encounter_rate) +
   geom_line() +
   geom_point() +
-  scale_y_continuous(labels = scales::percent) +
-  facet_wrap(~ as_factor(predictor), nrow = 3, scales = "free") +
+  facet_wrap(~ as_factor(predictor), ncol = 3, scales = "free") +
   labs(x = NULL, y = "Encounter Rate") +
   theme_minimal() +
   theme_minimal() +
@@ -606,7 +607,7 @@ r_pred <- predictions %>%
   setNames("encounter_rate")
 
 # save the raster
-r_pred <- writeRaster(r_pred, "results/encounter-rate_woothr.tif", 
+r_pred <- writeRaster(r_pred, "results/encounter-rate_woothr_june-2022.tif", 
                       overwrite = TRUE,
                       gdal = "COMPRESS=DEFLATE")
 ```

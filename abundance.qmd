@@ -303,7 +303,7 @@ r_pred <- predictions %>%
 
 # save the raster
 # 3 bands: encounter_rate, count, and relative abundance
-r_pred <- writeRaster(r_pred, "results/abundance_woothr.tif", 
+r_pred <- writeRaster(r_pred, "results/abundance_woothr_june-2022.tif", 
                       overwrite = TRUE,
                       gdal = "COMPRESS=DEFLATE")
 ```

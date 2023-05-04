@@ -11,6 +11,7 @@ book:
     - envvar.qmd
     - encounter.qmd
     - abundance.qmd
+    - occupancy.qmd
     - references.qmd
 
   page-footer:

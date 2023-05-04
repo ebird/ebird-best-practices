@@ -298,6 +298,5 @@ forest_cover <- env_variables_ps %>%
 par(mar = c(0.25, 0.25, 2, 0.25))
 plot(forest_cover, 
      axes = FALSE, box = FALSE, col = viridis(10), 
-     main = paste("Percent Deciduous Broadleaf Forest\n",
-                  "2021 MODIS Landcover"))
+     main = "Deciduous Broadleaf Forest (% cover)")
 ```

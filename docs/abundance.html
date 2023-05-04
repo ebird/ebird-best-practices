@@ -113,7 +113,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./references.html" rel="next">
+<link href="./occupancy.html" rel="next">
 <link href="./encounter.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -207,6 +207,11 @@ div.csl-indent {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./abundance.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relative Abundance</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./occupancy.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Occupancy</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -359,7 +364,7 @@ div.csl-indent {
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                          <span class="at">gamma =</span> <span class="dv">2</span>,</span>
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                          <span class="at">data =</span> obs_pred)</span>
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  mccf1_metric best_threshold</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         0.396          0.572</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         0.397          0.551</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="abundance-hurdle-count-" class="level3" data-number="5.2.2">
@@ -472,19 +477,19 @@ div.csl-indent {
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">count_spearman</td>
-<td style="text-align: right;">0.233</td>
+<td style="text-align: right;">0.269</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">log_count_pearson</td>
-<td style="text-align: right;">0.292</td>
+<td style="text-align: right;">0.351</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">abundance_spearman</td>
-<td style="text-align: right;">0.354</td>
+<td style="text-align: right;">0.322</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">log_abundance_pearson</td>
-<td style="text-align: right;">0.486</td>
+<td style="text-align: right;">0.513</td>
 </tr>
 </tbody>
 </table>
@@ -546,7 +551,7 @@ div.csl-indent {
 <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co"># save the raster</span></span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 3 bands: encounter_rate, count, and relative abundance</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>r_pred <span class="ot">&lt;-</span> <span class="fu">writeRaster</span>(r_pred, <span class="st">"results/abundance_woothr.tif"</span>, </span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>r_pred <span class="ot">&lt;-</span> <span class="fu">writeRaster</span>(r_pred, <span class="st">"results/abundance_woothr_june-2022.tif"</span>, </span>
 <span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                      <span class="at">overwrite =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                      <span class="at">gdal =</span> <span class="st">"COMPRESS=DEFLATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -750,8 +755,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./references.html" class="pagination-link">
-        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./occupancy.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Occupancy</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
