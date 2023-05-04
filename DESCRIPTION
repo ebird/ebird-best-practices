@@ -38,6 +38,7 @@ Imports:
     lubridate,
     mccf1,
     MuMIn,
+    precrec,
     PresenceAbsence,
     purrr,
     ranger (>= 0.11.2),

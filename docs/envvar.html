@@ -201,12 +201,12 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./encounter.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Modeling Encounter Rate</span></a>
+  <a href="./encounter.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Encounter Rate</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./abundance.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Modeling Relative Abundance</span></a>
+  <a href="./abundance.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relative Abundance</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -259,8 +259,8 @@ div.csl-indent {
 </section>
 <section id="envvar-landcover" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="envvar-landcover"><span class="header-section-number">3.2</span> Landcover</h2>
-<p>For the examples in this book, we’ll use land cover variables derived from the <a href="https://lpdaac.usgs.gov/products/mcd12q1v006/">MODIS MCD12Q1 v006</a> land cover product <span class="citation" data-cites="friedlMCD12Q1MODISTerra2015">(<a href="references.html#ref-friedlMCD12Q1MODISTerra2015" role="doc-biblioref">Friedl and Sulla-Menashe 2015</a>)</span>. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We’ll use the FAO Land Cover Classification System (LCCS1), which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 16 different land cover classes.</p>
-<p>The 2013-2021 data for our focal region (i.e.&nbsp;Georgia) is the data package in the file <code>data/modis_mcd12q1_fao_2013-2021.tif</code>. This is multi-band <a href="https://en.wikipedia.org/wiki/GeoTIFF">GeoTIFF</a> in which each band corresponds to a year of landcover data. In R, we’ll use the <a href="https://rspatial.github.io/terra/"><code>terra</code> package</a> package to work with <a href="https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/">raster datasets</a>.</p>
+<p>For the examples in this book, we’ll use land cover variables derived from the <a href="https://lpdaac.usgs.gov/products/mcd12q1v006/">MODIS MCD12Q1 v006</a> land cover product <span class="citation" data-cites="friedlMCD12Q1MODISTerra2015">(<a href="#ref-friedlMCD12Q1MODISTerra2015" role="doc-biblioref">Friedl and Sulla-Menashe 2015</a>)</span>. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We’ll use the University of Maryland classification system, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 15 different land cover classes. The <code>terra</code> package includes a <a href="https://rspatial.org/modis/1-introduction.html">nice tutorial</a> for how to download and pre-processing MODIS data like this using the <a href="https://github.com/rspatial/luna"><code>luna</code> R package</a>.</p>
+<p>The 2013-2021 data for our focal region (i.e.&nbsp;Georgia) is the data package in the file <code>data/modis_mcd12q1_umd_2013-2021.tif</code>. This is multi-band <a href="https://en.wikipedia.org/wiki/GeoTIFF">GeoTIFF</a> in which each band corresponds to a year of landcover data. In R, we’ll use the <a href="https://rspatial.github.io/terra/"><code>terra</code> package</a> package to work with <a href="https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/">raster datasets</a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(exactextractr)</span>
@@ -274,17 +274,17 @@ div.csl-indent {
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># load and inspect the landcover data</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>landcover <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"data/modis_mcd12q1_fao_2013-2021.tif"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>landcover <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"data/modis_mcd12q1_umd_2013-2021.tif"</span>)</span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(landcover)</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; class       : SpatRaster </span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; dimensions  : 1173, 1249, 9  (nrow, ncol, nlyr)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; dimensions  : 1174, 1249, 9  (nrow, ncol, nlyr)</span></span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; resolution  : 463, 463  (x, y)</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; extent      : -8132528, -7553851, 3362724, 3906190  (xmin, xmax, ymin, ymax)</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; extent      : -8132528, -7553851, 3362724, 3906653  (xmin, xmax, ymin, ymax)</span></span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; coord. ref. : +proj=sinu +lon_0=0 +x_0=0 +y_0=0 +R=6371007.181 +units=m +no_defs </span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; source      : modis_mcd12q1_fao_2013-2021.tif </span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; source      : modis_mcd12q1_umd_2013-2021.tif </span></span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; names       : 2013, 2014, 2015, 2016, 2017, 2018, ... </span></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; min values  :    1,    1,    1,    1,    1,    1, ... </span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; max values  :   43,   43,   43,   43,   43,   43, ...</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; min values  :    0,    0,    0,    0,    0,    0, ... </span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; max values  :   15,   15,   15,   15,   15,   15, ...</span></span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co"># map the data for 2021</span></span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">as.factor</span>(landcover[[<span class="st">"2021"</span>]]), </span>
@@ -300,108 +300,113 @@ div.csl-indent {
 </div>
 <p>We’ve also included a lookup table in the data package (<code>data/mcd12q1_fao_classes.csv</code>) that provides descriptions of each of these classes.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lc_classes <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/mcd12q1_fao_classes.csv"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(class, name, description)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>lc_classes<span class="sc">$</span>label <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(lc_classes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lc_classes <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/mcd12q1_umd_classes.csv"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(lc_classes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped">
 <colgroup>
 <col style="width: 3%">
-<col style="width: 26%">
-<col style="width: 70%">
+<col style="width: 16%">
+<col style="width: 11%">
+<col style="width: 68%">
 </colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: right;">class</th>
 <th style="text-align: left;">name</th>
+<th style="text-align: left;">label</th>
 <th style="text-align: left;">description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: right;">1</td>
-<td style="text-align: left;">Barren</td>
-<td style="text-align: left;">At least of area 60% is non-vegetated barren (sand, rock, soil) or permanent snow/ice with less than 10% vegetation.</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">2</td>
-<td style="text-align: left;">Permanent Snow and Ice</td>
-<td style="text-align: left;">At least of area 60% is covered by snow and ice for at least 10 months of the year.</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">3</td>
-<td style="text-align: left;">Water Bodies</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">Water bodies</td>
+<td style="text-align: left;">water</td>
 <td style="text-align: left;">At least 60% of area is covered by permanent water bodies.</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">11</td>
+<td style="text-align: right;">1</td>
 <td style="text-align: left;">Evergreen Needleleaf Forests</td>
-<td style="text-align: left;">Dominated by evergreen conifer trees (&gt;2m). Tree cover &gt;60%.</td>
+<td style="text-align: left;">evergreen_needleleaf</td>
+<td style="text-align: left;">Dominated by evergreen conifer trees (canopy &gt;2m). Tree cover &gt;60%.</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">12</td>
+<td style="text-align: right;">2</td>
 <td style="text-align: left;">Evergreen Broadleaf Forests</td>
-<td style="text-align: left;">Dominated by evergreen broadleaf and palmate trees (&gt;2m). Tree cover &gt;60%.</td>
+<td style="text-align: left;">evergreen_broadleaf</td>
+<td style="text-align: left;">Dominated by evergreen broadleaf and palmate trees (canopy &gt;2m). Tree cover &gt;60%.</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">13</td>
+<td style="text-align: right;">3</td>
 <td style="text-align: left;">Deciduous Needleleaf Forests</td>
-<td style="text-align: left;">Dominated by deciduous needleleaf (larch) trees (&gt;2m). Tree cover &gt;60%.</td>
+<td style="text-align: left;">deciduous_needleleaf</td>
+<td style="text-align: left;">Dominated by deciduous needleleaf (e.g.&nbsp;larch) trees (canopy &gt;2m). Tree cover &gt;60%.</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">14</td>
+<td style="text-align: right;">4</td>
 <td style="text-align: left;">Deciduous Broadleaf Forests</td>
-<td style="text-align: left;">Dominated by deciduous broadleaf trees (&gt;2m). Tree cover &gt;60%.</td>
+<td style="text-align: left;">deciduous_broadleaf</td>
+<td style="text-align: left;">Dominated by deciduous broadleaf trees (canopy &gt;2m). Tree cover &gt;60%.</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Mixed Forests</td>
+<td style="text-align: left;">mixed_forest</td>
+<td style="text-align: left;">Dominated by neither deciduous nor evergreen (40-60% of each) tree type (canopy &gt;2m). Tree cover &gt;60%.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">Closed Shrublands</td>
+<td style="text-align: left;">closed_shrubland</td>
+<td style="text-align: left;">Dominated by woody perennials (1-2m height) &gt;60% cover.</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">Open Shrublands</td>
+<td style="text-align: left;">open_shrubland</td>
+<td style="text-align: left;">Dominated by woody perennials (1-2m height) 10-60% cover.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">Woody Savannas</td>
+<td style="text-align: left;">woody_savanna</td>
+<td style="text-align: left;">Tree cover 30-60% (canopy &gt;2m).</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">Savannas</td>
+<td style="text-align: left;">savanna</td>
+<td style="text-align: left;">Tree cover 10-30% (canopy &gt;2m).</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">Grasslands</td>
+<td style="text-align: left;">grassland</td>
+<td style="text-align: left;">Dominated by herbaceous annuals (&lt;2m).</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">Croplands</td>
+<td style="text-align: left;">cropland</td>
+<td style="text-align: left;">At least 60% of area is cultivated cropland.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">Urban and Built-up Lands</td>
+<td style="text-align: left;">urban</td>
+<td style="text-align: left;">At least 30% impervious surface area including building materials, asphalt, and vehicles.</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">15</td>
-<td style="text-align: left;">Mixed Broadleaf/Needleleaf Forests</td>
-<td style="text-align: left;">Co-dominated (40-60%) by broadleaf deciduous and evergreen needleleaf tree (&gt;2m) types. Tree cover &gt;60%.</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">16</td>
-<td style="text-align: left;">Mixed Broadleaf Evergreen/Deciduous Forests</td>
-<td style="text-align: left;">Co-dominated (40-60%) by broadleaf evergreen and deciduous tree (&gt;2m) types. Tree cover &gt;60%.</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">21</td>
-<td style="text-align: left;">Open Forests</td>
-<td style="text-align: left;">Tree cover 30-60% (canopy &gt;2m).</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">22</td>
-<td style="text-align: left;">Sparse Forests</td>
-<td style="text-align: left;">Tree cover 10-30% (canopy &gt;2m).</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">31</td>
-<td style="text-align: left;">Dense Herbaceous</td>
-<td style="text-align: left;">Dominated by herbaceous annuals (&lt;2m) at least 60% cover.</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">32</td>
-<td style="text-align: left;">Sparse Herbaceous</td>
-<td style="text-align: left;">Dominated by herbaceous annuals (&lt;2m) 10-60% cover.</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">41</td>
-<td style="text-align: left;">Dense Shrublands</td>
-<td style="text-align: left;">Dominated by woody perennials (1-2m) &gt;60% cover.</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">42</td>
-<td style="text-align: left;">Shrubland/Grassland Mosaics</td>
-<td style="text-align: left;">Dominated by woody perennials (1-2m) 10-60% cover with dense herbaceous annual understory.</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">43</td>
-<td style="text-align: left;">Sparse Shrublands</td>
-<td style="text-align: left;">Dominated by woody perennials (1-2m) 10-60% cover with minimal herbaceous understory.</td>
+<td style="text-align: left;">Non-Vegetated Lands</td>
+<td style="text-align: left;">nonvegetated</td>
+<td style="text-align: left;">At least 60% of area is non-vegetated barren (sand, rock, soil) or permanent snow and ice with less than 10% vegetation.</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">255</td>
 <td style="text-align: left;">Unclassified</td>
+<td style="text-align: left;">unclassified</td>
 <td style="text-align: left;">Has not received a map label because of missing inputs.</td>
 </tr>
 </tbody>
@@ -444,7 +449,7 @@ div.csl-indent {
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>lsm <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(lsm) <span class="sc">%&gt;%</span> </span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(locality_id, year_lc, class, metric, value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Finally, we’ll transform the data frame so there’s one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don’t appear within the buffer will not have associated <code>pland</code> and <code>ed</code> metrics; at this stage, we replace these implicit missing values with zeros using the complete list of classes in <code>lc_classes</code>.</p>
+<p>Finally, we’ll transform the data frame so there’s one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don’t appear within the buffer will not have associated <code>pland</code> and <code>ed</code> metrics; at this stage, we replace these implicit missing values with zeros using the complete list of classes in <code>lc_classes</code>. We also replace the opaque class numbers with more meaningful names from the class description file <code>data/mcd12q1_umd_classes.csv</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>lsm_wide <span class="ot">&lt;-</span> lsm <span class="sc">%&gt;%</span> </span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># fill missing classes with zeros</span></span>
@@ -452,17 +457,19 @@ div.csl-indent {
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">class =</span> lc_classes<span class="sc">$</span>class,</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">metric =</span> <span class="fu">c</span>(<span class="st">"ed"</span>, <span class="st">"pland"</span>),</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">value =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># transform from long to wide format</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">values_from =</span> value,</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_from =</span> <span class="fu">c</span>(class, metric),</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_glue =</span> <span class="st">"landcover_c{str_pad(class, 2, pad = '0')}_{metric}"</span>,</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(locality_id, year_lc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># bring in more descriptive names</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">select</span>(lc_classes, class, label), <span class="at">by =</span> <span class="st">"class"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># transform from long to wide format</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">values_from =</span> value,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_from =</span> <span class="fu">c</span>(class, label, metric),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_glue =</span> <span class="st">"{metric}_c{str_pad(class, 2, pad = '0')}_{label}"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(locality_id, year_lc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="envvar-elevation" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="envvar-elevation"><span class="header-section-number">3.3</span> Elevation</h2>
-<p>In this section we’ll demonstrate how to assign elevation to each checklist, which frequently plays an important role in shaping species distributions. Amatulli et al. <span class="citation" data-cites="amatulliSuiteGlobalCrossscale2018">(<a href="references.html#ref-amatulliSuiteGlobalCrossscale2018" role="doc-biblioref">2018</a>)</span> provide a suite of global, 1km resolution topographic variables designed for use in distribution modeling. A range of variables are available, including elevation, slope, roughness, and many others; we’ll focus on elevation here, but the approach can easily be applied to other variables.</p>
+<p>In this section we’ll demonstrate how to assign elevation to each checklist, which frequently plays an important role in shaping species distributions. Amatulli et al. <span class="citation" data-cites="amatulliSuiteGlobalCrossscale2018">(<a href="#ref-amatulliSuiteGlobalCrossscale2018" role="doc-biblioref">2018</a>)</span> provide a suite of global, 1km resolution topographic variables designed for use in distribution modeling. A range of variables are available, including elevation, slope, roughness, and many others; we’ll focus on elevation here, but the approach can easily be applied to other variables.</p>
 <p>To access the data, visit <a href="http://www.earthenv.org/topography">the website for these data</a>, download the 1 km resolution median elevation product, and save the file (<code>elevation_1KMmd_GMTEDmd.tif</code>) in the <code>data/</code> subdirectory of your RStudio project. If you’re unable to download the data, we’ve also provided a small subset of the data covering our study extent in the <a href="#intro-setup-data">data package</a>.</p>
 <p>Analogous to how we assigned landcover variables, we’ll calculate the mean and standard deviation of the elevation within 3km diameter circular neighborhoods centered on each checklist location.</p>
 <div class="cell" data-layout-align="center">
@@ -490,8 +497,8 @@ div.csl-indent {
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(env_variables, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"locality_id"</span>, <span class="st">"year_lc"</span>)) <span class="sc">%&gt;%</span> </span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>locality_id, <span class="sc">-</span>year_lc)</span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># save to csv</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(env_variables, </span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># save to csv, dropping any rows with missing variables</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(<span class="fu">drop_na</span>(env_variables), </span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>          <span class="st">"data/environmental-variables_checklists.csv"</span>, </span>
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>          <span class="at">na =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -530,7 +537,7 @@ div.csl-indent {
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_buffer</span>(<span class="fu">set_units</span>(<span class="dv">3</span>, <span class="st">"km"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now we can calculate the landcover and elevation variables exactly as we did for the eBird checklists in the previous two sections. First, the landscape metrics <code>pland</code> and <code>ed</code> from the landcover data. Note that we use the most recent year of landcover data (i.e.&nbsp;2021) in this case.</p>
-<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-lsm_df61bb5afb65286dd50991793cda9aec">
+<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-lsm_2b0982e68b89a937f6d2b6e24ee276d3">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># estimate landscape metrics for each cell in the prediction surface</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>lsm_ps <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(buffers_ps))) {</span>
@@ -554,13 +561,15 @@ div.csl-indent {
 <span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>           <span class="at">class =</span> lc_classes<span class="sc">$</span>class,</span>
 <span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>           <span class="at">metric =</span> <span class="fu">c</span>(<span class="st">"ed"</span>, <span class="st">"pland"</span>),</span>
 <span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>           <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">value =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># transform from long to wide format</span></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">values_from =</span> value,</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_from =</span> <span class="fu">c</span>(class, metric),</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_glue =</span> <span class="st">"landcover_c{str_pad(class, 2, pad = '0')}_{metric}"</span>,</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_sort =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(cell_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># bring in more descriptive names</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">select</span>(lc_classes, class, label), <span class="at">by =</span> <span class="st">"class"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># transform from long to wide format</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">values_from =</span> value,</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_from =</span> <span class="fu">c</span>(class, label, metric),</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_glue =</span> <span class="st">"{metric}_c{str_pad(class, 2, pad = '0')}_{label}"</span>,</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_sort =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(cell_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>And now the mean and standard deviation of elevation.</p>
 <div class="cell" data-layout-align="center">
@@ -582,18 +591,18 @@ div.csl-indent {
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cell_id, x, y) <span class="sc">%&gt;%</span> </span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(env_variables_ps, <span class="at">by =</span> <span class="st">"cell_id"</span>)</span>
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># save as csv</span></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(env_variables_ps, </span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># save as csv, dropping any rows with missing variables</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(<span class="fu">drop_na</span>(env_variables_ps),</span>
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>          <span class="st">"data/environmental-variables_prediction-surface.csv"</span>, </span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>          <span class="at">na =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Keeping these data in a data frame is a compact way to store them and will be required once we make model predictions in later chapters. However, we can always use the raster template to convert these environmental variables into a spatial format, for example, if we want to map them. Let’s look at how this works for percent landcover of class 14: deciduous broadleaf forest.</p>
+<p>Keeping these data in a data frame is a compact way to store them and will be required once we make model predictions in later chapters. However, we can always use the raster template to convert these environmental variables into a spatial format, for example, if we want to map them. Let’s look at how this works for percent cover of deciduous broadleaf forest (class 4).</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>forest_cover <span class="ot">&lt;-</span> env_variables_ps <span class="sc">%&gt;%</span> </span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert to spatial features</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> laea_crs) <span class="sc">%&gt;%</span> </span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># rasterize points</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rasterize</span>(r, <span class="at">field =</span> <span class="st">"landcover_c14_pland"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rasterize</span>(r, <span class="at">field =</span> <span class="st">"pland_c04_deciduous_broadleaf"</span>)</span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># make a map</span></span>
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="dv">2</span>, <span class="fl">0.25</span>))</span>
@@ -611,7 +620,7 @@ div.csl-indent {
 </div>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
 <div id="ref-amatulliSuiteGlobalCrossscale2018" class="csl-entry" role="doc-biblioentry">
 Amatulli, Giuseppe, Sami Domisch, Mao-Ning Tuanmu, Benoit Parmentier, Ajay Ranipeta, Jeremy Malczyk, and Walter Jetz. 2018. <span>“A Suite of Global, Cross-Scale Topographic Variables for Environmental and Biodiversity Modeling.”</span> <em>Scientific Data</em> 5 (March): 180040. <a href="https://doi.org/10.1038/sdata.2018.40">https://doi.org/10.1038/sdata.2018.40</a>.
 </div>
@@ -763,7 +772,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   </div>
   <div class="nav-page nav-page-next">
       <a href="./encounter.html" class="pagination-link">
-        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Modeling Encounter Rate</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Encounter Rate</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

@@ -43,6 +43,7 @@ Before running any of the following code, create an [RStudio project](https://r4
 Downloading and extracting eBird data in this section can be time consuming and laborious. If you would prefer to skip to the next section, download the [data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip) mentioned in the Introduction and jump to the {next section}(#ebird-zf). Just make sure you load the packages in the first code chunk before proceeding.
 
 ```{r}
+#| label: ebird-filter-ebd
 library(auk)
 library(dplyr)
 library(ggplot2)
@@ -63,6 +64,7 @@ Next, define the filters that you want to apply to the EBD. Each field that you 
 Some of the filtering work has already been done for us by downloading an EBD subset via the Custom Download form: we only have observations for Wood Thrush in Georgia. However, it's **critical that we filter the EBD and SED in exactly the same way** to produce exactly the same population of checklists, so we include the filter for Georgia even though it's redundant for the EBD.
 
 ```{r}
+#| label: ebird-filter-define
 ebd_filters <- ebd %>% 
   # georgia, make sure to use the ebird region code here
   auk_state(state = "US-GA") %>% 
@@ -78,6 +80,7 @@ ebd_filters
 Printing the object `ebd_filters` above shows what filters have been set. At this point, we've only defined the filters, not applied them to the data. The last step is to use `auk_filter()` to compile the filters into an AWK script and run it to produce two output files: one for the EBD and one for the SED. **This step typically takes at least 30 minutes to run since the SED file is so large.** As a result, it's wise to wrap this in an `if` statement, so it's only run once. As noted in the [Introduction](#intro-setup-software), Windows users will need to [install Cygwin](https://www.cygwin.com/) for this next step to work.
 
 ```{r}
+#| label: ebird-filter-compile
 # output files
 f_ebd <- "data/observations_woothr_june_us-ga.txt"
 f_sed <- "data/checklists_june_us-ga.txt"
@@ -95,6 +98,7 @@ The resulting SED file is now about 13MB, compared to over 4GB for the original 
 The previous step left us with two tab separated text files, one for the EBD (i.e. observation data) and one for the SED (i.e. checklist data). Next, we'll use [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) to read these two files into R and combine them together to produce zero-filled, detection/non-detection data (also called presence/absence data). To just read the EBD or SED, but not combine them, use [`read_ebd()`](https://cornelllabofornithology.github.io/auk/reference/read_ebd.html) or [`read_sampling()`](https://cornelllabofornithology.github.io/auk/reference/read_ebd.html), respectively.
 
 ```{r}
+#| label: ebird-zf-zf
 zf <- auk_zerofill(f_ebd, f_sed, collapse = TRUE)
 ```
 
@@ -102,9 +106,10 @@ When any of the read functions from `auk` are used, two important processing ste
 
 Finally, by default [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) returns a compact representation of the data, consisting of a list of two data frames, one with checklist data and the other with observation data; the use of `collapse = TRUE` combines these into a single data frame, which will be easier to work with.
 
-Before continuing, we'll transform some of the variables to a more useful form for modelling. We convert time to a decimal value between 0 and 24, and we force the distance travelled to 0 for stationary checklists. Notably, eBirders have the option of entering an "X" rather than a count for a species, to indicate that the species was present, but they didn't keep track of how many individuals were observed. During the modeling stage, we'll want the `observation_count` variable stored as an integer and we'll convert "X" to `NA` to allow for this.
+Before continuing, we'll transform some of the variables to a more useful form for modelling. We convert time to a decimal value between 0 and 24, force the distance travelled to 0 for stationary checklists, and create a new variable for speed. Notably, eBirders have the option of entering an "X" rather than a count for a species, to indicate that the species was present, but they didn't keep track of how many individuals were observed. During the modeling stage, we'll want the `observation_count` variable stored as an integer and we'll convert "X" to `NA` to allow for this.
 
 ```{r}
+#| label: ebird-zf-transform
 # function to convert time observation to hours since midnight
 time_to_decimal <- function(x) {
   x <- hms(x, quiet = TRUE)
@@ -123,6 +128,8 @@ zf <- zf %>%
                                  0, effort_distance_km),
     # convert duration to hours
     effort_hours = duration_minutes / 60,
+    # speed km/h
+    effort_speed_kmph = effort_distance_km / effort_hours,
     # convert time to decimal hours since midnight
     hours_of_day = time_to_decimal(time_observations_started),
     # split date into year and day of year
@@ -133,9 +140,10 @@ zf <- zf %>%
 
 ## Accounting for variation in detectability {#ebird-detect}
 
-As discussed in the [Introduction](#intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to less than 24 hours in duration and 10 km in length, and with 10 or fewer observers. Furthermore, we'll only consider data from the past 10 years (2013-2022).
+As discussed in the [Introduction](#intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to those less than 24 hours in duration and 10 km in length, at a speed below 100 km/h, and with 10 or fewer observers. Furthermore, we'll only consider data from the past 10 years (2013-2022).
 
 ```{r ebird-detect}
+#| label: ebird-detect-filter
 # additional filtering
 zf_filtered <- zf %>% 
   filter(
@@ -144,21 +152,34 @@ zf_filtered <- zf %>%
     # effort filters
     effort_hours <= 24,
     effort_distance_km <= 10,
+    effort_speed_kmph <= 100,
     number_observers <= 10)
+```
+
+## Test-train split {#ebird-testtrain}
+
+For the modeling exercises used in this book, we'll hold aside a portion of the data from training to be used as an independent test set to assess the predictive performance of the model. Specifically, we'll randomly split the data into 80% of checklists for training and 20% for testing. To facilitate this, we  create a new variable `type` that will indicate whether the observation falls in the test test or training set.
+
+```{r}
+#| label: ebird-testtrain-split
+zf_split <- zf_filtered %>% 
+  mutate(type = if_else(runif(nrow(.)) <= 0.8, "train", "test"))
+# confirm the proportion in each set is correct
+table(zf_split$type) / nrow(zf_split)
 ```
 
 Finally, there are a large number of variables in the EBD that are redundant (e.g. both state names *and* codes are present) or unnecessary for most modeling exercises (e.g. checklist comments and Important Bird Area codes). These can be removed at this point, keeping only the variables we want for modelling. Then we'll save the resulting zero-filled observations for use in later chapters.
 
-```{r ebird-detect-clean}
-checklists <- zf_filtered %>% 
-  select(checklist_id, observer_id, sampling_event_identifier,
-         scientific_name,
+```{r}
+#| label: ebird-testtrain-clean
+checklists <- zf_split %>% 
+  select(checklist_id, observer_id, type,
          observation_count, species_observed, 
          state_code, locality_id, latitude, longitude,
          protocol_type, all_species_reported,
          observation_date, year, day_of_year,
          hours_of_day, 
-         effort_hours, effort_distance_km,
+         effort_hours, effort_distance_km, effort_speed_kmph,
          number_observers)
 write_csv(checklists, "data/checklists-zf_woothr_june_us-ga.csv", na = "")
 ```

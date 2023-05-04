@@ -36,6 +36,7 @@ Throughout this book, we use packages from the [Tidyverse](https://www.tidyverse
 The one piece of the Tidyverse that we will cover here, because it is ubiquitous throughout this book and unfamiliar to many, is the pipe operator `%>%`. The pipe operator takes the expression to the left of it and "pipes" it into the first argument of the expression on the right, i.e. one can replace `f(x)` with `x %>% f()`. The pipe makes code significantly more readable by avoiding nested function calls, reducing the need for intermediate variables, and making sequential operations read left-to-right. For example, to add a new variable to a data frame, then summarize using a grouping variable, the following are equivalent:
 
 ```{r}
+#| label: intro-pre-tidyverse
 library(dplyr)
 
 # pipes
@@ -80,6 +81,7 @@ Due to the large size of the eBird dataset, working with it requires the Unix co
 The examples in this book use a variety of R packages for accessing eBird data, working with spatial data, data processing and manipulation, and model fitting. To install all the packages necessary to work through this book, run the following code:
 
 ```{r}
+#| label: intro-setup-packages
 #| eval: false
 if (!requireNamespace("pak", quietly = TRUE)) {
   install.packages("pak")
@@ -98,6 +100,7 @@ Once you've granted access to the EBD, you will be able to download either the e
 To use eBird data in R, you’ll need to reference the full path to the text files, for example `~/data/ebird/ebd_relMarch-2023.txt`. In general, it’s best to avoid using absolute paths in R scripts because it makes them less portable–if you’re sharing the files with someone else, they’ll need to change the file paths to point to the location where they’ve stored the eBird data. The R package auk provides a workaround for this, by allowing users to set an environment variable (`EBD_PATH`) that points to the directory where you’ve stored the eBird data. We suggest choosing a sensible central location for all eBird data files such as `~/data/ebird/`. Then set the environment variable using `auk_set_ebd_path()`.
 
 ```{r}
+#| label: intro-setup-ebird
 #| eval: false
 # set EBD_PATH environment variable
 auk::auk_set_ebd_path("~/data/ebird/")
@@ -110,6 +113,7 @@ Throughout this book, we'll be producing maps of species distributions. To provi
 In the [next chapter](#ebird), we provide a link to download a data package that will include all the necessary GIS data. However, for reference, the following code was used to generate the GIS dataset. Running this code will create a GeoPackage containing the necessary spatial layers in `data/gis-data.gpkg`.
 
 ```{r}
+#| label: intro-setup-gis
 #| eval: false
 library(dplyr)
 library(rnaturalearth)

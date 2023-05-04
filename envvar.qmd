@@ -18,9 +18,9 @@ To gain access to the example raster datasets, download the data package for by 
 
 ## Landcover {#envvar-landcover}
 
-For the examples in this book, we'll use land cover variables derived from the [MODIS MCD12Q1 v006](https://lpdaac.usgs.gov/products/mcd12q1v006/) land cover product [@friedlMCD12Q1MODISTerra2015]. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We'll use the FAO Land Cover Classification System (LCCS1), which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 16 different land cover classes.
+For the examples in this book, we'll use land cover variables derived from the [MODIS MCD12Q1 v006](https://lpdaac.usgs.gov/products/mcd12q1v006/) land cover product [@friedlMCD12Q1MODISTerra2015]. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We'll use the University of Maryland classification system, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 15 different land cover classes. The `terra` package includes a [nice tutorial](https://rspatial.org/modis/1-introduction.html) for how to download and pre-processing MODIS data like this using the [`luna` R package](https://github.com/rspatial/luna).
 
-The 2013-2021 data for our focal region (i.e. Georgia) is the data package in the file `data/modis_mcd12q1_fao_2013-2021.tif`. This is multi-band [GeoTIFF](https://en.wikipedia.org/wiki/GeoTIFF) in which each band corresponds to a year of landcover data. In R, we'll use the [`terra` package](https://rspatial.github.io/terra/) package to work with [raster datasets](https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/).
+The 2013-2021 data for our focal region (i.e. Georgia) is the data package in the file `data/modis_mcd12q1_umd_2013-2021.tif`. This is multi-band [GeoTIFF](https://en.wikipedia.org/wiki/GeoTIFF) in which each band corresponds to a year of landcover data. In R, we'll use the [`terra` package](https://rspatial.github.io/terra/) package to work with [raster datasets](https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/).
 
 ```{r}
 #| label: envvar-landcover-map
@@ -36,7 +36,7 @@ library(units)
 library(viridis)
 
 # load and inspect the landcover data
-landcover <- rast("data/modis_mcd12q1_fao_2013-2021.tif")
+landcover <- rast("data/modis_mcd12q1_umd_2013-2021.tif")
 print(landcover)
 
 # map the data for 2021
@@ -46,6 +46,7 @@ plot(as.factor(landcover[["2021"]]),
 ```
 
 ```{r}
+#| label: envvar-load-cache
 #| eval: false
 #| include: false
 # load cached objects for faster interactive processing
@@ -58,9 +59,8 @@ lsm_ps <- knitr::load_cache("envvar-pred-lsm", object = "lsm_ps")
 We've also included a lookup table in the data package (`data/mcd12q1_fao_classes.csv`) that provides descriptions of each of these classes.
 
 ```{r}
-lc_classes <- read_csv("data/mcd12q1_fao_classes.csv") %>% 
-  select(class, name, description)
-lc_classes$label <- NULL
+#| label: envvar-landcover-lookup
+lc_classes <- read_csv("data/mcd12q1_umd_classes.csv")
 knitr::kable(lc_classes)
 ```
 
@@ -111,19 +111,22 @@ lsm <- bind_rows(lsm) %>%
   select(locality_id, year_lc, class, metric, value)
 ```
 
-Finally, we'll transform the data frame so there's one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don't appear within the buffer will not have associated `pland` and `ed` metrics; at this stage, we replace these implicit missing values with zeros using the complete list of classes in `lc_classes`.
+Finally, we'll transform the data frame so there's one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don't appear within the buffer will not have associated `pland` and `ed` metrics; at this stage, we replace these implicit missing values with zeros using the complete list of classes in `lc_classes`. We also replace the opaque class numbers with more meaningful names from the class description file `data/mcd12q1_umd_classes.csv`.
 
 ```{r}
+#| label: envvar-landcover-wide
 lsm_wide <- lsm %>% 
   # fill missing classes with zeros
   complete(nesting(locality_id, year_lc),
            class = lc_classes$class,
            metric = c("ed", "pland"),
            fill = list(value = 0)) %>% 
+  # bring in more descriptive names
+  inner_join(select(lc_classes, class, label), by = "class") %>% 
   # transform from long to wide format
   pivot_wider(values_from = value,
-              names_from = c(class, metric),
-              names_glue = "landcover_c{str_pad(class, 2, pad = '0')}_{metric}",
+              names_from = c(class, label, metric),
+              names_glue = "{metric}_c{str_pad(class, 2, pad = '0')}_{label}",
               names_sort = TRUE) %>% 
   arrange(locality_id, year_lc)
 ```
@@ -137,6 +140,7 @@ To access the data, visit [the website for these data](http://www.earthenv.org/t
 Analogous to how we assigned landcover variables, we'll calculate the mean and standard deviation of the elevation within 3km diameter circular neighborhoods centered on each checklist location.
 
 ```{r}
+#| label: envvar-elevation-buffer
 # elevation raster
 elevation <- rast("data/elevation_1KMmd_GMTEDmd.tif")
 
@@ -153,6 +157,7 @@ elev_buffer <- exact_extract(elevation, buffers, fun = c("mean", "stdev"),
 Now, let's combine the landcover and elevation variables together, join them back to the checklist data, and save them as model predictors in the upcoming chapters.
 
 ```{r}
+#| label: envvar-elevation-combine
 # combine elevation and landcover
 env_variables <- inner_join(elev_buffer, lsm_wide,
                             by = c("locality_id", "year_lc"))
@@ -163,8 +168,8 @@ env_variables <- checklists %>%
   inner_join(env_variables, by = c("locality_id", "year_lc")) %>% 
   select(-locality_id, -year_lc)
 
-# save to csv
-write_csv(env_variables, 
+# save to csv, dropping any rows with missing variables
+write_csv(drop_na(env_variables), 
           "data/environmental-variables_checklists.csv", 
           na = "")
 ```
@@ -174,6 +179,7 @@ write_csv(env_variables,
 After training a species distribution model, the goal is typically to make predictions throughout the study area. To do this, we'll need a **prediction surface**: a regular grid of habitat covariates over which to make predictions. In this section, we'll create such a prediction surface for our study region (Georgia) using the MODIS land cover data from the most recent year for which they're available in addition to elevation data. To start, we'll create a template raster with cells equal in dimension to the diameter of the circular neighborhoods we used above. It's important to use an equal area coordinate reference system for the prediction surface; we'll use a [Lambert's azimuthal equal area projection](https://en.wikipedia.org/wiki/Lambert_azimuthal_equal-area_projection) centered on our study region.
 
 ```{r}
+#| label: envvar-pred-template
 # lambert's azimuthal equal area projection for georgia
 laea_crs <- st_crs("+proj=laea +lat_0=32.5 +lon_0=-83.5")
 
@@ -236,10 +242,12 @@ lsm_wide_ps <- lsm_ps %>%
            class = lc_classes$class,
            metric = c("ed", "pland"),
            fill = list(value = 0)) %>% 
+  # bring in more descriptive names
+  inner_join(select(lc_classes, class, label), by = "class") %>% 
   # transform from long to wide format
   pivot_wider(values_from = value,
-              names_from = c(class, metric),
-              names_glue = "landcover_c{str_pad(class, 2, pad = '0')}_{metric}",
+              names_from = c(class, label, metric),
+              names_glue = "{metric}_c{str_pad(class, 2, pad = '0')}_{label}",
               names_sort = TRUE,
               values_fill = 0) %>% 
   arrange(cell_id)
@@ -248,6 +256,7 @@ lsm_wide_ps <- lsm_ps %>%
 And now the mean and standard deviation of elevation.
 
 ```{r}
+#| label: envvar-pred-elevation
 elev_buffer_ps <- exact_extract(elevation, buffers_ps, 
                                 fun = c("mean", "stdev"),
                                 progress = FALSE) %>% 
@@ -259,6 +268,7 @@ elev_buffer_ps <- exact_extract(elevation, buffers_ps,
 Finally, we combine the landcover and elevation variables together and save to CSV.
 
 ```{r}
+#| label: envvar-pred-combine
 # combine landcover and elevation
 env_variables_ps <- inner_join(elev_buffer_ps, lsm_wide_ps, by = "cell_id")
 
@@ -268,13 +278,13 @@ env_variables_ps <- buffers_ps %>%
   select(cell_id, x, y) %>% 
   inner_join(env_variables_ps, by = "cell_id")
 
-# save as csv
-write_csv(env_variables_ps, 
+# save as csv, dropping any rows with missing variables
+write_csv(drop_na(env_variables_ps),
           "data/environmental-variables_prediction-surface.csv", 
           na = "")
 ```
 
-Keeping these data in a data frame is a compact way to store them and will be required once we make model predictions in later chapters. However, we can always use the raster template to convert these environmental variables into a spatial format, for example, if we want to map them. Let's look at how this works for percent landcover of class 14: deciduous broadleaf forest.
+Keeping these data in a data frame is a compact way to store them and will be required once we make model predictions in later chapters. However, we can always use the raster template to convert these environmental variables into a spatial format, for example, if we want to map them. Let's look at how this works for percent cover of deciduous broadleaf forest (class 4).
 
 ```{r}
 #| label: envvar-pred-map
@@ -282,7 +292,7 @@ forest_cover <- env_variables_ps %>%
   # convert to spatial features
   st_as_sf(coords = c("x", "y"), crs = laea_crs) %>% 
   # rasterize points
-  rasterize(r, field = "landcover_c14_pland")
+  rasterize(r, field = "pland_c04_deciduous_broadleaf")
 
 # make a map
 par(mar = c(0.25, 0.25, 2, 0.25))
