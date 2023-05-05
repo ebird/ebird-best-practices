@@ -134,10 +134,10 @@ For the second step, we train a random forests model to estimate the expected co
 ```{r}
 #| label: abundance-hurdle-count-filter
 # attach the predicted encounter rate based on out of bag samples
-train_er <- checklists_train
-train_er$pred_er <- er_model$predictions[, 2]
+train_count <- checklists_train
+train_count$pred_er <- er_model$predictions[, 2]
 # subset to only observed or predicted detections
-train_count <- train_er %>% 
+train_count <- train_count %>% 
   filter(!is.na(observation_count),
          observation_count > 0 | pred_er > threshold) %>% 
   select(-species_observed, -pred_er)
