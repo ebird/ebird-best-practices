@@ -4,9 +4,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-# eBird Data {#ebird}
+# eBird Data {#sec-ebird}
 
-## Introduction {#ebird-intro}
+## Introduction {#sec-ebird-intro}
 
 eBird data are collected and organized around the concept of a checklist, representing observations from a single birding event, such as a 1 km walk through a park or 15 minutes observing bird feeders in your backyard. Each checklist contains a list of species observed, counts of the number of individuals seen of each species, the location and time of the observations, and a measure of the effort expended while collecting these data. The following image depicts a typical eBird checklist as viewed [on the eBird website](https://ebird.org/view/checklist/S46908897):
 
@@ -18,32 +18,32 @@ eBird data are typically distributed in two parts: observation data and checklis
 
 In this chapter, we'll download eBird data and demonstrate how to use the R package `auk` to extract subsets of the data for analysis. Next, we'll show how to import the data into R and zero-fill it to produce detection/non-detection data suitable for modeling species distribution and abundance. Finally, we'll perform some pre-processing steps required to ensure proper analysis of the data.
 
-## Downloading data {#ebird-download}
+## Downloading data {#sec-ebird-download}
 
-The observation and checklist data are released as tab-separated text files referred to as the *eBird Basic Dataset (EBD)* and the *Sampling Event Data (SED)*, respectively. These files are released monthly and contain all validated bird sightings in the eBird database at the time of release. The EBD (i.e. the observation data) can be downloaded in its entirety or a subset for a given species, region, or time period can be requested via the "Custom Download" form. We strongly recommend against attempting to download the complete EBD since it's well over 100GB at the time of writing. Instead, we will demonstrate a workflow using the "Custom Download" approach. In what follows, we will assume you have followed the instructions for requesting access to eBird data outlined in [the previous chapter](#intro-setup-ebird).
+The observation and checklist data are released as tab-separated text files referred to as the *eBird Basic Dataset (EBD)* and the *Sampling Event Data (SED)*, respectively. These files are released monthly and contain all validated bird sightings in the eBird database at the time of release. The EBD (i.e. the observation data) can be downloaded in its entirety or a subset for a given species, region, or time period can be requested via the *Custom Download* form. We strongly recommend against attempting to download the complete EBD since it's well over 100GB at the time of writing. Instead, we will demonstrate a workflow using the Custom Download approach. In what follows, we will assume you have followed the instructions for requesting access to eBird data outlined in [the previous chapter](intro.qmd#sec-intro-setup-ebird).
 
 In the interest of making examples concrete, throughout this book, we'll use the specific example of [Wood Thrush](https://ebird.org/species/woothr) observations from Georgia (the US state, not the country) in June for our analyses. We'll start by downloading the corresponding eBird observations by visiting the [eBird Basic Dataset](https://ebird.org/data/download/ebd) download page and filling out the Custom Download form to request eBird data from Georgia.
 
 ![](images/ebird-data_download.png)
 
-Once the data are ready, you will an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a text file (e.g. `ebd_US-GA_woothr_relMar-2023.txt`) containing all the Wood Thrush observations from Georgia. The `relMar-2023` component of the file name describes which version of the EBD this dataset came from; in this case it's the March 2023 release.
+Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a text file (e.g. `ebd_US-GA_woothr_relMar-2023.txt`) containing all the Wood Thrush observations from Georgia. The `relMar-2023` component of the file name describes which version of the EBD this dataset came from; in this case it's the March 2023 release.
 
 For some uses cases, such as making a map of eBird observations, the EBD will be sufficient. However, for many applications, including all analyses in this book, we need both the detections and non-detections (i.e. the checklists where the species was not detected). To infer the non-detections we'll need the full population of checklists for our region and time period of interest, which is provided in the form of the SED. Unlike the EBD, the SED can only be downloaded in it's entirety rather than as a custom subset; however, the file is much smaller (\~4GB at the time of writing) and therefore easier to deal with.
 
-Download the **Sampling Event Data** now, then use a compression utility to uncompress the `.tar` file and the `.txt.gz` file it contains to produce a text file (e.g. `ebd_sampling_relMar-2023.txt`). It's **absolutely critical to confirm that the versions of the EBD and SED are the same**, for example both files have `relMar-2023` in the name, otherwise they will be mismatched when we later try to combine them. Move these the EBD and SED text files to the central location for eBird data that you set in the [Introduction](#intro-setup-ebird). To be reminded of the path to this directory use `auk::auk_get_ebd_path()`.
+[Download the Sampling Event Data](https://ebird.org/data/download/ebd) now, then use a compression utility to unarchive the `.tar` file and the `.txt.gz` file it contains to produce a text file (e.g. `ebd_sampling_relMar-2023.txt`). It's **absolutely critical to confirm that the versions of the EBD and SED are the same**, for example check that both files have `relMar-2023` in the name, otherwise they will be mismatched when we later try to combine them. Move these the EBD and SED text files to the central location for eBird data that you set in the [Introduction](intro.qmd#sec-intro-setup-ebird). To be reminded of the path to this directory use `auk::auk_get_ebd_path()`.
 
-## Data extraction with `auk` {#ebird-filter}
+## Data extraction with `auk` {#sec-ebird-extract}
 
-eBird contains an impressive amount of data (over 1 billion bird observations!); however, this makes the data particularly challenging to work with. Very large text files can't be opened in R, Excel, or most other software because they may require more memory than your computer has access to. In addition, even if these files can be read into R, they can be extremely slow to process. Fortunately, the R package `auk` has been specifically designed to extract subsets of data from the EBD and SED for analysis using the Unix command line text processing utility AWK. AWK only allows for coarse filtering, but the data can always be further refined once in R. With this in mind, **the goal when using `auk` should always be to subset the EBD and SED text files down to a manageable size**, small enough that they can be imported into R for further processing or analysis. In our case, that will mean extracting Wood Thrush records from Georgia in June.
+eBird contains an impressive amount of data (over 1 billion bird observations!); however, this makes the data particularly challenging to work with. Very large text files can't be opened in R, Excel, or most other software because they may require more memory than your computer has access to. In addition, even if these files can be read into R, they can be extremely slow to process. Fortunately, the R package `auk` has been specifically designed to extract subsets of data from the EBD and SED for analysis using the Unix command line text processing utility AWK. AWK only allows for coarse filtering, but the data can always be further refined once in R. With this in mind, **the goal when using `auk` should always be to filter the EBD and SED text files down to a manageable size**, small enough that they can be imported into R for further processing or analysis. In our case, that will mean extracting Wood Thrush records from Georgia in June.
 
-Filtering the eBird data using `auk` requires three steps. First, reference the EBD and SED text files using the function `auk_ebd()`. If you've followed the setup instruction in the [Introduction](#intro-setup-ebird) and the [previous section](#ebird-download), you'll have these text files on your computer and will have pointed `auk` to the directory they're stored in using `auk_set_ebd_path()`.
+Filtering the eBird data using `auk` requires three steps. First, reference the EBD and SED text files using the function `auk_ebd()`. If you've followed the setup instruction in the [Introduction](intro.qmd#sec-intro-setup-ebird) and the [previous section](ebird.qmd#sec-ebird-download), you'll have these text files on your computer and will have pointed `auk` to the directory they're stored in using `auk_set_ebd_path()`.
 
 Before running any of the following code, create an [RStudio project](https://r4ds.hadley.nz/workflow-scripts.html#projects) for following along with this book. The project will be a self contained space for all the code, input data, and outputs that comprise the lessons in this book. In addition, using a project will ensure your working directory is set to the project directory.
 
-Downloading and extracting eBird data in this section can be time consuming and laborious. If you would prefer to skip to the next section, download the [data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip) mentioned in the Introduction and jump to the {next section}(#ebird-zf). Just make sure you load the packages in the first code chunk before proceeding.
+Downloading and extracting eBird data in this section can be time consuming and laborious. If you would prefer to skip to the next section, download the [data package](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip) mentioned in the @sec-intro-data and jump to the [next section](ebird.qmd#sec-ebird-zf). Just make sure you load the packages in the first code chunk before proceeding.
 
 ```{r}
-#| label: ebird-filter-ebd
+#| label: ebird-extract-ebd
 library(auk)
 library(dplyr)
 library(ggplot2)
@@ -64,7 +64,7 @@ Next, define the filters that you want to apply to the EBD. Each field that you 
 Some of the filtering work has already been done for us by downloading an EBD subset via the Custom Download form: we only have observations for Wood Thrush in Georgia. However, it's **critical that we filter the EBD and SED in exactly the same way** to produce exactly the same population of checklists, so we include the filter for Georgia even though it's redundant for the EBD.
 
 ```{r}
-#| label: ebird-filter-define
+#| label: ebird-extract-define
 ebd_filters <- ebd %>% 
   # georgia, make sure to use the ebird region code here
   auk_state(state = "US-GA") %>% 
@@ -77,23 +77,23 @@ ebd_filters <- ebd %>%
 ebd_filters
 ```
 
-Printing the object `ebd_filters` above shows what filters have been set. At this point, we've only defined the filters, not applied them to the data. The last step is to use `auk_filter()` to compile the filters into an AWK script and run it to produce two output files: one for the EBD and one for the SED. **This step typically takes at least 30 minutes to run since the SED file is so large.** As a result, it's wise to wrap this in an `if` statement, so it's only run once. As noted in the [Introduction](#intro-setup-software), Windows users will need to [install Cygwin](https://www.cygwin.com/) for this next step to work.
+Printing the object `ebd_filters` above shows what filters have been set. At this point, we've only defined the filters, not applied them to the data. The last step is to use `auk_filter()` to compile the filters into an AWK script and run it to produce two output files: one for the EBD and one for the SED. **This step typically takes at least 30 minutes to run since the SED file is so large.** As a result, it's wise to wrap this in an `if` statement, so it's only run once. As noted in the [Introduction](intro.qmd#sec-intro-setup-software), Windows users will need to [install Cygwin](https://www.cygwin.com/) for this next step to work.
 
 ```{r}
-#| label: ebird-filter-compile
+#| label: ebird-extract-compile
 # output files
 f_ebd <- "data/observations_woothr_june_us-ga.txt"
 f_sed <- "data/checklists_june_us-ga.txt"
 
 # only run if the output files don't already exist
-if (!file.exists(f_ebd)|| !file.exists(f_sed)) {
+if (!file.exists(f_ebd) || !file.exists(f_sed)) {
   auk_filter(ebd_filters, file = f_ebd, file_sampling = f_sed)
 }
 ```
 
 The resulting SED file is now about 13MB, compared to over 4GB for the original dataset, which means it can easily be read into R!
 
-## Importing and zero-filling {#ebird-zf}
+## Importing and zero-filling {#sec-ebird-zf}
 
 The previous step left us with two tab separated text files, one for the EBD (i.e. observation data) and one for the SED (i.e. checklist data). Next, we'll use [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) to read these two files into R and combine them together to produce zero-filled, detection/non-detection data (also called presence/absence data). To just read the EBD or SED, but not combine them, use [`read_ebd()`](https://cornelllabofornithology.github.io/auk/reference/read_ebd.html) or [`read_sampling()`](https://cornelllabofornithology.github.io/auk/reference/read_ebd.html), respectively.
 
@@ -102,7 +102,10 @@ The previous step left us with two tab separated text files, one for the EBD (i.
 zf <- auk_zerofill(f_ebd, f_sed, collapse = TRUE)
 ```
 
-When any of the read functions from `auk` are used, two important processing steps occur by default behind the scenes. 1. **Taxonomic rollup**: eBird observations can be made at levels below species (e.g. subspecies) or above species (e.g. a bird that was only identified as Duck sp.); however, for most uses we'll want observations at the species level. [`auk_rollup()`](https://cornelllabofornithology.github.io/auk/reference/auk_rollup.html) is applied by default when [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) is used. It drops all observations not identifiable to a species and rolls up all observations reported below species to the species level. 2. **Collapsing group checklist**: eBird also allows for [group checklists](https://support.ebird.org/en/support/solutions/articles/48000625567-checklist-sharing-and-group-accounts), those shared by multiple users. These checklists lead to duplication or near duplication of records within the dataset and the function [`auk_unique()`](https://cornelllabofornithology.github.io/auk/reference/auk_unique.html), applied by default by [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html), addresses this by only keeping one independent copy of each checklist.
+When any of the read functions from `auk` are used, two important processing steps occur by default behind the scenes.
+
+1. **Taxonomic rollup**: eBird observations can be made at levels below species (e.g. subspecies) or above species (e.g. a bird that was identified as a duck, but the species could not be determined); however, for most uses we'll want observations at the species level. [`auk_rollup()`](https://cornelllabofornithology.github.io/auk/reference/auk_rollup.html) is applied by default when [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) is used. It drops all observations not identifiable to a species and rolls up all observations reported below species to the species level.
+2. **Collapsing group checklist**: eBird also allows for [group checklists](https://support.ebird.org/en/support/solutions/articles/48000625567-checklist-sharing-and-group-accounts), those shared by multiple users. These checklists lead to duplication or near duplication of records within the dataset and the function [`auk_unique()`](https://cornelllabofornithology.github.io/auk/reference/auk_unique.html), applied by default by [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html), addresses this by only keeping one independent copy of each checklist.
 
 Finally, by default [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) returns a compact representation of the data, consisting of a list of two data frames, one with checklist data and the other with observation data; the use of `collapse = TRUE` combines these into a single data frame, which will be easier to work with.
 
@@ -138,11 +141,11 @@ zf <- zf %>%
   )
 ```
 
-## Accounting for variation in detectability {#ebird-detect}
+## Accounting for variation in detectability {#sec-ebird-detect}
 
-As discussed in the [Introduction](#intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to those less than 24 hours in duration and 10 km in length, at a speed below 100 km/h, and with 10 or fewer observers. Furthermore, we'll only consider data from the past 10 years (2013-2022).
+As discussed in the [Introduction](intro.qmd#sec-intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to those less than 24 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers. Furthermore, we'll only consider data from the past 10 years (2013-2022).
 
-```{r ebird-detect}
+```{r}
 #| label: ebird-detect-filter
 # additional filtering
 zf_filtered <- zf %>% 
@@ -156,9 +159,9 @@ zf_filtered <- zf %>%
     number_observers <= 10)
 ```
 
-## Test-train split {#ebird-testtrain}
+## Test-train split {#sec-ebird-testtrain}
 
-For the modeling exercises used in this book, we'll hold aside a portion of the data from training to be used as an independent test set to assess the predictive performance of the model. Specifically, we'll randomly split the data into 80% of checklists for training and 20% for testing. To facilitate this, we  create a new variable `type` that will indicate whether the observation falls in the test test or training set.
+For the modeling exercises used in this book, we'll hold aside a portion of the data from training to be used as an independent test set to assess the predictive performance of the model. Specifically, we'll randomly split the data into 80% of checklists for training and 20% for testing. To facilitate this, we  create a new variable `type` that will indicate whether the observation falls in the test set or training set.
 
 ```{r}
 #| label: ebird-testtrain-split
@@ -184,11 +187,11 @@ checklists <- zf_split %>%
 write_csv(checklists, "data/checklists-zf_woothr_june_us-ga.csv", na = "")
 ```
 
-If you'd like to ensure you're using exactly the same data as was used to generate this book, download the [data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip) mentioned in the [setup instructions](#intro-setup-data) and place the contents in the `data/` subdirectory of your project directory.
+If you'd like to ensure you're using exactly the same data as was used to generate this book, download the [data package](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip) mentioned in the [setup instructions](intro.qmd#sec-intro-setup-data) and place the contents in the `data/` subdirectory of your project directory.
 
-## Exploratory analysis and visualization {#ebird-explore}
+## Exploratory analysis and visualization {#sec-ebird-explore}
 
-Before proceeding to fitting species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip). Place the contents of the zip file in the `data/` subdirectory of your project directory.
+Before proceeding to training species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip). Place the contents of the zip file in the `data/` subdirectory of your project directory.
 
 ```{r}
 #| label: ebird-explore-map
@@ -243,17 +246,17 @@ par(new = TRUE, mar = c(0, 0, 3, 0))
 title("Wood Thrush eBird Observations\nJune 2013-2022")
 ```
 
-In this map, the spatial bias in eBird data becomes immediately obvious, for example, notice the large number of checklists areas around Atlanta in the northern part of the state.
+In this map, the spatial bias in eBird data becomes immediately obvious, for example, notice the large number of checklists in areas around Atlanta, the largest city in Georgia, in the northern part of the state.
 
 Exploring the effort variables is also a valuable exercise. For each effort variable, we'll produce both a histogram and a plot of frequency of detection as a function of that effort variable. The histogram will tell us something about birder behavior. For example, what time of day are most people going birding, and for how long? We may also want to note values of the effort variable that have very few observations; predictions made in these regions may be unreliable due to a lack of data. The detection frequency plots tell us how the probability of detecting a species changes with effort.
 
-### Time of day {#ebird-explore-time}
+### Time of day {#sec-ebird-explore-time}
 
 The chance of an observer detecting a bird when present can be highly dependent on time of day. For example, many species exhibit a peak in detection early in the morning during dawn chorus and a secondary peak early in the evening. With this in mind, the first predictor of detection that we'll explore is the time of day at which a checklist was started. We'll summarize the data in 1 hour intervals, then plot them. Since estimates of detection frequency are unreliable when only a small number of checklists are available, we'll only plot hours for which at least 100 checklists are present.
 
-```{r ebird-explore-time}
+```{r}
 #| label: ebird-explore-time
-#| fig-asp: 1
+#| asp: 1
 # summarize data by hourly bins
 breaks <- seq(0, 24)
 labels <- breaks[-length(breaks)] + diff(breaks) / 2
@@ -297,13 +300,13 @@ grid.arrange(g_tod_hist, g_tod_freq)
 
 As expected, Wood Thrush detectability is highest early in the morning and quickly falls off as the day progresses. In later chapters, we'll make predictions at the peak time of day for detectability to limit the effect of this variation. The majority of checklist submissions also occurs in the morning; however, there are reasonable numbers of checklists between 6am and 9pm. It's in this region that our model estimates will be most reliable.
 
-### Checklist duration {#ebird-explore-duration}
+### Checklist duration {#sec-ebird-explore-duration}
 
-When we initially extracted the eBird data in Section \@ref(ebird-extract), we restricted observations to those from checklists 24 hours in duration or shorter to reduce variability. Let's see what sort of variation remains in checklist duration.
+When we initially extracted the eBird data in @sec-ebird-extract, we restricted observations to those from checklists 24 hours in duration or shorter to reduce variability. Let's see what sort of variation remains in checklist duration.
 
 ```{r}
 #| label: ebird-explore-duration
-#| fig-asp: 1
+#| asp: 1
 # summarize data by hour long bins
 breaks <- seq(0, 24)
 labels <- breaks[-length(breaks)] + diff(breaks) / 2
@@ -324,7 +327,7 @@ g_duration_hist <- ggplot(checklists_duration) +
   geom_segment(aes(xend = duration_bins, y = 0, yend = n_checklists),
                color = "grey50") +
   geom_point() +
-  scale_x_continuous(breaks = 0:5) +
+  scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::comma) +
   labs(x = "Checklist duration (hours)",
        y = "# checklists",
@@ -335,7 +338,7 @@ g_duration_freq <- ggplot(checklists_duration %>% filter(n_checklists > 100)) +
   aes(x = duration_bins, y = det_freq) +
   geom_line() +
   geom_point() +
-  scale_x_continuous(breaks = 0:5) +
+  scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::percent) +
   labs(x = "Checklist duration (hours)",
        y = "% checklists with detections",
@@ -347,13 +350,13 @@ grid.arrange(g_duration_hist, g_duration_freq)
 
 The majority of checklists are an hour or shorter and there is a rapid decline in the frequency of checklists with increasing duration. In addition, longer searches yield a higher chance of detecting a Wood Thrush. In many cases, there is a saturation effect, with searches beyond a given length producing little additional benefit; however, here there appears to be a drop off in detection for checklists longer than 3.5 hours.
 
-### Distance traveled {#ebird-explore-distance}
+### Distance traveled {#sec-ebird-explore-distance}
 
 As with checklist duration, we expect *a priori* that the greater the distance someone travels, the greater the probability of encountering at least one Wood Thrush. Let's see if this expectation is met. Note that we have already truncated the data to checklists less than 10 km in length.
 
 ```{r}
 #| label: ebird-explore-distance
-#| fig-asp: 1
+#| asp: 1
 # summarize data by 1 km bins
 breaks <- seq(0, 10)
 labels <- breaks[-length(breaks)] + diff(breaks) / 2
@@ -374,7 +377,7 @@ g_dist_hist <- ggplot(checklists_dist) +
   geom_segment(aes(xend = dist_bins, y = 0, yend = n_checklists),
                color = "grey50") +
   geom_point() +
-  scale_x_continuous(breaks = 0:5) +
+  scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::comma) +
   labs(x = "Distance travelled (km)",
        y = "# checklists",
@@ -385,7 +388,7 @@ g_dist_freq <- ggplot(checklists_dist %>% filter(n_checklists > 100)) +
   aes(x = dist_bins, y = det_freq) +
   geom_line() +
   geom_point() +
-  scale_x_continuous(breaks = 0:5) +
+  scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::percent) +
   labs(x = "Distance travelled (km)",
        y = "% checklists with detections",
@@ -395,13 +398,13 @@ g_dist_freq <- ggplot(checklists_dist %>% filter(n_checklists > 100)) +
 grid.arrange(g_dist_hist, g_dist_freq)
 ```
 
-As with duration, the majority of observations are from short checklists (less than half a kilometer). One fortunate consequence of this is that most checklists will be contained within a small area within which habitat is not likely to show high variability. In chapter \@ref{envvar}, we will summarize land cover data within circles 3 km in diameter, centered on each checklist, and it appears that the vast majority of checklists will stay contained within this area.
+As with duration, the majority of observations are from short checklists (less than half a kilometer). One fortunate consequence of this is that most checklists will be contained within a small area within which habitat is not likely to show high variability. In [Chapter -@sec-envvar], we will summarize land cover data within circles 3 km in diameter, centered on each checklist, and it appears that the vast majority of checklists will stay contained within this area.
 
-### Number of observers {#ebird-explore-observers}
+### Number of observers {#sec-ebird-explore-observers}
 
 Finally, let's consider the number of observers whose observation are being reported in each checklist. We expect that at least up to some number of observers, reporting rates will increase; however, in working with these data we have found cases of declining detection rates for very large groups. With this in mind we have already restricted checklists to those with 30 or fewer observers, thus removing the very largest groups (prior to filtering, some checklists had as many as 180 observers!).
 
-```{r ebird-explore-observers, fig.asp = 1}
+```{r}
 #| label: ebird-explore-observers
 #| fig-asp: 1
 # summarize data

@@ -14,7 +14,7 @@ The application of occupancy models typically requires data from repeated sampli
 
 This chapter differs from the previous chapter on modeling encounter rate in two important ways. First, the random forests model used in Chapter \@ref(encounter) is an example of a [machine learning](https://en.wikipedia.org/wiki/Machine_learning) approach, while the occupancy models used in this chapter use a more traditional likelihood approach. This latter class of statistical models are widely used for addressing specific questions and hypotheses, while the goal of machine learning is primarily to identify patterns and make predictions [@bzdokPointsSignificanceStatistics2018]. Second, machine learning approaches can accommodate complex non-linear effects and interactions between covariates, and are useful when modeling habitat associations that can vary across large spatial and temporal scales. In contrast, occupancy models are well suited for describing linear effects and simpler interactions. In this example, we specifically focus on the mechanics of filtering and formatting the data to fit occupancy models, and less on the specifics of how to choose suitable predictor variables for estimating detection and occupancy probabilities to generate a candidate model set used for model selection. The predictors we do include are informed by our inferences on variable importance scores from the random forest model in Chapter \@ref(encounter), as well as our existing knowledge of the species being modeled.
 
-If you worked through the previous chapters, you should have all the data necessary for this chapter. You can also [download the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip), and unzip it to your project directory.
+If you worked through the previous chapters, you should have all the data necessary for this chapter. You can also [download the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip), and unzip it to your project directory.
 
 ```{r}
 #| label: occupancy-intro
@@ -44,9 +44,9 @@ checklists <- read_csv("data/checklists-zf_woothr_june_us-ga.csv") %>%
   # for occupancy modeling the response should be binary 0/1
   mutate(species_observed = as.integer(species_observed))
 
-# prediction surface
-pred_surface <- read_csv("data/environmental-variables_prediction-surface.csv")
-r <- rast("data/prediction-surface.tif") %>% 
+# prediction grid
+pred_grid <- read_csv("data/environmental-variables_prediction-grid.csv")
+r <- rast("data/prediction-grid.tif") %>% 
   # this second rast() call removes all the values from the raster template
   rast()
 crs <- st_crs(r)
@@ -269,24 +269,24 @@ Again, the `psi()` coefficients are from the occupancy submodel and the `p()` co
 
 ## Prediction {#occupancy-predict}
 
-In this section, we'll estimate the distribution of Wood Thrush in Georgia. Similar to Section \@ref(encounter-predict), we'll use the [prediction surface](#envvar-pred) to make estimates across a regular grid of points across Georgia. For this, we'll use the `predict()` function to estimate occupancy probabilities, standard errors, and confidence intervals. We will use `predict()` on the output of `model.avg()` to make predictions using the model averaged coefficients from the candidate model set with at least a 95% cumulative AIC weight.
+In this section, we'll estimate the distribution of Wood Thrush in Georgia. Similar to Section \@ref(encounter-predict), we'll use the [prediction grid](#envvar-pred) to make estimates across a regular grid of points across Georgia. For this, we'll use the `predict()` function to estimate occupancy probabilities, standard errors, and confidence intervals. We will use `predict()` on the output of `model.avg()` to make predictions using the model averaged coefficients from the candidate model set with at least a 95% cumulative AIC weight.
 
 ```{r}
 #| label: occupancy-predict-predict
 #| cache: true
 # note: the code below can take up to an hour to run!
 occ_pred <- predict(occ_avg, 
-                    newdata = as.data.frame(pred_surface), 
+                    newdata = as.data.frame(pred_grid), 
                     type = "state")
 
-# add to prediction surface
-pred_occ <- bind_cols(pred_surface, 
+# add to prediction grid
+pred_occ <- bind_cols(pred_grid, 
                       occ_prob = occ_pred$fit, 
                       occ_se = occ_pred$se.fit) %>% 
   select(cell_id, x, y, occ_prob, occ_se)
 ```
 
-Next, we'll convert this data frame to spatial features using `sf`, then rasterize the points using the prediction surface raster template.
+Next, we'll convert this data frame to spatial features using `sf`, then rasterize the points using the prediction grid raster template.
 
 ```{r}
 #| label: occupancy-predict-rasterize

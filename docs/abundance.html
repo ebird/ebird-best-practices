@@ -113,7 +113,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./occupancy.html" rel="next">
+<link href="./references.html" rel="next">
 <link href="./encounter.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -211,11 +211,6 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./occupancy.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Occupancy</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
   </div>
 </li>
@@ -228,14 +223,14 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#encounter-data" id="toc-encounter-data" class="nav-link active" data-scroll-target="#encounter-data"><span class="toc-section-number">5.1</span>  Data preparation</a></li>
-  <li><a href="#abundance-hurdle" id="toc-abundance-hurdle" class="nav-link" data-scroll-target="#abundance-hurdle"><span class="toc-section-number">5.2</span>  Hurdle model</a>
+  <li><a href="#sec-encounter-data" id="toc-sec-encounter-data" class="nav-link active" data-scroll-target="#sec-encounter-data"><span class="toc-section-number">5.1</span>  Data preparation</a></li>
+  <li><a href="#sec-abundance-hurdle" id="toc-sec-abundance-hurdle" class="nav-link" data-scroll-target="#sec-abundance-hurdle"><span class="toc-section-number">5.2</span>  Hurdle model</a>
   <ul class="collapse">
-  <li><a href="#abundance-hurdle-er" id="toc-abundance-hurdle-er" class="nav-link" data-scroll-target="#abundance-hurdle-er"><span class="toc-section-number">5.2.1</span>  Step 1: Encounter rate</a></li>
-  <li><a href="#abundance-hurdle-count-" id="toc-abundance-hurdle-count-" class="nav-link" data-scroll-target="#abundance-hurdle-count-"><span class="toc-section-number">5.2.2</span>  Step 2: Expected count</a></li>
-  <li><a href="#abundance-assess" id="toc-abundance-assess" class="nav-link" data-scroll-target="#abundance-assess"><span class="toc-section-number">5.2.3</span>  Assessment</a></li>
+  <li><a href="#sec-abundance-hurdle-er" id="toc-sec-abundance-hurdle-er" class="nav-link" data-scroll-target="#sec-abundance-hurdle-er"><span class="toc-section-number">5.2.1</span>  Step 1: Encounter rate</a></li>
+  <li><a href="#sec-abundance-hurdle-count" id="toc-sec-abundance-hurdle-count" class="nav-link" data-scroll-target="#sec-abundance-hurdle-count"><span class="toc-section-number">5.2.2</span>  Step 2: Expected count</a></li>
+  <li><a href="#sec-abundance-assess" id="toc-sec-abundance-assess" class="nav-link" data-scroll-target="#sec-abundance-assess"><span class="toc-section-number">5.2.3</span>  Assessment</a></li>
   </ul></li>
-  <li><a href="#abundance-predict" id="toc-abundance-predict" class="nav-link" data-scroll-target="#abundance-predict"><span class="toc-section-number">5.3</span>  Prediction</a></li>
+  <li><a href="#sec-abundance-predict" id="toc-sec-abundance-predict" class="nav-link" data-scroll-target="#sec-abundance-predict"><span class="toc-section-number">5.3</span>  Prediction</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/ebird/ebird-best-practices/edit/main/abundance.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/ebird/ebird-best-practices/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
@@ -244,7 +239,7 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span id="abundance" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relative Abundance</span></span></h1>
+<h1 class="title"><span id="sec-abundance" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relative Abundance</span></span></h1>
 </div>
 
 
@@ -259,12 +254,12 @@ div.csl-indent {
 
 </header>
 
-<p>The <a href="encounter.html">previous chapter</a> focused on modeling encounter rate, the probability of detecting a species on a standard eBird checklist. However, in addition to recording which species they observed, most eBirders also specify how many individuals of each species were observed. So, in this chapter, we’ll take advantage of these counts to model a relative measure of species abundance.</p>
+<p><a href="encounter.html">Chapter&nbsp;<span>4</span></a> focused on modeling encounter rate, the probability of detecting a species on a standard eBird checklist. However, in addition to recording which species they observed, most eBirders also specify how many individuals of each species were observed. So, in this chapter, we’ll take advantage of these counts to model a relative measure of species abundance.</p>
 <p>To motivate this chapter, we will focus on the specific goal of estimating a map of relative abundance. This type of map would help us to identify areas with higher or lower abundance. The metric we’ll use to estimate abundance is the expected number of individuals observed on a standardized eBird checklist. Like the encounter rate model, the abundance model we present in this section accounts for variation in detection rates but it does not directly estimate the absolute detection probability. For this reason, the estimates of abundance we make can only be interpreted as a measure of relative abundance; an index of the <em>count</em> of individuals of the species present in the search area. To match the common terminology in the literature, we refer to this as an estimate of <em>relative</em> abundance.</p>
-<p>The relative abundance model presented here is similar to and a natural extension of the encounter rate model of Chapter @ref(encounter). In particular, we use a two-step hurdle model following Keyser et al. <span class="citation" data-cites="keyserSnowCoverDynamics2023">(<a href="references.html#ref-keyserSnowCoverDynamics2023" role="doc-biblioref">2023</a>)</span>. In the first step, we estimate encounter rate using exactly the same method as in Chapter @ref(encounter). In the second step, we estimate the expected count of individuals on eBird checklists where the species was detected. Finally, we multiple encounter rate by median count to produce an estimate of relative abundance. We use random forests for both steps on the hurdle.</p>
-<section id="encounter-data" class="level2" data-number="5.1">
-<h2 data-number="5.1" class="anchored" data-anchor-id="encounter-data"><span class="header-section-number">5.1</span> Data preparation</h2>
-<p>Let’s get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to <a href="https://github.com/ebird/ebird-best-practices/raw/master/data/data.zip">download the data package</a>, and unzip it to your project directory, to ensure you’re working with exactly the same data as was used in the creation of this book.</p>
+<p>The relative abundance model presented here is similar to and a natural extension of the encounter rate model of <a href="encounter.html">Chapter&nbsp;<span>4</span></a>. In particular, we use a two-step hurdle model following Keyser et al. <span class="citation" data-cites="keyserSnowCoverDynamics2023">(<a href="references.html#ref-keyserSnowCoverDynamics2023" role="doc-biblioref">2023</a>)</span>. In the first step, we estimate encounter rate using exactly the same method as in <a href="encounter.html">Chapter&nbsp;<span>4</span></a>. In the second step, we estimate the expected count of individuals on eBird checklists where the species was detected. Finally, we multiply encounter rate by median count to produce an estimate of relative abundance. We use random forests for both steps on the hurdle.</p>
+<section id="sec-encounter-data" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="sec-encounter-data"><span class="header-section-number">5.1</span> Data preparation</h2>
+<p>Let’s get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to <a href="https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip">download the data package</a>, and unzip it to your project directory, to ensure you’re working with exactly the same data as was used in the creation of this book.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ebirdst)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fields)</span>
@@ -289,9 +284,9 @@ div.csl-indent {
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>checklists <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/checklists-zf_woothr_june_us-ga.csv"</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(habitat, <span class="at">by =</span> <span class="st">"checklist_id"</span>)</span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co"># prediction surface</span></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>pred_surface <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/environmental-variables_prediction-surface.csv"</span>)</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"data/prediction-surface.tif"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co"># prediction grid</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>pred_grid <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/environmental-variables_prediction-grid.csv"</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"data/prediction-grid.tif"</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># this second rast() call removes all the values from the raster template</span></span>
 <span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>crs <span class="ot">&lt;-</span> <span class="fu">st_crs</span>(r)</span>
@@ -311,7 +306,7 @@ div.csl-indent {
 <span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> crs) <span class="sc">%&gt;%</span> </span>
 <span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_geometry</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Next we’ll perform a round of spatiotemporal subsampling on the data to reduce bias.</p>
+<p>Next, following the approach outlined in <a href="encounter.html#sec-encounter-sss"><span>Section&nbsp;4.3</span></a>, we’ll perform a round of spatiotemporal subsampling on the data to reduce bias.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sample one checklist per 3km x 3km x 1 week grid for each year</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># sample detection/non-detection independently </span></span>
@@ -319,7 +314,7 @@ div.csl-indent {
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">obs_column =</span> <span class="st">"species_observed"</span>,</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">sample_by =</span> <span class="st">"type"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Finally, we’ll remove the 20% of checklists held aside for testing and select only the columns we intend to use as predictors in the model training.</p>
+<p>Finally, we’ll remove the 20% of checklists held aside for testing and select only the columns we intend to use as predictors to train the models.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>checklists_train <span class="ot">&lt;-</span> checklists_ss <span class="sc">%&gt;%</span> </span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(type <span class="sc">==</span> <span class="st">"train"</span>) <span class="sc">%&gt;%</span> </span>
@@ -333,12 +328,12 @@ div.csl-indent {
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>         <span class="fu">starts_with</span>(<span class="st">"elevation_"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="abundance-hurdle" class="level2" data-number="5.2">
-<h2 data-number="5.2" class="anchored" data-anchor-id="abundance-hurdle"><span class="header-section-number">5.2</span> Hurdle model</h2>
-<p>For this two-step hurdle model, we’ll start by training exactly the same encounter rate model as in the <a href="encounter.html">previous chapter</a>. Then we’ll subset the eBird checklist to only those where the species was detected or predicted to occur by the encounter rate model. We’ll use this subset of the data to train a second random forest model for expected count. Finally we’ll combine the results of the two steps together to produce estimates of relative abundance.</p>
-<section id="abundance-hurdle-er" class="level3" data-number="5.2.1">
-<h3 data-number="5.2.1" class="anchored" data-anchor-id="abundance-hurdle-er"><span class="header-section-number">5.2.1</span> Step 1: Encounter rate</h3>
-<p>If you haven’t done so, read Chapter @ref(encounter) for details on the calibrated encounter rate model. Here we repeat the process of modeling encounter rate in a compressed form.</p>
+<section id="sec-abundance-hurdle" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="sec-abundance-hurdle"><span class="header-section-number">5.2</span> Hurdle model</h2>
+<p>For this two-step hurdle model, we’ll start by training exactly the same encounter rate model as in the <a href="encounter.html">Chapter&nbsp;<span>4</span></a>. Then we’ll subset the eBird checklist to only those where the species was detected or predicted to occur by the encounter rate model. We’ll use this subset of the data to train a second random forests model for expected count. Finally we’ll combine the results of the two steps together to produce estimates of relative abundance.</p>
+<section id="sec-abundance-hurdle-er" class="level3" data-number="5.2.1">
+<h3 data-number="5.2.1" class="anchored" data-anchor-id="sec-abundance-hurdle-er"><span class="header-section-number">5.2.1</span> Step 1: Encounter rate</h3>
+<p>If you haven’t done so, read <a href="encounter.html">Chapter&nbsp;<span>4</span></a> for details on the calibrated encounter rate model. Here we repeat the process of modeling encounter rate in a compressed form.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate detection frequency for the balance random forest</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>detection_freq <span class="ot">&lt;-</span> <span class="fu">mean</span>(checklists_train<span class="sc">$</span>species_observed)</span>
@@ -364,11 +359,11 @@ div.csl-indent {
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                          <span class="at">gamma =</span> <span class="dv">2</span>,</span>
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                          <span class="at">data =</span> obs_pred)</span>
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  mccf1_metric best_threshold</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         0.397          0.551</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         0.397          0.599</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="abundance-hurdle-count-" class="level3" data-number="5.2.2">
-<h3 data-number="5.2.2" class="anchored" data-anchor-id="abundance-hurdle-count-"><span class="header-section-number">5.2.2</span> Step 2: Expected count</h3>
+<section id="sec-abundance-hurdle-count" class="level3" data-number="5.2.2">
+<h3 data-number="5.2.2" class="anchored" data-anchor-id="sec-abundance-hurdle-count"><span class="header-section-number">5.2.2</span> Step 2: Expected count</h3>
 <p>For the second step, we train a random forests model to estimate the expected count of individuals on eBird checklists where the species was detected or predicted to be detected by the encounter rate model. So, we’ll start by subsetting the data to just these checklists. In addition, we’ll remove any observations for which the observer reported that Wood Thrush was present, but didn’t report a count of the number of individuals (coded as a count of “X” in the eBird database, but converted to <code>NA</code> in our dataset).</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># attach the predicted encounter rate based on out of bag samples</span></span>
@@ -394,9 +389,9 @@ div.csl-indent {
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">replace =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="abundance-assess" class="level3" data-number="5.2.3">
-<h3 data-number="5.2.3" class="anchored" data-anchor-id="abundance-assess"><span class="header-section-number">5.2.3</span> Assessment</h3>
-<p>In the previous chapter we calculate a suite of <a href="encounter.html#encounter-rf-assess">predictive performance metrics for the encounter rate model</a>. These metrics should also be considered when modeling relative; however, here we won’t duplicate these metrics here. Instead we’ll calculate <a href="https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient">Spearman’s rank correlation coefficient</a> for both count and relative abundance and <a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Pearson correlation coefficient</a> for the log of count and relative abundance. We’ll start by estimating encounter rate, count, and relative abundance for the test dataset.</p>
+<section id="sec-abundance-assess" class="level3" data-number="5.2.3">
+<h3 data-number="5.2.3" class="anchored" data-anchor-id="sec-abundance-assess"><span class="header-section-number">5.2.3</span> Assessment</h3>
+<p>In the <a href="encounter.html#sec-encounter-rf-assess"><span>Section&nbsp;4.4.3</span></a> we calculated a suite of predictive performance metrics for the encounter rate model. These metrics should also be considered when modeling relative abundance; however, we won’t duplicate calculation of these metrics here. Instead we’ll calculate <a href="https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient">Spearman’s rank correlation coefficient</a> for both count and relative abundance and <a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Pearson correlation coefficient</a> for the log of count and relative abundance. We’ll start by estimating encounter rate, count, and relative abundance for the spatiotemporally grid sampled test dataset.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get the test set held out from training</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>checklists_test <span class="ot">&lt;-</span> <span class="fu">filter</span>(checklists_ss, type <span class="sc">==</span> <span class="st">"test"</span>) <span class="sc">%&gt;%</span> </span>
@@ -439,33 +434,35 @@ div.csl-indent {
 <span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">pred_abundance =</span> pred_abundance</span>
 <span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>For the count predictive performance metrics, we compare observed and estimated counts only <em>for those checklists where the species was detected</em>. In contrast, for the relative abundance metrics we compare observed count and estimate relative abundance <em>for all checklists</em>.</p>
+<p>The count and abundance predictive performance metrics are measures of <em>within range</em> performance, meaning we compare observed count vs.&nbsp;estimated count and abundance <em>only for those checklists where the model predicts the species to occur</em>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># count metrics</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>count_test <span class="ot">&lt;-</span> <span class="fu">filter</span>(obs_pred_test, obs_pred_test<span class="sc">$</span>obs_count <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>count_spearman <span class="ot">&lt;-</span> <span class="fu">cor</span>(count_test<span class="sc">$</span>pred_count, </span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                      count_test<span class="sc">$</span>obs_count,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method =</span> <span class="st">"spearman"</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>log_count_pearson <span class="ot">&lt;-</span> <span class="fu">cor</span>(<span class="fu">log</span>(count_test<span class="sc">$</span>pred_count <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">log</span>(count_test<span class="sc">$</span>obs_count <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>                         <span class="at">method =</span> <span class="st">"pearson"</span>)</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># abundance metrics</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>abundance_spearman <span class="ot">&lt;-</span> <span class="fu">cor</span>(obs_pred_test<span class="sc">$</span>pred_abundance, </span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                          obs_pred_test<span class="sc">$</span>obs_count,</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>                          <span class="at">method =</span> <span class="st">"spearman"</span>)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>log_abundance_pearson <span class="ot">&lt;-</span> <span class="fu">cor</span>(<span class="fu">log</span>(obs_pred_test<span class="sc">$</span>pred_abundance <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">log</span>(obs_pred_test<span class="sc">$</span>obs_count <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>                             <span class="at">method =</span> <span class="st">"pearson"</span>)</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co"># combine metrics together</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>ppms <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">count_spearman =</span> count_spearman,</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_count_pearson =</span> log_count_pearson,</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">abundance_spearman =</span> abundance_spearman,</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_abundance_pearson =</span> log_abundance_pearson</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">pivot_longer</span>(ppms, <span class="fu">everything</span>()), <span class="at">digits =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># subset to only those checklists where detection is predicted</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>detections_test <span class="ot">&lt;-</span> <span class="fu">filter</span>(obs_pred_test, pred_binary <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># count metrics</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>count_spearman <span class="ot">&lt;-</span> <span class="fu">cor</span>(detections_test<span class="sc">$</span>pred_count, </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                      detections_test<span class="sc">$</span>obs_count,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method =</span> <span class="st">"spearman"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>log_count_pearson <span class="ot">&lt;-</span> <span class="fu">cor</span>(<span class="fu">log</span>(detections_test<span class="sc">$</span>pred_count <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">log</span>(detections_test<span class="sc">$</span>obs_count <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                         <span class="at">method =</span> <span class="st">"pearson"</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># abundance metrics</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>abundance_spearman <span class="ot">&lt;-</span> <span class="fu">cor</span>(detections_test<span class="sc">$</span>pred_abundance, </span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>                          detections_test<span class="sc">$</span>obs_count,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                          <span class="at">method =</span> <span class="st">"spearman"</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>log_abundance_pearson <span class="ot">&lt;-</span> <span class="fu">cor</span>(<span class="fu">log</span>(detections_test<span class="sc">$</span>pred_abundance <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">log</span>(detections_test<span class="sc">$</span>obs_count <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                             <span class="at">method =</span> <span class="st">"pearson"</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># combine metrics together</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>ppms <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">count_spearman =</span> count_spearman,</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_count_pearson =</span> log_count_pearson,</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">abundance_spearman =</span> abundance_spearman,</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_abundance_pearson =</span> log_abundance_pearson</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">pivot_longer</span>(ppms, <span class="fu">everything</span>()), <span class="at">digits =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped">
 <thead>
@@ -477,31 +474,32 @@ div.csl-indent {
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">count_spearman</td>
-<td style="text-align: right;">0.269</td>
+<td style="text-align: right;">0.369</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">log_count_pearson</td>
-<td style="text-align: right;">0.351</td>
+<td style="text-align: right;">0.401</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">abundance_spearman</td>
-<td style="text-align: right;">0.322</td>
+<td style="text-align: right;">0.366</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">log_abundance_pearson</td>
-<td style="text-align: right;">0.513</td>
+<td style="text-align: right;">0.404</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
+<p>The Spearman’s correlations tell us about the ability of the model to estimate the rank order of counts and relative abundance, something that these models often perform better with. The Pearson’s correlations give us information about the ability of the model to estimate absolute counts on the log scale, a task that is often more difficult to do with eBird data, especially for congregatory species that often have high counts. Again, as with the binary performance metrics, these are useful in comparing model quality across species, region, and season.</p>
 </section>
 </section>
-<section id="abundance-predict" class="level2" data-number="5.3">
-<h2 data-number="5.3" class="anchored" data-anchor-id="abundance-predict"><span class="header-section-number">5.3</span> Prediction</h2>
-<p>Just as we did in the <a href="encounter.html#encounter-predict">previous chapter</a> for encounter rate, we can estimate relative abundance over our prediction surface. First we estimate encounter rate and count, then we multiply these together to get an estimate of relative abundance. Let’s start by added the effort variables to the prediction grid for a standard eBird checklist at the optimal time of day for detecting Wood Thrush. Recall from the <a href="encounter.html#encounter-predict">previous chapter</a> that we determined the optimal time of day for detecting Wood Thrush was around 6:15AM.</p>
+<section id="sec-abundance-predict" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="sec-abundance-predict"><span class="header-section-number">5.3</span> Prediction</h2>
+<p>Just as we did in the <a href="encounter.html#sec-encounter-predict"><span>Section&nbsp;4.6</span></a> for encounter rate, we can estimate relative abundance over our prediction grid. First we estimate encounter rate and count, then we multiply these together to get an estimate of relative abundance. Let’s start by adding the effort variables to the prediction grid for a standard eBird checklist at the optimal time of day for detecting Wood Thrush. Recall from the <a href="encounter.html#sec-encounter-predict-effort"><span>Section&nbsp;4.6.1</span></a> that we determined the optimal time of day for detecting Wood Thrush was around 6:15AM.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>pred_surface_eff <span class="ot">&lt;-</span> pred_surface <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>pred_grid_eff <span class="ot">&lt;-</span> pred_grid <span class="sc">%&gt;%</span> </span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">observation_date =</span> <span class="fu">ymd</span>(<span class="st">"2022-06-15"</span>),</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">year =</span> <span class="fu">year</span>(observation_date),</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">day_of_year =</span> <span class="fu">yday</span>(observation_date),</span>
@@ -512,29 +510,32 @@ div.csl-indent {
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">effort_speed_kmph =</span> <span class="fl">0.5</span>,</span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">number_observers =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Now we can estimate calibrated encounter rate and count for each point on the prediction surface.</p>
+<p>Now we can estimate calibrated encounter rate and count for each point on the prediction grid. We also include a binary estimate of the range boundary.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># encounter rate estimate</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>pred_er <span class="ot">&lt;-</span> <span class="fu">predict</span>(er_model, <span class="at">data =</span> pred_surface_eff, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>pred_er <span class="ot">&lt;-</span> <span class="fu">predict</span>(er_model, <span class="at">data =</span> pred_grid_eff, <span class="at">type =</span> <span class="st">"response"</span>)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>pred_er <span class="ot">&lt;-</span> pred_er<span class="sc">$</span>predictions[, <span class="dv">2</span>]</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># apply calibration</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>pred_er_cal <span class="ot">&lt;-</span> <span class="fu">predict</span>(calibration_model, </span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">data.frame</span>(<span class="at">pred =</span> pred_er), </span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"response"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>()</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># add predicted encounter rate required for count estimates</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>pred_surface_eff<span class="sc">$</span>predicted_er <span class="ot">&lt;-</span> pred_er</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co"># count estimate</span></span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>pred_count <span class="ot">&lt;-</span> <span class="fu">predict</span>(count_model, <span class="at">data =</span> pred_surface_eff, <span class="at">type =</span> <span class="st">"response"</span>)</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>pred_count <span class="ot">&lt;-</span> pred_count<span class="sc">$</span>predictions</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="co"># add estimates to prediction surface</span></span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_surface_eff, </span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>                         <span class="at">encounter_rate =</span> pred_er_cal,</span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>                         <span class="at">count =</span> pred_count) <span class="sc">%&gt;%</span> </span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cell_id, x, y, encounter_rate, count) <span class="sc">%&gt;%</span> </span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">encounter_rate =</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(encounter_rate, <span class="dv">0</span>), <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># binary prediction</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>pred_binary <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(pred_er <span class="sc">&gt;</span> threshold)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># apply calibration</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>pred_er_cal <span class="ot">&lt;-</span> <span class="fu">predict</span>(calibration_model, </span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">data.frame</span>(<span class="at">pred =</span> pred_er), </span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"response"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>()</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co"># add predicted encounter rate required for count estimates</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>pred_grid_eff<span class="sc">$</span>predicted_er <span class="ot">&lt;-</span> pred_er</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="co"># count estimate</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>pred_count <span class="ot">&lt;-</span> <span class="fu">predict</span>(count_model, <span class="at">data =</span> pred_grid_eff, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>pred_count <span class="ot">&lt;-</span> pred_count<span class="sc">$</span>predictions</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># add estimates to prediction grid</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_grid_eff,</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>                         <span class="at">in_range =</span> pred_binary,</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>                         <span class="at">encounter_rate =</span> pred_er_cal,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>                         <span class="at">count =</span> pred_count) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cell_id, x, y, in_range, encounter_rate, count) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">encounter_rate =</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(encounter_rate, <span class="dv">0</span>), <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, we add a column for the relative abundance estimate (the product of the encounter rate and count estimates), and convert these estimates to raster format.</p>
 <div class="cell" data-layout-align="center">
@@ -543,11 +544,11 @@ div.csl-indent {
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">abundance =</span> encounter_rate <span class="sc">*</span> count) <span class="sc">%&gt;%</span> </span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert to spatial features</span></span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> crs) <span class="sc">%&gt;%</span> </span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(encounter_rate, count, abundance) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(in_range, encounter_rate, count, abundance) <span class="sc">%&gt;%</span> </span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># rasterize</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rasterize</span>(r, <span class="at">field =</span> <span class="fu">c</span>(<span class="st">"encounter_rate"</span>, <span class="st">"count"</span>, <span class="st">"abundance"</span>),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rasterize</span>(r, <span class="at">field =</span> <span class="fu">c</span>(<span class="st">"in_range"</span>, <span class="st">"encounter_rate"</span>, <span class="st">"count"</span>, <span class="st">"abundance"</span>),</span>
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">fun =</span> <span class="st">"mean"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setNames</span>(<span class="fu">c</span>(<span class="st">"encounter_rate"</span>, <span class="st">"count"</span>, <span class="st">"abundance"</span>))</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setNames</span>(<span class="fu">c</span>(<span class="st">"in_range"</span>, <span class="st">"encounter_rate"</span>, <span class="st">"count"</span>, <span class="st">"abundance"</span>))</span>
 <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co"># save the raster</span></span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 3 bands: encounter_rate, count, and relative abundance</span></span>
@@ -556,47 +557,52 @@ div.csl-indent {
 <span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                      <span class="at">gdal =</span> <span class="st">"COMPRESS=DEFLATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Finally we’ll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 1 hour, 1 km checklist for which counting started at about 6:15AM on June 15, 2022. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it’s difficult to say how much higher.</p>
+<p>Prior to mapping the relative abundance, we’ll multiple by the <code>in_range</code> layer, which will produce a map showing zero relative abundance where the model predicts that Wood Thrush does not occur.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="fl">3.5</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>))</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># set up plot area</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(study_region, <span class="at">col =</span> <span class="cn">NA</span>, <span class="at">border =</span> <span class="cn">NA</span>)</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_land, <span class="at">col =</span> <span class="st">"#dddddd"</span>, <span class="at">border =</span> <span class="st">"#888888"</span>, <span class="at">lwd =</span> <span class="fl">0.5</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co"># define quantile breaks</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>brks <span class="ot">&lt;-</span> <span class="fu">global</span>(r_pred[[<span class="st">"abundance"</span>]], <span class="at">fun =</span> quantile, </span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">probs =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.1</span>), <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># label the bottom, middle, and top value</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>lbls <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">median</span>(brks), <span class="fu">max</span>(brks)), <span class="dv">2</span>)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co"># ebird status and trends color palette</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>pal <span class="ot">&lt;-</span> <span class="fu">abundance_palette</span>(<span class="fu">length</span>(brks) <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(r_pred[[<span class="st">"abundance"</span>]], </span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> pal, <span class="at">breaks =</span> brks, </span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">maxpixels =</span> <span class="fu">ncell</span>(r_pred),</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">legend =</span> <span class="cn">FALSE</span>, <span class="at">axes =</span> <span class="cn">FALSE</span>, <span class="at">bty =</span> <span class="st">"n"</span>,</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="co"># borders</span></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_state_lines, <span class="at">col =</span> <span class="st">"#ffffff"</span>, <span class="at">lwd =</span> <span class="fl">0.75</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_country_lines, <span class="at">col =</span> <span class="st">"#ffffff"</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(study_region, <span class="at">border =</span> <span class="st">"#000000"</span>, <span class="at">col =</span> <span class="cn">NA</span>, <span class="at">lwd =</span> <span class="dv">1</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="fu">box</span>()</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="co"># legend</span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">new =</span> <span class="cn">TRUE</span>, <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>title <span class="ot">&lt;-</span> <span class="st">"Wood Thrush Relative Abundance (June 2022)"</span></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="fu">image.plot</span>(<span class="at">zlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">legend.only =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>           <span class="at">col =</span> pal, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="fu">length</span>(brks)),</span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>           <span class="at">smallplot =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">0.06</span>, <span class="fl">0.09</span>),</span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>           <span class="at">horizontal =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>           <span class="at">axis.args =</span> <span class="fu">list</span>(<span class="at">at =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>), <span class="at">labels =</span> lbls,</span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>                            <span class="at">fg =</span> <span class="st">"black"</span>, <span class="at">col.axis =</span> <span class="st">"black"</span>,</span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>                            <span class="at">cex.axis =</span> <span class="fl">0.75</span>, <span class="at">lwd.ticks =</span> <span class="fl">0.5</span>,</span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>                            <span class="at">padj =</span> <span class="sc">-</span><span class="fl">1.5</span>),</span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>           <span class="at">legend.args =</span> <span class="fu">list</span>(<span class="at">text =</span> title,</span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>                              <span class="at">side =</span> <span class="dv">3</span>, <span class="at">col =</span> <span class="st">"black"</span>,</span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>                              <span class="at">cex =</span> <span class="dv">1</span>, <span class="at">line =</span> <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># in range abundance</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>r_plot <span class="ot">&lt;-</span> r_pred[[<span class="st">"abundance"</span>]] <span class="sc">*</span> r_pred[[<span class="st">"in_range"</span>]]</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="fl">3.5</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>))</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># set up plot area</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(study_region, <span class="at">col =</span> <span class="cn">NA</span>, <span class="at">border =</span> <span class="cn">NA</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_land, <span class="at">col =</span> <span class="st">"#cfcfcf"</span>, <span class="at">border =</span> <span class="st">"#888888"</span>, <span class="at">lwd =</span> <span class="fl">0.5</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co"># define quantile breaks, excluding zeros</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>brks <span class="ot">&lt;-</span> <span class="fu">ifel</span>(r_plot <span class="sc">&gt;</span> <span class="dv">0</span>, r_plot, <span class="cn">NA</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">global</span>(<span class="at">fun =</span> quantile, </span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">probs =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.1</span>), <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co"># label the bottom, middle, and top value</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>lbls <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">c</span>(<span class="fu">min</span>(brks), <span class="fu">median</span>(brks), <span class="fu">max</span>(brks)), <span class="dv">2</span>)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co"># ebird status and trends color palette</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>pal <span class="ot">&lt;-</span> <span class="fu">abundance_palette</span>(<span class="fu">length</span>(brks) <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(r_plot, </span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"#e6e6e6"</span>, pal), <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, brks), </span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>     <span class="at">maxpixels =</span> <span class="fu">ncell</span>(r_plot),</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>     <span class="at">legend =</span> <span class="cn">FALSE</span>, <span class="at">axes =</span> <span class="cn">FALSE</span>, <span class="at">bty =</span> <span class="st">"n"</span>,</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>     <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co"># borders</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_state_lines, <span class="at">col =</span> <span class="st">"#ffffff"</span>, <span class="at">lwd =</span> <span class="fl">0.75</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_country_lines, <span class="at">col =</span> <span class="st">"#ffffff"</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(study_region, <span class="at">border =</span> <span class="st">"#000000"</span>, <span class="at">col =</span> <span class="cn">NA</span>, <span class="at">lwd =</span> <span class="dv">1</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="fu">box</span>()</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="co"># legend</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">new =</span> <span class="cn">TRUE</span>, <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>title <span class="ot">&lt;-</span> <span class="st">"Wood Thrush Relative Abundance (June 2022)"</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="fu">image.plot</span>(<span class="at">zlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">legend.only =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>           <span class="at">col =</span> pal, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="fu">length</span>(brks)),</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>           <span class="at">smallplot =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">0.06</span>, <span class="fl">0.09</span>),</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>           <span class="at">horizontal =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>           <span class="at">axis.args =</span> <span class="fu">list</span>(<span class="at">at =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>), <span class="at">labels =</span> lbls,</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>                            <span class="at">fg =</span> <span class="st">"black"</span>, <span class="at">col.axis =</span> <span class="st">"black"</span>,</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>                            <span class="at">cex.axis =</span> <span class="fl">0.75</span>, <span class="at">lwd.ticks =</span> <span class="fl">0.5</span>,</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>                            <span class="at">padj =</span> <span class="sc">-</span><span class="fl">1.5</span>),</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>           <span class="at">legend.args =</span> <span class="fu">list</span>(<span class="at">text =</span> title,</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>                              <span class="at">side =</span> <span class="dv">3</span>, <span class="at">col =</span> <span class="st">"black"</span>,</span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>                              <span class="at">cex =</span> <span class="dv">1</span>, <span class="at">line =</span> <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -755,8 +761,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./occupancy.html" class="pagination-link">
-        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Occupancy</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./references.html" class="pagination-link">
+        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

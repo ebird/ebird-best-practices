@@ -1,0 +1,360 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Occupancy {#occupancy}
+
+## Introduction {#occupancy-intro}
+
+In this chapter, we'll cover basic initial steps for applying **occupancy models** to eBird data. In Chapter \@ref(encounter), we used analytical approaches that accounted for variation in detectability. We modeled variables that are known to influence detectability (e.g. duration, time of day) alongside variables that influence occurrence. In contrast, occupancy models jointly model the ecological process of *species occurrence* and the observation process of *species detection*, but estimate these as separate processes. This modeling framework allows us to account for variation in detection probability when estimating species occurrence. In this chapter, we will not provide much detail on the theory and assumptions of occupancy models; however, there is a wealth of background literature and applications of occupancy models, and readers wishing to learn more about this field may want to consult the book on the topic by MacKenzie et al. [-@mackenzieOccupancyEstimationModeling2017].
+
+The application of occupancy models typically requires data from repeated sampling visits (occasions) to a single site during a time frame over which the population is *closed* (e.g., no changes in occupancy between surveys). Although eBird checklists are not designed to meet these requirements, it is possible to apply occupancy models to eBird data by extracting a subset of the data that meet closure assumptions and conform to a repeat-sampling data structure. Here, we present a simple example of how to process eBird data to meet these requirements. To illustrate our example, we apply a single-season occupancy model to estimate occupancy and detection probabilities for Wood Thrush in the month of June for Georgia.
+
+This chapter differs from the previous chapter on modeling encounter rate in two important ways. First, the random forests model used in Chapter \@ref(encounter) is an example of a [machine learning](https://en.wikipedia.org/wiki/Machine_learning) approach, while the occupancy models used in this chapter use a more traditional likelihood approach. This latter class of statistical models are widely used for addressing specific questions and hypotheses, while the goal of machine learning is primarily to identify patterns and make predictions [@bzdokPointsSignificanceStatistics2018]. Second, machine learning approaches can accommodate complex non-linear effects and interactions between covariates, and are useful when modeling habitat associations that can vary across large spatial and temporal scales. In contrast, occupancy models are well suited for describing linear effects and simpler interactions. In this example, we specifically focus on the mechanics of filtering and formatting the data to fit occupancy models, and less on the specifics of how to choose suitable predictor variables for estimating detection and occupancy probabilities to generate a candidate model set used for model selection. The predictors we do include are informed by our inferences on variable importance scores from the random forest model in Chapter \@ref(encounter), as well as our existing knowledge of the species being modeled.
+
+If you worked through the previous chapters, you should have all the data necessary for this chapter. You can also [download the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip), and unzip it to your project directory.
+
+```{r}
+#| label: occupancy-intro
+library(AICcmodavg)
+library(auk)
+library(ebirdst)
+library(fields)
+library(MuMIn)
+library(sf)
+library(terra)
+library(unmarked)
+library(tidyverse)
+
+# set random number seed to insure fully repeatable results
+set.seed(1)
+
+# setup results directory for saved results
+dir.create("results/", showWarnings = FALSE, recursive = TRUE)
+
+
+# habitat variables: landcover and elevation
+habitat <- read_csv("data/environmental-variables_checklists.csv")
+
+# zero-filled ebird data combined with habitat data
+checklists <- read_csv("data/checklists-zf_woothr_june_us-ga.csv") %>% 
+  inner_join(habitat, by = "checklist_id") %>% 
+  # for occupancy modeling the response should be binary 0/1
+  mutate(species_observed = as.integer(species_observed))
+
+# prediction grid
+pred_grid <- read_csv("data/environmental-variables_prediction-grid.csv")
+r <- rast("data/prediction-grid.tif") %>% 
+  # this second rast() call removes all the values from the raster template
+  rast()
+crs <- st_crs(r)
+
+# load gis data for making maps
+study_region <- read_sf("data/gis-data.gpkg", "ne_states") %>% 
+  filter(state_code == "US-GA") %>% 
+  st_transform(crs = crs) %>% 
+  st_geometry()
+ne_land <- read_sf("data/gis-data.gpkg", "ne_land") %>% 
+  st_transform(crs = crs) %>% 
+  st_geometry()
+ne_country_lines <- read_sf("data/gis-data.gpkg", "ne_country_lines") %>% 
+  st_transform(crs = crs) %>% 
+  st_geometry()
+ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") %>% 
+  st_transform(crs = crs) %>% 
+  st_geometry()
+```
+
+## Data preparation {#occupancy-data}
+
+First, will extract a subset of the eBird data that meets the assumptions of occupancy models, and then we perform spatiotemporal subsampling to deal with spatial bias in the data.
+
+Let's start by filtering our data to include only checklists shorter than 5km in length, 5 hours in duration, and with 5 or fewer observers, to reduce sources of variation in detectability, and because there are very few checklists with more than 5 observers. In addition, we'll subset observations to the most recent year for which we have data (`r max(checklists$year)`) to fit a single-season occupancy model.
+
+```{r}
+#| label: occupancy-data-filter
+# filter prior to creating occupancy model data
+checklists_filtered <- filter(checklists, 
+                              effort_hours <= 5,
+                              effort_distance_km <= 5,
+                              number_observers <= 5,
+                              year == max(year))
+```
+
+In some situations, you may want to further filter the data based on the results of an exploratory analysis similar to the one conducted in Section \@ref(ebird-explore). Even though most of the checklists in this example are submitted by 2 or fewer observers, we won't further filter the observations for our occupancy example. Given the extra constraints for data suitable for occupancy modeling, it may be useful to retain more checklists at this stage.
+
+### Data formatting {#occupancy-data-sites}
+
+Next, we need to create detection histories for each location we define as a site. In this example, we define the month of June as the time period over which we assume that there are no changes in occupancy between secondary sampling occasions for Wood Thrush in Georgia. The time frame over which closure can be assumed will differ among species and localities, requires careful consideration. We define a site as a specific location (latitude/longitude) that is visited at least twice by the same observer within our defined period of closure (i.e. the month of June).
+
+The `auk` function `filter_repeat_visits()` is designed to extract a subset of eBird data suitable for occupancy modeling. Using the function, we first filter the data to only sites that have at least 2 visits (`min_obs`). We also define the maximum number of repeat visits (`max_obs`) as 10 visits or checklists. When a specific site has been visited more than 10 times, the function will randomly select 10 checklists from all the visits to that site. If we had data from more than one year, we would use `annual_closure = TRUE` to determine that populations are closed within the specified time frame for a given year, but *not closed* between years. In other words, species occurrence does not change from one repeat visit to the next for a given sampling event (e.g. year), but can change between years. If we want to define periods of closure within years, we can define these in terms of the number of days using `n_days`. For example, `n_days = 10` would define contiguous sets of 10 days, starting with the earliest observation date in the data, and use these as consecutive periods of closure. Here we don't define `n_days` and treat all the June 2019 checklists as repeat visits during a single season. Finally, `site_vars` specifies the set of variables that defines a site. In this example, a site is defined jointly by the location and observer IDs. Any set of variables in the data can be used to define sites. For example, `site_vars = "locality_id"` could be used to define sites using the location regardless of observer.
+
+```{r}
+#| label: occupancy-data-sites-filter
+occ_data <- filter_repeat_visits(checklists_filtered, 
+                                 min_obs = 2, max_obs = 10,
+                                 annual_closure = TRUE,
+                                 date_var = "observation_date",
+                                 site_vars = c("locality_id", "observer_id"))
+# entire data set
+nrow(checklists_filtered)
+# reduced data set
+nrow(occ_data)
+# number of individual sites
+n_distinct(occ_data$site)
+```
+
+This function `filter_repeat_visits()` added three new columns to the dataset: `site` is a unique site ID (here, location and observer), `closure_id` identifies the primary period of closure (in this example the year), and `n_observations` is the number of visits to each site. Our capture histories are now properly formatted for a single-season occupancy model and ready to be analyzed. Note that we've made a trade off in sample size, dropping from `r scales::comma(nrow(checklists_filtered))` checklists to `r scales::comma(nrow(occ_data))` checklists over `r scales::comma(n_distinct(occ_data$site))` sites.
+
+We'll use our filtered observations to fit a single-season occupancy model using the `unmarked` R package. For additional details on the type of data format required for this package, consult the documentation for the `unmarked` function `formatWide()`. The `auk` function `format_unmarked_occu()` converts data from a vertical format in which each row is an observation (as in the EBD) to a horizontal detection history where each row is a site. Under this format, each column represent a repeat visit- for this example, we will have up to 10 detection event columns. This data format is commonly used for most applications of occupancy model, including `unmarked`.
+
+At this stage, we need to specify which variables will be ecological process (i.e. occupancy) covariates and which will be observational process (i.e. detection) covariates. Occupancy covariates (`site_covs`) will be unique at the level of the site, while detection covariates (`obs_covs`) can be also be unique for each site, as well as sampling occasion (i.e. checklist).
+
+For this example, we'll use MODIS land cover variables as habitat covariates for modeling the occupancy probability of Wood Thrush. Based on [predictor importance](#encounter-habitat-pi) and [partial dependence](#encounter-habitat-pd) measures from Chapter \@ref(encounter), we include percent cover of deciduous broadleaf forest (class 4) and mixed forest (class 5) as covariates for which we expect positive relationships with occupancy, and percent cover of savanna (class 9) and grassland (class 10), for which we expect negative relationships.
+
+To estimate detection probability, we include three effort variables that are related to the detection process. Habitat type has been shown to influence detectability in bird species, for example, some species are harder to detect in densely forested habitats relative to more open habitat types. So we also include percent cover of deciduous broadleaf forest and mixed forest as covariates for detection probability. Occupancy models allow us to tease apart the differing effects of habitat on both detection and occupancy probabilities.
+
+```{r}
+#| label: occupancy-data-sites-format
+# format for unmarked
+occ_wide <- format_unmarked_occu(occ_data, 
+                                 site_id = "site", 
+                                 response = "species_observed",
+                                 site_covs = c("n_observations", 
+                                               "latitude", "longitude", 
+                                               "pland_c04_deciduous_broadleaf", 
+                                               "pland_c05_mixed_forest",
+                                               "pland_c09_savanna",
+                                               "pland_c10_grassland"),
+                                 obs_covs = c("hours_of_day", 
+                                              "effort_hours", 
+                                              "effort_distance_km", 
+                                              "number_observers", 
+                                              "protocol_type",
+                                              "pland_c04_deciduous_broadleaf", 
+                                              "pland_c05_mixed_forest"))
+```
+
+### Spatial subsampling {#occupancy-data-sss}
+
+As discussed in Section \@ref(encounter-sss), spatial subsampling of eBird observations reduces spatial bias. We'll use the same approach as in Chapter \@ref(encounter); however, here we'll subsample at the level of sites rather than observations. For this example, we will sample one site per 5 km grid cell. Note, that because we included `observer_id` in the site definition, this subsampling process will only select one row, or set of visits from *one observer* to *one site*, within each 3km by 3km cell.
+
+```{r}
+#| label: occupancy-data-sss
+#| results: "hide"
+# grid_sample() requires a day_of_year column, so we add a fake one temporarily
+occ_wide$day_of_year <- 1
+occ_ss <- grid_sample(occ_wide)
+occ_ss$day_of_year <- NULL
+
+# calculate the percent decrease in the number of sites
+1 - nrow(occ_ss) / nrow(occ_wide)
+```
+
+This resulted in a `r scales::percent(1 - nrow(occ_ss) / nrow(occ_wide))` decrease in the number of sites.
+
+### `unmarked` object {#occupancy-data-unmarked}
+
+Finally, we'll convert this data frame of observations into an `unmarked` object so we can start fitting occupancy models.
+
+```{r}
+#| label: occupancy-data-unmarked
+occ_um <- formatWide(occ_ss, type = "unmarkedFrameOccu")
+summary(occ_um)
+```
+
+## Occupancy modeling {#occupancy-model}
+
+Now that we've created a data frame with detection histories and covariates, we can use `unmarked` to fit a single-season occupancy model. As mentioned above, readers can discover more about occupancy models and the variety of modeling approaches in MacKenzie et al. [-@mackenzieOccupancyEstimationModeling2017]. Here, we simply fit a single-season occupancy model to our data using the `occu()` function, specifying the detection and occupancy covariates, respectively, via a double right-hand sided formula of the form `~ detection covariates ~ occupancy covariates`.
+
+```{r}
+#| label: occupancy-model-train
+# train model
+occ_model <- occu(~ hours_of_day + 
+                    effort_hours + 
+                    effort_distance_km + 
+                    number_observers + 
+                    protocol_type +
+                    pland_c04_deciduous_broadleaf +
+                    pland_c05_mixed_forest
+                  ~ pland_c04_deciduous_broadleaf + 
+                    pland_c05_mixed_forest + 
+                    pland_c09_savanna + 
+                    pland_c10_grassland, 
+                  data = occ_um)
+# look at the regression coefficients from the model
+summary(occ_model)
+```
+
+### Assessment {#occupancy-model-assess}
+
+Although few goodness-of-fit tests exist for occupancy models, we demonstrate how to perform the MacKenzie and Bailey [-@mackenzieAssessingFitSiteoccupancy2004] goodness-of-fit test. This approach calculates a Pearson's chi-square fit statistic from the observed and expected frequencies of detection histories for a given model. For this example, we use the `mb.gof.test()` test function in the `AICcmodavg` package, which can handle occupancy models produced by the `occu()` function in `unmarked`. Note that to produce accurate results, this process requires simulating a large number of bootstrap samples, which can take a long time to run. To keep the execution times reasonable, we set `nsim = 100` to simulate 100 samples for this example; however, when running this under regular circumstances, you should increase this to a much higher number of simulations (e.g., `nsim = 1000`).
+
+```{r}
+#| label: occupancy-model-assess
+#| cache: true
+occ_gof <- mb.gof.test(occ_model, nsim = 100, plot.hist = FALSE)
+# hide the chisq table to give simpler output
+occ_gof$chisq.table <- NULL
+print(occ_gof)
+```
+
+For this example, the probability of getting the calculated chi-square statistic under a null sampling distribution is indicated by the p-value of `r occ_gof$p.value`. As p > 0.1 there is no reason to consider a lack of fit. We also get an estimate of the overdispersion parameter (c-hat) for the model, which is derived by dividing the observed chi-square statistic by the mean of the statistics obtained from simulation. In this example, c-hat = `r round(occ_gof$c.hat.est, 2)`, which is very close to c-hat = 1, indicating that the variance is not greater than the mean, and that there is no evidence for overdispersion. Again, under regular circumstances we would want to run many more simulations, but based on this smaller run, the test statistics suggest that there is no evidence of lack of fit of this model to these data. For more details on this test, see MacKenzie and Bailey [-@mackenzieAssessingFitSiteoccupancy2004].
+
+### Model selection {#occupancy-model-select}
+
+So far, we have a single global model that includes all of the covariates we believe will influence the occupancy and detection probabilities. In general, we suggest that careful consideration be used when choosing the set of candidate models to be run and compared during model selection. In this example, we will use the `dredge()` function to generate a set of candidate models using different combinations of the covariates in the global model. This does take some time to run, and hence recommend choosing carefully candidate model sets instead of this approach.
+
+```{r}
+#| label: occupancy-model-select-dredge
+#| cache: true
+# dredge all possible combinations of the occupancy covariates
+occ_dredge <- dredge(occ_model)
+
+# model comparison to explore the results for occupancy
+mc <- as.data.frame(occ_dredge) %>% 
+  select(starts_with("psi(pland"), df, AICc, delta, weight)
+
+# take a quick peak at the model selection table
+mutate_all(mc, ~ round(., 3)) %>% 
+  head(15) %>% 
+  knitr::kable()
+```
+
+The corrected [Akaike Information Criterion (AICc)](https://en.wikipedia.org/wiki/Akaike_information_criterion#AICc) measures the likelihood of each model to have generated the data we observed, adjusted for the number of parameters in the model. Lower values indicate models with a better fit to the data, penalizing for the added number of parameters. Delta is the difference in AICc values between the given model and the model that is most likely to have generated the data (i.e. the one with the lowest AICc), and is a relative measure conditional on the candidate set of models. Finally, the AIC weight is a transformation of delta that can be interpreted as the probability that the given model is the most likely one of the candidate models to have generated the data, and is also conditional on the candidate model set.
+
+A quick look at the results of dredging, focusing on visualizing what covariates most influence occupancy probability, reveals that for the Wood Thrush example there is not a clear single model, or even a small set of models, that are most likely to have generated our data. This is evident from the number of models that all fall within a delta AICc value of ~2-3, and the large number of models with moderate AIC weights. Given this, and the fact that all of our effects are linear and use the same family and link function, we'll average across all models, weighted by AICc, to produce a model-averaged prediction. However, there may be scenarios in which there is a clear set of high performing models, in which case you can use the `get.models()` function to extract just these models prior to averaging. For the sake of efficiency, we'll only average the top models, which we'll define as those cumulatively comprising 95% of the weights. This will trivially impact the results since the models with lower support have very small weights and therefore contribute little to the weighted-average predictions.
+
+```{r}
+#| label: occupancy-model-select-avg
+# select models with the most support for model averaging (< 2.5 delta aicc)
+occ_dredge_delta <- get.models(occ_dredge, subset = delta <= 2.5)
+
+# average models based on model weights 
+occ_avg <- model.avg(occ_dredge_delta, fit = TRUE)
+
+# model averaged coefficients for occupancy and detection probability
+coef(occ_avg)
+```
+
+In this table, the `psi()` coefficients are from the occupancy submodel and the `p()` coefficients are from the detection submodel. As expected, increases in percent cover of deciduous broadleaf forest and mixed both increase occupancy probability, while increases in grassland and savanna both decrease occupancy probability.
+
+### Exploring the effects of covariates on detection probability {#occupancy-model-detection}
+
+A unique feature of occupancy models, is that we can investigate whether certain covariates specifically influence detection probability separately from any influencing occurrence, which wasn't possible using the machine learning approach in Chapter \@ref(encounter). Specifically, we have already seen that the habitat covariates influence occupancy, but we can assess how these covariates affect detection probability using the same model averaging results that we generated above, conditional on a bird being present and potentially detected. We included percent cover of deciduous broadleaf forest (class 4) mixed forest (class 5) and as a detection covariates in the global model.
+
+```{r}
+#| label: occupancy-model-detection-define
+# model comparison to explore the results for detection
+md <- as.data.frame(occ_dredge) %>% 
+  select(starts_with("p("), df, AICc, delta, weight)
+
+# take a quick peak at the model selection table
+head(md, 15) %>% 
+  knitr::kable()
+```
+
+From these results, it's clear that several of our effort covariates did not influence detection probability–mainly protocol type and the number of observers. However, including habitat covariates did influenced detection probability, as observed by the differences in AIC and the AIC weights for the models that include these covariates. Let's look at the model averaged coefficients to see how they're impacting detection and occupancy.
+
+```{r}
+#| label: occupancy-select-detection-coef
+coef(occ_avg) %>% 
+  enframe() %>% 
+  knitr::kable()
+```
+
+Again, the `psi()` coefficients are from the occupancy submodel and the `p()` coefficients are from the detection submodel. For detection probability, we see that although deciduous forest increases occupancy probability for Wood Thrush, it decreases detection probability, since birds are harder to see and hear in dense forest. However, mixed forest positively influences both, occupancy and detection probability. The ability to tease apart the differing effects that covariates have on detection and occupancy is one of the strengths of occupancy modeling.
+
+## Prediction {#occupancy-predict}
+
+In this section, we'll estimate the distribution of Wood Thrush in Georgia. Similar to Section \@ref(encounter-predict), we'll use the [prediction grid](#envvar-pred) to make estimates across a regular grid of points across Georgia. For this, we'll use the `predict()` function to estimate occupancy probabilities, standard errors, and confidence intervals. We will use `predict()` on the output of `model.avg()` to make predictions using the model averaged coefficients from the candidate model set with at least a 95% cumulative AIC weight.
+
+```{r}
+#| label: occupancy-predict-predict
+#| cache: true
+# note: the code below can take up to an hour to run!
+occ_pred <- predict(occ_avg, 
+                    newdata = as.data.frame(pred_grid), 
+                    type = "state")
+
+# add to prediction grid
+pred_occ <- bind_cols(pred_grid, 
+                      occ_prob = occ_pred$fit, 
+                      occ_se = occ_pred$se.fit) %>% 
+  select(cell_id, x, y, occ_prob, occ_se)
+```
+
+Next, we'll convert this data frame to spatial features using `sf`, then rasterize the points using the prediction grid raster template.
+
+```{r}
+#| label: occupancy-predict-rasterize
+r_pred <- pred_occ %>% 
+  # convert to spatial features
+  st_as_sf(coords = c("x", "y"), crs = crs) %>% 
+  rasterize(r, field = c("occ_prob", "occ_se")) %>% 
+  setNames(c("occ_prob", "occ_se"))
+
+# save the raster
+# 2 bands: occ_prob, occ_se
+r_pred <- writeRaster(r_pred, "results/occupancy_woothr_june-2022.tif", 
+                      overwrite = TRUE,
+                      gdal = "COMPRESS=DEFLATE")
+```
+
+Finally, we can map these predictions!
+
+```{r}
+#| label: occupancy-predict-map
+#| fig-asp: 1.236
+par(mfrow = c(2, 1))
+for (nm in names(r_pred)) {
+  r_plot <- r_pred[[nm]]
+  
+  par(mar = c(3.5, 0.25, 0.25, 0.25))
+  # set up plot area
+  plot(study_region, col = NA, border = NA)
+  plot(ne_land, col = "#dddddd", border = "#888888", lwd = 0.5, add = TRUE)
+
+  # occupancy probability or standard error
+  if (nm == "occ_prob") {
+    title <- "Wood Thrush Occupancy Probability"
+    brks <- seq(0, 1, length.out = 21)
+    lbl_brks <- seq(0, 1, length.out = 11) %>% 
+      round(2)
+  } else {
+    title <- "Wood Thrush Occupancy Uncertainty (SE)"
+    mx <- ceiling(1000 * as.numeric(global(r_plot, max, na.rm = TRUE))) / 1000
+    brks <- seq(0, mx, length.out = 21)
+    lbl_brks <- seq(0, mx, length.out = 11) %>% 
+      round(2)
+  }
+  pal <- abundance_palette(length(brks) - 1)
+  plot(r_plot, 
+       col = pal, breaks = brks, 
+       maxpixels = ncell(r_plot),
+       legend = FALSE, axes = FALSE, bty = "n",
+       add = TRUE)
+  
+  # borders
+  plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
+  plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
+  plot(study_region, border = "#000000", col = NA, lwd = 1, add = TRUE)
+  box()
+  
+  # legend
+  par(new = TRUE, mar = c(0, 0, 0, 0))
+  image.plot(zlim = range(brks), legend.only = TRUE, 
+             breaks = brks, col = pal,
+             smallplot = c(0.25, 0.75, 0.06, 0.09),
+             horizontal = TRUE,
+             axis.args = list(at = lbl_brks, labels = lbl_brks,
+                              fg = "black", col.axis = "black",
+                              cex.axis = 0.75, lwd.ticks = 0.5,
+                              padj = -1.5),
+             legend.args = list(text = title,
+                                side = 3, col = "black",
+                                cex = 1, line = 0))
+}
+```
