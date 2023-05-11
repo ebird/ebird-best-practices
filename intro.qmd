@@ -89,7 +89,7 @@ if (!requireNamespace("remotes", quietly = TRUE)) {
 remotes::install_github("ebird/ebird-best-practices")
 ```
 
-Note that several of the spatial packages require dependencies. If installing these packages fails, consult the [instructions for installing dependencies on the `sf` package website](https://r-spatial.github.io/sf/#installing). Finally, **ensure all R packages are updated** to their most recent version by clicking on the Update button on the Packages tab in RStudio.
+Note that several of the spatial packages require dependencies. If installing these packages fails, consult the [instructions for installing dependencies on the `sf` package website](https://r-spatial.github.io/sf/#installing). Finally, **ensure all R packages are updated** to their most recent versions by clicking on the Update button on the Packages tab in RStudio.
 
 ### eBird data access {#sec-intro-setup-ebird}
 

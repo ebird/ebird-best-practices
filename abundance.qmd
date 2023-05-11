@@ -10,7 +10,7 @@ editor_options:
 
 To motivate this chapter, we will focus on the specific goal of estimating a map of relative abundance. This type of map would help us to identify areas with higher or lower abundance. The metric we'll use to estimate abundance is the expected number of individuals observed on a standardized eBird checklist. Like the encounter rate model, the abundance model we present in this section accounts for variation in detection rates but it does not directly estimate the absolute detection probability. For this reason, the estimates of abundance we make can only be interpreted as a measure of relative abundance; an index of the *count* of individuals of the species present in the search area. To match the common terminology in the literature, we refer to this as an estimate of *relative* abundance.
 
-The relative abundance model presented here is similar to and a natural extension of the encounter rate model of [Chapter -@sec-encounter]. In particular, we use a two-step hurdle model following Keyser et al. [-@keyserSnowCoverDynamics2023]. In the first step, we estimate encounter rate using exactly the same method as in [Chapter -@sec-encounter]. In the second step, we estimate the expected count of individuals on eBird checklists where the species was detected. Finally, we multiply encounter rate by median count to produce an estimate of relative abundance. We use random forests for both steps on the hurdle.
+The relative abundance model presented here is similar to and a natural extension of the encounter rate model of [Chapter -@sec-encounter]. In particular, we use a two-step hurdle model following Keyser et al. [-@keyserSnowCoverDynamics2023]. In the first step, we estimate encounter rate using exactly the same method as in [Chapter -@sec-encounter]. In the second step, we estimate the expected count of individuals on eBird checklists where the species was detected. Finally, we multiply encounter rate by median count to produce an estimate of relative abundance. We use random forests for both steps of the hurdle.
 
 ## Data preparation {#sec-encounter-data}
 
@@ -143,7 +143,7 @@ train_count <- train_count %>%
   select(-species_observed, -pred_er)
 ```
 
-We've found that including predicted encounter rate as a predictor in the count model improves predictive performance. So, with this in mind, we predict encounter rate for the training dataset and add it as an additional column. 
+We've found that including estimated encounter rate as a predictor in the count model improves predictive performance. So, with this in mind, we predict encounter rate for the training dataset and add it as an additional column. 
 
 ```{r}
 #| label: abundance-hurdle-count-preder
@@ -315,7 +315,7 @@ r_pred <- writeRaster(r_pred, "results/abundance_woothr_june-2022.tif",
                       gdal = "COMPRESS=DEFLATE")
 ```
 
-Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 1 hour, 1 km checklist for which counting started at about 6:15AM on June 15, 2022. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
+Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 hour, 1 km checklist for which counting started at about 6:15AM on June 15, 2022. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
 
 Prior to mapping the relative abundance, we'll multiple by the `in_range` layer, which will produce a map showing zero relative abundance where the model predicts that Wood Thrush does not occur.
 

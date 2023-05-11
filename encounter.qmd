@@ -127,7 +127,7 @@ pct_after <- mean(checklists_ss$species_observed) %>%
   scales::percent(accuracy = 0.1)
 ```
 
-So, the subsampling *decreased* the overall number of checklists by a factor of about `round(nrow(checklists) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`. This increase in detections will help the random forests model distinguish where birds are being observed; however, this does affect the prevalence rate of the detections in the data. As a result, the estimated probability of occurrence based on these subsampled data will be larger than the true occurrence rate. When examining the outputs from the models it will be important to recall that we altered the prevalence rate at this stage. Now let's look at how the subsampling affects the spatial distribution of the training observations.
+So, the subsampling *decreased* the overall number of checklists by a factor of about `round(nrow(checklists) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`. This increase in detections will help the random forests model distinguish where birds are being observed; however, this does affect the prevalence rate of the detections in the data. As a result, the estimated encounter rate based on these subsampled data will be larger than the true encounter rate. When examining the outputs from the models it will be important to recall that we altered the prevalence rate at this stage. Now let's look at how the subsampling affects the spatial distribution of the training observations.
 
 ```{r}
 #| label: encounter-sss-map
@@ -228,7 +228,7 @@ To view the calibration of our model results, we predict encounter rate for each
 
 ```{r}
 #| label: encounter-rf-cal-train
-# predicted encounter rate predictions based on out of bag samples
+# predicted encounter rate based on out of bag samples
 er_pred <- er_model$predictions[, 2]
 # observed detection, converted back from factor
 det_obs <- as.integer(checklists_train$species_observed)
@@ -261,7 +261,7 @@ cal_pred <- data.frame(pred = er_breaks)
 cal_pred <- predict(calibration_model, cal_pred, type = "response") %>% 
   bind_cols(cal_pred, calibrated = .)
 
-# compared binned mean encouter rates to calibration model
+# compared binned mean encounter rates to calibration model
 ggplot(cal_pred) +
   aes(x = pred, y = calibrated) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
@@ -286,7 +286,7 @@ If you're using this model to calibrate your estimates, notice that the calibrat
 
 ### Thresholding {#sec-encounter-rf-threshold}
 
-The random forest model produces continuous estimates of encounter rate from 0-1. However, for many applications, including assessing model performance, we'll need to reclassify this continuous probability to a binary presence/absence estimate. This reclassification is done by setting a threshold above which the species is predicted to be absent. The threshold is typically chosen to maximize a performance metric such as the [Kappa statistic](https://en.wikipedia.org/wiki/Cohen%27s_kappa) or the [area under the ROC curve](https://en.wikipedia.org/wiki/Receiver_operating_characteristic). However, for class imbalanced data, such as eBird data where non-detections are much more common, many of these metrics can inflate performance by over-weighting the more common class [@caoMCCF1CurvePerformance2020]. To mitigate these issues, we suggest a threshold setting method using the [MCC-F1 curve](https://arxiv.org/abs/2006.11278). This method plots [Matthews correlation coefficient (MCC)](https://en.wikipedia.org/wiki/Phi_coefficient) against the [F1 score](https://en.wikipedia.org/wiki/F-score) for a range of possible threshold, then chooses the threshold where the curve is closest to the point of perfect performance. The R package `mccf1` implements the method.
+The random forest model produces continuous estimates of encounter rate from 0-1. However, for many applications, including assessing model performance, we'll need to reclassify this continuous probability to a binary presence/absence estimate. This reclassification is done by setting a threshold above which the species is predicted to be absent. The threshold is typically chosen to maximize a performance metric such as the [Kappa statistic](https://en.wikipedia.org/wiki/Cohen%27s_kappa) or the [area under the ROC curve](https://en.wikipedia.org/wiki/Receiver_operating_characteristic). However, for class imbalanced data, such as eBird data where non-detections are much more common, many of these metrics can inflate performance by over-weighting the more common class [@caoMCCF1CurvePerformance2020]. To mitigate these issues, we suggest a threshold setting method using the [MCC-F1 curve](https://arxiv.org/abs/2006.11278). This method plots [Matthews correlation coefficient (MCC)](https://en.wikipedia.org/wiki/Phi_coefficient) against the [F1 score](https://en.wikipedia.org/wiki/F-score) for a range of possible threshold, then chooses the threshold where the curve is closest to the point of perfect performance. The R package `mccf1` implements this method.
 
 ```{r}
 #| label: encounter-rf-threshold
@@ -532,13 +532,13 @@ g_hist <- ggplot(checklists_train) +
        y = "# checklists",
        title = "Distribution of observation start times")
 
-# gam
+# partial dependence plot
 g_pd <- ggplot(pd_time) +
   aes(x = hours_of_day, y = encounter_rate) +
   geom_line() +
   scale_x_continuous(breaks = seq(0, 24, by = 3)) +
   labs(x = "Hours since midnight",
-       y = "Probability of reporting",
+       y = "Encounter rate",
        title = "Observation start time partial dependence")
 
 # combine

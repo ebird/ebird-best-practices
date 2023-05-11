@@ -8,7 +8,7 @@ editor_options:
 
 ## Introduction {#sec-ebird-intro}
 
-eBird data are collected and organized around the concept of a checklist, representing observations from a single birding event, such as a 1 km walk through a park or 15 minutes observing bird feeders in your backyard. Each checklist contains a list of species observed, counts of the number of individuals seen of each species, the location and time of the observations, and a measure of the effort expended while collecting these data. The following image depicts a typical eBird checklist as viewed [on the eBird website](https://ebird.org/view/checklist/S46908897):
+eBird data are collected and organized around the concept of a checklist, representing observations from a single birding event, such as a 1 km walk through a park or 15 minutes observing bird feeders in your backyard. Each checklist contains a list of species observed, counts of the number of individuals seen of each species, the location and time of the observations, and a measure of the effort expended while collecting these data. The following image depicts a typical eBird checklist as viewed [on the eBird website](https://ebird.org/checklist/S46908897):
 
 ![](images/ebird-data_checklist.png)
 
@@ -22,7 +22,7 @@ In this chapter, we'll download eBird data and demonstrate how to use the R pack
 
 The observation and checklist data are released as tab-separated text files referred to as the *eBird Basic Dataset (EBD)* and the *Sampling Event Data (SED)*, respectively. These files are released monthly and contain all validated bird sightings in the eBird database at the time of release. The EBD (i.e. the observation data) can be downloaded in its entirety or a subset for a given species, region, or time period can be requested via the *Custom Download* form. We strongly recommend against attempting to download the complete EBD since it's well over 100GB at the time of writing. Instead, we will demonstrate a workflow using the Custom Download approach. In what follows, we will assume you have followed the instructions for requesting access to eBird data outlined in [the previous chapter](intro.qmd#sec-intro-setup-ebird).
 
-In the interest of making examples concrete, throughout this book, we'll use the specific example of [Wood Thrush](https://ebird.org/species/woothr) observations from Georgia (the US state, not the country) in June for our analyses. We'll start by downloading the corresponding eBird observations by visiting the [eBird Basic Dataset](https://ebird.org/data/download/ebd) download page and filling out the Custom Download form to request eBird data from Georgia.
+In the interest of making examples concrete, throughout this book, we'll use the specific example of [Wood Thrush](https://ebird.org/species/woothr) observations from Georgia (the US state, not the country) in June for our analyses. We'll start by downloading the corresponding eBird observations by visiting the [eBird Basic Dataset](https://ebird.org/data/download/ebd) download page and filling out the Custom Download form to request Wood Thrush observations from Georgia.
 
 ![](images/ebird-data_download.png)
 
@@ -161,7 +161,7 @@ zf_filtered <- zf %>%
 
 ## Test-train split {#sec-ebird-testtrain}
 
-For the modeling exercises used in this book, we'll hold aside a portion of the data from training to be used as an independent test set to assess the predictive performance of the model. Specifically, we'll randomly split the data into 80% of checklists for training and 20% for testing. To facilitate this, we  create a new variable `type` that will indicate whether the observation falls in the test set or training set.
+For the modeling exercises used in this book, we'll hold aside a portion of the data from training to be used as an independent test set to assess the predictive performance of the model. Specifically, we'll randomly split the data into 80% of checklists for training and 20% for testing. To facilitate this, we create a new variable `type` that will indicate whether the observation falls in the test set or training set.
 
 ```{r}
 #| label: ebird-testtrain-split
