@@ -104,8 +104,8 @@ zf <- auk_zerofill(f_ebd, f_sed, collapse = TRUE)
 
 When any of the read functions from `auk` are used, two important processing steps occur by default behind the scenes.
 
-1. **Taxonomic rollup**: eBird observations can be made at levels below species (e.g. subspecies) or above species (e.g. a bird that was identified as a duck, but the species could not be determined); however, for most uses we'll want observations at the species level. [`auk_rollup()`](https://cornelllabofornithology.github.io/auk/reference/auk_rollup.html) is applied by default when [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) is used. It drops all observations not identifiable to a species and rolls up all observations reported below species to the species level.
-2. **Collapsing group checklist**: eBird also allows for [group checklists](https://support.ebird.org/en/support/solutions/articles/48000625567-checklist-sharing-and-group-accounts), those shared by multiple users. These checklists lead to duplication or near duplication of records within the dataset and the function [`auk_unique()`](https://cornelllabofornithology.github.io/auk/reference/auk_unique.html), applied by default by [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html), addresses this by only keeping one independent copy of each checklist.
+1.  **Taxonomic rollup**: eBird observations can be made at levels below species (e.g. subspecies) or above species (e.g. a bird that was identified as a duck, but the species could not be determined); however, for most uses we'll want observations at the species level. [`auk_rollup()`](https://cornelllabofornithology.github.io/auk/reference/auk_rollup.html) is applied by default when [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) is used. It drops all observations not identifiable to a species and rolls up all observations reported below species to the species level.
+2.  **Collapsing group checklist**: eBird also allows for [group checklists](https://support.ebird.org/en/support/solutions/articles/48000625567-checklist-sharing-and-group-accounts), those shared by multiple users. These checklists lead to duplication or near duplication of records within the dataset and the function [`auk_unique()`](https://cornelllabofornithology.github.io/auk/reference/auk_unique.html), applied by default by [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html), addresses this by only keeping one independent copy of each checklist.
 
 Finally, by default [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) returns a compact representation of the data, consisting of a list of two data frames, one with checklist data and the other with observation data; the use of `collapse = TRUE` combines these into a single data frame, which will be easier to work with.
 
@@ -143,7 +143,7 @@ zf <- zf %>%
 
 ## Accounting for variation in detectability {#sec-ebird-detect}
 
-As discussed in the [Introduction](intro.qmd#sec-intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to those less than 24 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers. Furthermore, we'll only consider data from the past 10 years (2013-2022).
+As discussed in the [Introduction](intro.qmd#sec-intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to those less than 6 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers. Furthermore, we'll only consider data from the past 10 years (2013-2022).
 
 ```{r}
 #| label: ebird-detect-filter
@@ -153,7 +153,7 @@ zf_filtered <- zf %>%
     # last 10 years of data
     year >= 2013,
     # effort filters
-    effort_hours <= 24,
+    effort_hours <= 6,
     effort_distance_km <= 10,
     effort_speed_kmph <= 100,
     number_observers <= 10)
@@ -302,13 +302,13 @@ As expected, Wood Thrush detectability is highest early in the morning and quick
 
 ### Checklist duration {#sec-ebird-explore-duration}
 
-When we initially extracted the eBird data in @sec-ebird-extract, we restricted observations to those from checklists 24 hours in duration or shorter to reduce variability. Let's see what sort of variation remains in checklist duration.
+When we initially extracted the eBird data in @sec-ebird-extract, we restricted observations to those from checklists 6 hours in duration or shorter to reduce variability. Let's see what sort of variation remains in checklist duration.
 
 ```{r}
 #| label: ebird-explore-duration
 #| asp: 1
 # summarize data by hour long bins
-breaks <- seq(0, 24)
+breaks <- seq(0, 6)
 labels <- breaks[-length(breaks)] + diff(breaks) / 2
 checklists_duration <- checklists %>% 
   mutate(duration_bins = cut(effort_hours, 

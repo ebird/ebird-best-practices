@@ -392,7 +392,7 @@ div.csl-indent {
 </section>
 <section id="sec-ebird-detect" class="level2" data-number="2.5">
 <h2 data-number="2.5" class="anchored" data-anchor-id="sec-ebird-detect"><span class="header-section-number">2.5</span> Accounting for variation in detectability</h2>
-<p>As discussed in the <a href="./intro.html#sec-intro-intro">Introduction</a>, variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to those less than 24 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers. Furthermore, we’ll only consider data from the past 10 years (2013-2022).</p>
+<p>As discussed in the <a href="./intro.html#sec-intro-intro">Introduction</a>, variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data, we suggest restricting checklists to those less than 6 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers. Furthermore, we’ll only consider data from the past 10 years (2013-2022).</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># additional filtering</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>zf_filtered <span class="ot">&lt;-</span> zf <span class="sc">%&gt;%</span> </span>
@@ -400,7 +400,7 @@ div.csl-indent {
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># last 10 years of data</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    year <span class="sc">&gt;=</span> <span class="dv">2013</span>,</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># effort filters</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    effort_hours <span class="sc">&lt;=</span> <span class="dv">24</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    effort_hours <span class="sc">&lt;=</span> <span class="dv">6</span>,</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    effort_distance_km <span class="sc">&lt;=</span> <span class="dv">10</span>,</span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    effort_speed_kmph <span class="sc">&lt;=</span> <span class="dv">100</span>,</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    number_observers <span class="sc">&lt;=</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -551,10 +551,10 @@ div.csl-indent {
 </section>
 <section id="sec-ebird-explore-duration" class="level3" data-number="2.7.2">
 <h3 data-number="2.7.2" class="anchored" data-anchor-id="sec-ebird-explore-duration"><span class="header-section-number">2.7.2</span> Checklist duration</h3>
-<p>When we initially extracted the eBird data in <a href="#sec-ebird-extract"><span>Section&nbsp;2.3</span></a>, we restricted observations to those from checklists 24 hours in duration or shorter to reduce variability. Let’s see what sort of variation remains in checklist duration.</p>
+<p>When we initially extracted the eBird data in <a href="#sec-ebird-extract"><span>Section&nbsp;2.3</span></a>, we restricted observations to those from checklists 6 hours in duration or shorter to reduce variability. Let’s see what sort of variation remains in checklist duration.</p>
 <div class="cell" data-layout-align="center" data-asp="1">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># summarize data by hour long bins</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>breaks <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">24</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>breaks <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">6</span>)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>labels <span class="ot">&lt;-</span> breaks[<span class="sc">-</span><span class="fu">length</span>(breaks)] <span class="sc">+</span> <span class="fu">diff</span>(breaks) <span class="sc">/</span> <span class="dv">2</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>checklists_duration <span class="ot">&lt;-</span> checklists <span class="sc">%&gt;%</span> </span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">duration_bins =</span> <span class="fu">cut</span>(effort_hours, </span>
