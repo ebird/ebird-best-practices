@@ -12,6 +12,7 @@ book:
     - encounter.qmd
     - abundance.qmd
     - references.qmd
+  google-analytics: "G-0QV88WCBNB"
 
   page-footer:
     left: "Best Practices for Using eBird Data (v2.0)"
