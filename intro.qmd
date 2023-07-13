@@ -14,12 +14,12 @@ There are two key characteristics that distinguish eBird from many other citizen
 
 Despite the strengths of eBird data, species observations collected through citizen science projects present a number of challenges that are not found in conventional scientific data. The following are some of the primary challenges associated these data; challenges that will be addressed throughout this book:
 
-- **Taxonomic bias:** participants often have preferences for certain species, which may lead to preferential recording of some species over others [@greenwoodCitizensScienceBird2007; @tullochBehaviouralEcologyApproach2012]. Restricting analyses to complete checklists largely mitigates this issue.
-- **Spatial bias:** most participants in citizen science surveys sample near their homes [@luckAlleviatingSpatialConflict2004], in easily accessible areas such as roadsides [@kadmonEffectRoadsideBias2004], or in areas and habitats of known high biodiversity [@prendergastCorrectingVariationRecording1993]. A simple method to reduce the spatial bias that we describe is to create an equal area grid over the region of interest, and sample a given number of checklists from within each grid cell.
-- **Temporal bias:** participants preferentially sample when they are available, such as weekends [@courterWeekendBiasCitizen2013], and at times of year when they expect to observe more birds, notably during spring migration [@sullivanEBirdEnterpriseIntegrated2014]. To address the weekend bias, we recommend using a temporal scale of a week or multiple weeks for most analyses.
-- **Spatial precision:** the spatial location of an eBird checklist is given as a single latitude-longitude point; however, this may not be precise for two main reasons. First, for traveling checklists, this location represents just one point on the journey. Second, eBird checklists are often assigned to a **hotspot** (a common location for all birders visiting a popular birding site) rather than their true location. For these reasons, it's not appropriate to align the eBird locations with very precise habitat variables, and we recommend summarizing variables within a neighborhood around the checklist location.
-- **Class imbalance:** bird species that are rare or hard to detect may have data with high class imbalance, with many more checklists with non-detections than detections. For these species, a distribution model predicting that the species is absent everywhere will have high accuracy, but no ecological value. We'll follow the methods for addressing class imbalance proposed by Robinson et al. [-@robinsonUsingCitizenScience2018].
-- **Variation in detectability:** detectability describes the probability of a species that is present in an area being detected and identified. Detectability varies by season, habitat, and species [@johnstonSpeciesTraitsExplain2014; @johnstonEstimatesObserverExpertise2018]. Furthermore, eBird data are collected with high variation in effort, time of day, number of observers, and external conditions such as weather, all of which can affect the detectability of species [@ellisEffectsWeatherTime2018; @oliveiraObservationDiurnalSoaring2018]. Therefore, detectability is particularly important to consider when comparing between seasons, habitats or species. Since eBird uses a semi-structured protocol, that collects variables associated with variation in detectability, we'll be able to account for a larger proportion of this variation in our analyses.
+-   **Taxonomic bias:** participants often have preferences for certain species, which may lead to preferential recording of some species over others [@greenwoodCitizensScienceBird2007; @tullochBehaviouralEcologyApproach2012]. Restricting analyses to complete checklists largely mitigates this issue.
+-   **Spatial bias:** most participants in citizen science surveys sample near their homes [@luckAlleviatingSpatialConflict2004], in easily accessible areas such as roadsides [@kadmonEffectRoadsideBias2004], or in areas and habitats of known high biodiversity [@prendergastCorrectingVariationRecording1993]. A simple method to reduce the spatial bias that we describe is to create an equal area grid over the region of interest, and sample a given number of checklists from within each grid cell.
+-   **Temporal bias:** participants preferentially sample when they are available, such as weekends [@courterWeekendBiasCitizen2013], and at times of year when they expect to observe more birds, notably during spring migration [@sullivanEBirdEnterpriseIntegrated2014]. To address the weekend bias, we recommend using a temporal scale of a week or multiple weeks for most analyses.
+-   **Spatial precision:** the spatial location of an eBird checklist is given as a single latitude-longitude point; however, this may not be precise for two main reasons. First, for traveling checklists, this location represents just one point on the journey. Second, eBird checklists are often assigned to a **hotspot** (a common location for all birders visiting a popular birding site) rather than their true location. For these reasons, it's not appropriate to align the eBird locations with very precise habitat variables, and we recommend summarizing variables within a neighborhood around the checklist location.
+-   **Class imbalance:** bird species that are rare or hard to detect may have data with high class imbalance, with many more checklists with non-detections than detections. For these species, a distribution model predicting that the species is absent everywhere will have high accuracy, but no ecological value. We'll follow the methods for addressing class imbalance proposed by Robinson et al. [-@robinsonUsingCitizenScience2018].
+-   **Variation in detectability:** detectability describes the probability of a species that is present in an area being detected and identified. Detectability varies by season, habitat, and species [@johnstonSpeciesTraitsExplain2014; @johnstonEstimatesObserverExpertise2018]. Furthermore, eBird data are collected with high variation in effort, time of day, number of observers, and external conditions such as weather, all of which can affect the detectability of species [@ellisEffectsWeatherTime2018; @oliveiraObservationDiurnalSoaring2018]. Therefore, detectability is particularly important to consider when comparing between seasons, habitats or species. Since eBird uses a semi-structured protocol, that collects variables associated with variation in detectability, we'll be able to account for a larger proportion of this variation in our analyses.
 
 The remainder of this book will demonstrate how to address these challenges using real data from eBird to produce reliable estimates of species distributions. In general, we'll take a two-pronged approach to dealing with unstructured data and maximizing the value of citizen science data: imposing more structure onto the data via data filtering and including predictor variables in models to account for the remaining variation.
 
@@ -62,11 +62,35 @@ summarize(
 
 Once you become familiar with the pipe operator, we believe you'll find the the above example using the pipe the easiest of the three to read and interpret.
 
+::: {.callout-caution icon="false"}
+## Exercise
+
+Rewrite the following code using pipes:
+
+```{r}
+#| label: intro-tidyverse-ex
+set.seed(1)
+round(log(runif(10, min = 0.5)), 1)
+```
+:::
+
+::: {.callout-note icon="false" collapse="true"}
+## Solution
+
+```{r}
+#| label: intro-tidyverse-sol
+set.seed(1)
+runif(10, min = 0.5) %>% 
+  log() %>% 
+  round(digits = 1)
+```
+:::
+
 ## Setup {#sec-intro-setup}
 
 ### Data package {#sec-intro-data}
 
-The next two chapters of this book focus on obtaining and preparing eBird data and environmental variables for the modeling that will occur in the remaining chapters. These steps can be time consuming and laborious. If you’d like to skip straight to the analysis, [download this package of prepared data](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip). Unzip this file so that the contents are in the `data/` subdirectory of your RStudio project folder. This will allow you to jump right in to the modeling and ensure that you’re using exactly the same data as was used when creating this book. This is a good option if you don’t have a fast enough internet connection to download the eBird data.
+The next two chapters of this book focus on obtaining and preparing eBird data and environmental variables for the modeling that will occur in the remaining chapters. These steps can be time consuming and laborious. If you'd like to skip straight to the analysis, [download this package of prepared data](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip). Unzip this file so that the contents are in the `data/` subdirectory of your RStudio project folder. This will allow you to jump right in to the modeling and ensure that you're using exactly the same data as was used when creating this book. This is a good option if you don't have a fast enough internet connection to download the eBird data.
 
 ### Software {#sec-intro-setup-software}
 
@@ -74,7 +98,7 @@ The examples throughout this website use the programming language **R** [@rcoret
 
 We strongly encourage R users to use **RStudio**. RStudio is not required to follow along with this book; however, it will make your R experience significantly better. If you don't have RStudio, [download it now](https://posit.co/download/rstudio-desktop/#download), if you already have it, [update it](https://posit.co/download/rstudio-desktop/#download) because new versions with useful additional features are regularly released.
 
-Due to the large size of the eBird dataset, working with it requires the Unix command-line utility AWK. You won’t need to use AWK directly, since the R package `auk` does this hard work for you, but you do need AWK to be installed on your computer. Linux and Mac users should already have AWK installed on their machines; however, Windows user will need to [install Cygwin](https://www.cygwin.com/) to gain access to AWK. Cygwin is free software that allows Windows users to use Unix tools. Cygwin should be installed in the default location (C:/cygwin/bin/gawk.exe or C:/cygwin64/bin/gawk.exe) in order for everything to work correctly. Note: there’s no need to do anything at the “Select Utilities” screen, AWK will be installed by default.
+Due to the large size of the eBird dataset, working with it requires the Unix command-line utility AWK. You won't need to use AWK directly, since the R package `auk` does this hard work for you, but you do need AWK to be installed on your computer. Linux and Mac users should already have AWK installed on their machines; however, Windows user will need to [install Cygwin](https://www.cygwin.com/) to gain access to AWK. Cygwin is free software that allows Windows users to use Unix tools. Cygwin should be installed in the default location (C:/cygwin/bin/gawk.exe or C:/cygwin64/bin/gawk.exe) in order for everything to work correctly. Note: there's no need to do anything at the "Select Utilities" screen, AWK will be installed by default.
 
 ### R packages {#sec-intro-setup-packages}
 
@@ -96,15 +120,6 @@ Note that several of the spatial packages require dependencies. If installing th
 Access to the eBird database is provided via the [eBird Basic Dataset (EBD)](https://science.ebird.org/en/use-ebird-data/download-ebird-data-products) as tab-separated text files. To access the EBD, begin by [creating an eBird account and signing in](https://secure.birds.cornell.edu/cassso/account/create). Then visit the [eBird Data Access page](https://ebird.org/data/download) and fill out the data access request form. eBird data access is free for most uses; however, you will need to request access in order to download the EBD. Filling out the access request form allows eBird to keep track of the number of people using the data and obtain information on the applications for which the data are used.
 
 Once you've been granted access to the EBD, you will be able to download either the entire eBird dataset or subsets for specific species, regions, or time periods. This is covered in more detail in the [next chapter](ebird.qmd).
-
-To use eBird data in R, you’ll need to reference the full path to the text files, for example `~/data/ebird/ebd_relMarch-2023.txt`. In general, it’s best to avoid using absolute paths in R scripts because it makes them less portable–if you’re sharing the files with someone else, they’ll need to change the file paths to point to the location where they’ve stored the eBird data. The R package `auk` provides a workaround for this, by allowing users to set an environment variable (`EBD_PATH`) that points to the directory where you’ve stored the eBird data. We suggest choosing a sensible central location for all eBird data files such as `~/data/ebird/`. Then set the environment variable using `auk_set_ebd_path()`.
-
-```{r}
-#| label: intro-setup-ebird
-#| eval: false
-# set EBD_PATH environment variable
-auk::auk_set_ebd_path("~/data/ebird/")
-```
 
 ### GIS data {#sec-intro-setup-gis}
 

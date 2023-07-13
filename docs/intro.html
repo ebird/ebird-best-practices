@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.335">
+<meta name="generator" content="quarto-1.3.353">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -18,9 +18,10 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -47,48 +48,19 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+/* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
 }
-.hanging div.csl-entry {
+.hanging-indent div.csl-entry {
   margin-left:2em;
   text-indent:-2em;
 }
@@ -102,8 +74,7 @@ div.csl-right-inline {
 }
 div.csl-indent {
   margin-left: 2em;
-}
-</style>
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -160,11 +131,16 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-    <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction and Setup</span></h1>
-      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
-        <i class="bi bi-chevron-right"></i>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction and Setup</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
       </button>
     </div>
   </nav>
@@ -172,78 +148,86 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Best Practices for Using eBird Data</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/ebird/ebird-best-practices/" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/ebird/ebird-best-practices/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
-      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
         </div>
-      </div>
+        </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link">Welcome</a>
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./intro.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction and Setup</span></a>
+  <a href="./intro.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction and Setup</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./ebird.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">eBird Data</span></a>
+  <a href="./ebird.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">eBird Data</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./envvar.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environmental Variables</span></a>
+  <a href="./envvar.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environmental Variables</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./encounter.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Encounter Rate</span></a>
+  <a href="./encounter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Encounter Rate</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./abundance.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relative Abundance</span></a>
+  <a href="./abundance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relative Abundance</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
   </div>
 </li>
     </ul>
     </div>
 </nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#sec-intro-intro" id="toc-sec-intro-intro" class="nav-link active" data-scroll-target="#sec-intro-intro"><span class="toc-section-number">1.1</span>  Introduction</a></li>
-  <li><a href="#sec-intro-pre" id="toc-sec-intro-pre" class="nav-link" data-scroll-target="#sec-intro-pre"><span class="toc-section-number">1.2</span>  Prerequisites</a>
+  <li><a href="#sec-intro-intro" id="toc-sec-intro-intro" class="nav-link active" data-scroll-target="#sec-intro-intro"><span class="header-section-number">1.1</span> Introduction</a></li>
+  <li><a href="#sec-intro-pre" id="toc-sec-intro-pre" class="nav-link" data-scroll-target="#sec-intro-pre"><span class="header-section-number">1.2</span> Prerequisites</a>
   <ul class="collapse">
-  <li><a href="#sec-intro-pre-tidyverse" id="toc-sec-intro-pre-tidyverse" class="nav-link" data-scroll-target="#sec-intro-pre-tidyverse"><span class="toc-section-number">1.2.1</span>  Tidyverse</a></li>
+  <li><a href="#sec-intro-pre-tidyverse" id="toc-sec-intro-pre-tidyverse" class="nav-link" data-scroll-target="#sec-intro-pre-tidyverse"><span class="header-section-number">1.2.1</span> Tidyverse</a></li>
   </ul></li>
-  <li><a href="#sec-intro-setup" id="toc-sec-intro-setup" class="nav-link" data-scroll-target="#sec-intro-setup"><span class="toc-section-number">1.3</span>  Setup</a>
+  <li><a href="#sec-intro-setup" id="toc-sec-intro-setup" class="nav-link" data-scroll-target="#sec-intro-setup"><span class="header-section-number">1.3</span> Setup</a>
   <ul class="collapse">
-  <li><a href="#sec-intro-data" id="toc-sec-intro-data" class="nav-link" data-scroll-target="#sec-intro-data"><span class="toc-section-number">1.3.1</span>  Data package</a></li>
-  <li><a href="#sec-intro-setup-software" id="toc-sec-intro-setup-software" class="nav-link" data-scroll-target="#sec-intro-setup-software"><span class="toc-section-number">1.3.2</span>  Software</a></li>
-  <li><a href="#sec-intro-setup-packages" id="toc-sec-intro-setup-packages" class="nav-link" data-scroll-target="#sec-intro-setup-packages"><span class="toc-section-number">1.3.3</span>  R packages</a></li>
-  <li><a href="#sec-intro-setup-ebird" id="toc-sec-intro-setup-ebird" class="nav-link" data-scroll-target="#sec-intro-setup-ebird"><span class="toc-section-number">1.3.4</span>  eBird data access</a></li>
-  <li><a href="#sec-intro-setup-gis" id="toc-sec-intro-setup-gis" class="nav-link" data-scroll-target="#sec-intro-setup-gis"><span class="toc-section-number">1.3.5</span>  GIS data</a></li>
+  <li><a href="#sec-intro-data" id="toc-sec-intro-data" class="nav-link" data-scroll-target="#sec-intro-data"><span class="header-section-number">1.3.1</span> Data package</a></li>
+  <li><a href="#sec-intro-setup-software" id="toc-sec-intro-setup-software" class="nav-link" data-scroll-target="#sec-intro-setup-software"><span class="header-section-number">1.3.2</span> Software</a></li>
+  <li><a href="#sec-intro-setup-packages" id="toc-sec-intro-setup-packages" class="nav-link" data-scroll-target="#sec-intro-setup-packages"><span class="header-section-number">1.3.3</span> R packages</a></li>
+  <li><a href="#sec-intro-setup-ebird" id="toc-sec-intro-setup-ebird" class="nav-link" data-scroll-target="#sec-intro-setup-ebird"><span class="header-section-number">1.3.4</span> eBird data access</a></li>
+  <li><a href="#sec-intro-setup-gis" id="toc-sec-intro-setup-gis" class="nav-link" data-scroll-target="#sec-intro-setup-gis"><span class="header-section-number">1.3.5</span> GIS data</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/ebird/ebird-best-practices/edit/main/intro.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/ebird/ebird-best-practices/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
@@ -253,7 +237,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span id="sec-intro" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction and Setup</span></span></h1>
+<h1 class="title"><span id="sec-intro" class="quarto-section-identifier"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction and Setup</span></span></h1>
 </div>
 
 
@@ -333,6 +317,46 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3     8 1816.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Once you become familiar with the pipe operator, we believe you’ll find the the above example using the pipe the easiest of the three to read and interpret.</p>
+<div class="callout callout-style-default callout-caution no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Rewrite the following code using pipes:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">log</span>(<span class="fu">runif</span>(<span class="dv">10</span>, <span class="at">min =</span> <span class="fl">0.5</span>)), <span class="dv">1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] -0.5 -0.4 -0.2  0.0 -0.5 -0.1  0.0 -0.2 -0.2 -0.6</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">runif</span>(<span class="dv">10</span>, <span class="at">min =</span> <span class="fl">0.5</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">log</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">1</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] -0.5 -0.4 -0.2  0.0 -0.5 -0.1  0.0 -0.2 -0.2 -0.6</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
 </section>
 </section>
 <section id="sec-intro-setup" class="level2" data-number="1.3">
@@ -351,10 +375,10 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <h3 data-number="1.3.3" class="anchored" data-anchor-id="sec-intro-setup-packages"><span class="header-section-number">1.3.3</span> R packages</h3>
 <p>The examples in this book use a variety of R packages for accessing eBird data, working with spatial data, data processing and manipulation, and model training. To install all the packages necessary to work through this book, run the following code:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">"remotes"</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">"remotes"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"ebird/ebird-best-practices"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">"remotes"</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">"remotes"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"ebird/ebird-best-practices"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note that several of the spatial packages require dependencies. If installing these packages fails, consult the <a href="https://r-spatial.github.io/sf/#installing">instructions for installing dependencies on the <code>sf</code> package website</a>. Finally, <strong>ensure all R packages are updated</strong> to their most recent versions by clicking on the Update button on the Packages tab in RStudio.</p>
 </section>
@@ -362,112 +386,107 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <h3 data-number="1.3.4" class="anchored" data-anchor-id="sec-intro-setup-ebird"><span class="header-section-number">1.3.4</span> eBird data access</h3>
 <p>Access to the eBird database is provided via the <a href="https://science.ebird.org/en/use-ebird-data/download-ebird-data-products">eBird Basic Dataset (EBD)</a> as tab-separated text files. To access the EBD, begin by <a href="https://secure.birds.cornell.edu/cassso/account/create">creating an eBird account and signing in</a>. Then visit the <a href="https://ebird.org/data/download">eBird Data Access page</a> and fill out the data access request form. eBird data access is free for most uses; however, you will need to request access in order to download the EBD. Filling out the access request form allows eBird to keep track of the number of people using the data and obtain information on the applications for which the data are used.</p>
 <p>Once you’ve been granted access to the EBD, you will be able to download either the entire eBird dataset or subsets for specific species, regions, or time periods. This is covered in more detail in the <a href="./ebird.html">next chapter</a>.</p>
-<p>To use eBird data in R, you’ll need to reference the full path to the text files, for example <code>~/data/ebird/ebd_relMarch-2023.txt</code>. In general, it’s best to avoid using absolute paths in R scripts because it makes them less portable–if you’re sharing the files with someone else, they’ll need to change the file paths to point to the location where they’ve stored the eBird data. The R package <code>auk</code> provides a workaround for this, by allowing users to set an environment variable (<code>EBD_PATH</code>) that points to the directory where you’ve stored the eBird data. We suggest choosing a sensible central location for all eBird data files such as <code>~/data/ebird/</code>. Then set the environment variable using <code>auk_set_ebd_path()</code>.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set EBD_PATH environment variable</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>auk<span class="sc">::</span><span class="fu">auk_set_ebd_path</span>(<span class="st">"~/data/ebird/"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 </section>
 <section id="sec-intro-setup-gis" class="level3" data-number="1.3.5">
 <h3 data-number="1.3.5" class="anchored" data-anchor-id="sec-intro-setup-gis"><span class="header-section-number">1.3.5</span> GIS data</h3>
 <p>Throughout this book, we’ll be producing maps of species distributions. To provide context for these distributions, we’ll need GIS data for political boundaries. <a href="https://www.naturalearthdata.com/">Natural Earth</a> is the best source for a range of tightly integrated vector and raster GIS data for producing professional cartographic maps. The R package, <a href="https://github.com/ropensci/rnaturalearth"><code>rnaturalearth</code></a> provides a convenient method for accessing these data from within R.</p>
 <p>The data package mentioned in <a href="#sec-intro-data"><span>Section&nbsp;1.3.1</span></a> contains a GeoPackage with all the necessary GIS data. However, for reference, the following code was used to generate the GIS dataset. Running this code will create a GeoPackage containing the necessary spatial layers in <code>data/gis-data.gpkg</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># file to save spatial data</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>gpkg_file <span class="ot">&lt;-</span> <span class="st">"data/gis-data.gpkg"</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="fu">dirname</span>(gpkg_file), <span class="at">showWarnings =</span> <span class="cn">FALSE</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># political boundaries</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># land border with lakes removed</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>ne_land <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"admin_0_countries_lakes"</span>,</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                       <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(CONTINENT <span class="sc">==</span> <span class="st">"North America"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_precision</span>(<span class="fl">1e6</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_union</span>()</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># state boundaries for united states</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>ne_states <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"admin_1_states_provinces"</span>,</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>                       <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iso_a2 <span class="sc">==</span> <span class="st">"US"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">state =</span> name, <span class="at">state_code =</span> iso_3166_2)</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># country lines</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co"># downloaded globally then filtered to north america with st_intersect()</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>ne_country_lines <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>                                <span class="at">type =</span> <span class="st">"admin_0_boundary_lines_land"</span>,</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>                                <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_geometry</span>()</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>ne_country_lines <span class="ot">&lt;-</span> <span class="fu">st_intersects</span>(ne_country_lines, ne_land, <span class="at">sparse =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.logical</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  {ne_country_lines[.]}</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co"># states, north america</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>ne_state_lines <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type =</span> <span class="st">"admin_1_states_provinces_lines"</span>,</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>                              <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ADM0_A3 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"USA"</span>, <span class="st">"CAN"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iso_a2 =</span> <span class="fu">recode</span>(ADM0_A3, <span class="at">USA =</span> <span class="st">"US"</span>, <span class="at">CAN =</span> <span class="st">"CAN"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">country =</span> ADM0_NAME, <span class="at">country_code =</span> iso_a2)</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="co"># save all layers to a geopackage</span></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="fu">unlink</span>(gpkg_file)</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_land, gpkg_file, <span class="st">"ne_land"</span>)</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_states, gpkg_file, <span class="st">"ne_states"</span>)</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_country_lines, gpkg_file, <span class="st">"ne_country_lines"</span>)</span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_state_lines, gpkg_file, <span class="st">"ne_state_lines"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># file to save spatial data</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>gpkg_file <span class="ot">&lt;-</span> <span class="st">"data/gis-data.gpkg"</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="fu">dirname</span>(gpkg_file), <span class="at">showWarnings =</span> <span class="cn">FALSE</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># political boundaries</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># land border with lakes removed</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>ne_land <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"admin_0_countries_lakes"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                       <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(CONTINENT <span class="sc">==</span> <span class="st">"North America"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_precision</span>(<span class="fl">1e6</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_union</span>()</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># state boundaries for united states</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>ne_states <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"admin_1_states_provinces"</span>,</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>                       <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iso_a2 <span class="sc">==</span> <span class="st">"US"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">state =</span> name, <span class="at">state_code =</span> iso_3166_2)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co"># country lines</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co"># downloaded globally then filtered to north america with st_intersect()</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>ne_country_lines <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>                                <span class="at">type =</span> <span class="st">"admin_0_boundary_lines_land"</span>,</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>                                <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_geometry</span>()</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>ne_country_lines <span class="ot">&lt;-</span> <span class="fu">st_intersects</span>(ne_country_lines, ne_land, <span class="at">sparse =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.logical</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  {ne_country_lines[.]}</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co"># states, north america</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>ne_state_lines <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type =</span> <span class="st">"admin_1_states_provinces_lines"</span>,</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>                              <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ADM0_A3 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"USA"</span>, <span class="st">"CAN"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iso_a2 =</span> <span class="fu">recode</span>(ADM0_A3, <span class="at">USA =</span> <span class="st">"US"</span>, <span class="at">CAN =</span> <span class="st">"CAN"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">country =</span> ADM0_NAME, <span class="at">country_code =</span> iso_a2)</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="co"># save all layers to a geopackage</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="fu">unlink</span>(gpkg_file)</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_land, gpkg_file, <span class="st">"ne_land"</span>)</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_states, gpkg_file, <span class="st">"ne_states"</span>)</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_country_lines, gpkg_file, <span class="st">"ne_country_lines"</span>)</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_state_lines, gpkg_file, <span class="st">"ne_state_lines"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
-<div id="ref-courterWeekendBiasCitizen2013" class="csl-entry" role="doc-biblioentry">
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-courterWeekendBiasCitizen2013" class="csl-entry" role="listitem">
 Courter, Jason R., Ron J. Johnson, Claire M. Stuyck, Brian A. Lang, and Evan W. Kaiser. 2013. <span>“Weekend Bias in <span>Citizen Science</span> Data Reporting: Implications for Phenology Studies.”</span> <em>International Journal of Biometeorology</em> 57 (5): 715–20. <a href="https://doi.org/10.1007/s00484-012-0598-7">https://doi.org/10.1007/s00484-012-0598-7</a>.
 </div>
-<div id="ref-ellisEffectsWeatherTime2018" class="csl-entry" role="doc-biblioentry">
+<div id="ref-ellisEffectsWeatherTime2018" class="csl-entry" role="listitem">
 Ellis, Murray V., and Jennifer E. Taylor. 2018. <span>“Effects of Weather, Time of Day, and Survey Effort on Estimates of Species Richness in Temperate Woodlands.”</span> <em>Emu-Austral Ornithology</em> 118 (2): 183–92.
 </div>
-<div id="ref-greenwoodCitizensScienceBird2007" class="csl-entry" role="doc-biblioentry">
+<div id="ref-greenwoodCitizensScienceBird2007" class="csl-entry" role="listitem">
 Greenwood, Jeremy J. D. 2007. <span>“Citizens, Science and Bird Conservation.”</span> <em>Journal of Ornithology</em> 148 (1): 77–124. <a href="https://doi.org/10.1007/s10336-007-0239-9">https://doi.org/10.1007/s10336-007-0239-9</a>.
 </div>
-<div id="ref-johnstonEstimatesObserverExpertise2018" class="csl-entry" role="doc-biblioentry">
+<div id="ref-johnstonEstimatesObserverExpertise2018" class="csl-entry" role="listitem">
 Johnston, Alison, Daniel Fink, Wesley M. Hochachka, and Steve Kelling. 2018. <span>“Estimates of Observer Expertise Improve Species Distributions from Citizen Science Data.”</span> <em>Methods in Ecology and Evolution</em> 9 (1): 88–97.
 </div>
-<div id="ref-johnstonAnalyticalGuidelinesIncrease2021" class="csl-entry" role="doc-biblioentry">
+<div id="ref-johnstonAnalyticalGuidelinesIncrease2021" class="csl-entry" role="listitem">
 Johnston, Alison, Wesley M. Hochachka, Matthew E. Strimas-Mackey, Viviana Ruiz Gutierrez, Orin J. Robinson, Eliot T. Miller, Tom Auer, Steve T. Kelling, and Daniel Fink. 2021. <span>“Analytical Guidelines to Increase the Value of Community Science Data: <span>An</span> Example Using <span class="nocase">eBird</span> Data to Estimate Species Distributions.”</span> Edited by Yoan Fourcade. <em>Diversity and Distributions</em> 27 (7): 1265–77. <a href="https://doi.org/10.1111/ddi.13271">https://doi.org/10.1111/ddi.13271</a>.
 </div>
-<div id="ref-johnstonSpeciesTraitsExplain2014" class="csl-entry" role="doc-biblioentry">
+<div id="ref-johnstonSpeciesTraitsExplain2014" class="csl-entry" role="listitem">
 Johnston, Alison, Stuart E. Newson, Kate Risely, Andy J. Musgrove, Dario Massimino, Stephen R. Baillie, and James W. Pearce-Higgins. 2014. <span>“Species Traits Explain Variation in Detectability of <span>UK</span> Birds.”</span> <em>Bird Study</em> 61 (3): 340–50.
 </div>
-<div id="ref-kadmonEffectRoadsideBias2004" class="csl-entry" role="doc-biblioentry">
+<div id="ref-kadmonEffectRoadsideBias2004" class="csl-entry" role="listitem">
 Kadmon, Ronen, Oren Farber, and Avinoam Danin. 2004. <span>“Effect of Roadside Bias on the Accuracy of Predictive Maps Produced by Bioclimatic Models.”</span> <em>Ecological Applications</em> 14 (2): 401–13.
 </div>
-<div id="ref-kellingFindingSignalNoise2018" class="csl-entry" role="doc-biblioentry">
+<div id="ref-kellingFindingSignalNoise2018" class="csl-entry" role="listitem">
 Kelling, Steve, Alison Johnston, Daniel Fink, Viviana Ruiz-Gutierrez, Rick Bonney, Aletta Bonn, Miguel Fernandez, et al. 2018. <span>“Finding the Signal in the Noise of <span>Citizen Science Observations</span>.”</span> <em>bioRxiv</em>, May, 326314. <a href="https://doi.org/10.1101/326314">https://doi.org/10.1101/326314</a>.
 </div>
-<div id="ref-lasorteOpportunitiesChallengesBig2018" class="csl-entry" role="doc-biblioentry">
+<div id="ref-lasorteOpportunitiesChallengesBig2018" class="csl-entry" role="listitem">
 La Sorte, Frank A., Christopher A. Lepczyk, Jessica L. Burnett, Allen H. Hurlbert, Morgan W. Tingley, and Benjamin Zuckerberg. 2018. <span>“Opportunities and Challenges for Big Data Ornithology.”</span> <em>The Condor</em> 120 (2): 414–26.
 </div>
-<div id="ref-luckAlleviatingSpatialConflict2004" class="csl-entry" role="doc-biblioentry">
+<div id="ref-luckAlleviatingSpatialConflict2004" class="csl-entry" role="listitem">
 Luck, Gary W., Taylor H. Ricketts, Gretchen C. Daily, and Marc Imhoff. 2004. <span>“Alleviating Spatial Conflict Between People and Biodiversity.”</span> <em>Proceedings of the National Academy of Sciences</em> 101 (1): 182–86. <a href="https://doi.org/10.1073/pnas.2237148100">https://doi.org/10.1073/pnas.2237148100</a>.
 </div>
-<div id="ref-oliveiraObservationDiurnalSoaring2018" class="csl-entry" role="doc-biblioentry">
+<div id="ref-oliveiraObservationDiurnalSoaring2018" class="csl-entry" role="listitem">
 Oliveira, Camilo Viana, Fabio Olmos, Manoel dos Santos-Filho, and Christine Steiner São Bernardo. 2018. <span>“Observation of <span>Diurnal Soaring Raptors In Northeastern Brazil Depends On Weather Conditions</span> and <span>Time</span> of <span>Day</span>.”</span> <em>Journal of Raptor Research</em> 52 (1): 56–65.
 </div>
-<div id="ref-prendergastCorrectingVariationRecording1993" class="csl-entry" role="doc-biblioentry">
+<div id="ref-prendergastCorrectingVariationRecording1993" class="csl-entry" role="listitem">
 Prendergast, J. R., S. N. Wood, J. H. Lawton, and B. C. Eversham. 1993. <span>“Correcting for Variation in Recording Effort in Analyses of Diversity Hotspots.”</span> <em>Biodiversity Letters</em>, 39–53.
 </div>
-<div id="ref-rcoreteamLanguageEnvironmentStatistical2023" class="csl-entry" role="doc-biblioentry">
+<div id="ref-rcoreteamLanguageEnvironmentStatistical2023" class="csl-entry" role="listitem">
 R Core Team. 2023. <em>R: <span>A</span> Language and Environment for Statistical Computing</em>. Manual. <span>Vienna, Austria</span>: <span>R Foundation for Statistical Computing</span>.
 </div>
-<div id="ref-robinsonUsingCitizenScience2018" class="csl-entry" role="doc-biblioentry">
+<div id="ref-robinsonUsingCitizenScience2018" class="csl-entry" role="listitem">
 Robinson, Orin J., Viviana Ruiz-Gutierrez, Daniel Fink, Robert J. Meese, Marcel Holyoak, and Evan G. Cooch. 2018. <span>“Using Citizen Science Data in Integrated Population Models to Inform Conservation Decision-Making.”</span> <em>bioRxiv</em>, 293464.
 </div>
-<div id="ref-sullivanEBirdEnterpriseIntegrated2014" class="csl-entry" role="doc-biblioentry">
+<div id="ref-sullivanEBirdEnterpriseIntegrated2014" class="csl-entry" role="listitem">
 Sullivan, Brian L., Jocelyn L. Aycrigg, Jessie H. Barry, Rick E. Bonney, Nicholas Bruns, Caren B. Cooper, Theo Damoulas, et al. 2014. <span>“The <span class="nocase">eBird</span> Enterprise: <span>An</span> Integrated Approach to Development and Application of Citizen Science.”</span> <em>Biological Conservation</em> 169 (January): 31–40. <a href="https://doi.org/10.1016/j.biocon.2013.11.003">https://doi.org/10.1016/j.biocon.2013.11.003</a>.
 </div>
-<div id="ref-tullochBehaviouralEcologyApproach2012" class="csl-entry" role="doc-biblioentry">
+<div id="ref-tullochBehaviouralEcologyApproach2012" class="csl-entry" role="listitem">
 Tulloch, Ayesha IT, and Judit K. Szabo. 2012. <span>“A Behavioural Ecology Approach to Understand Volunteer Surveying for Citizen Science Datasets.”</span> <em>Emu-Austral Ornithology</em> 112 (4): 313–25.
 </div>
 </div>
@@ -502,9 +521,23 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
   const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
     }
   });
   clipboard.on('success', function(e) {
@@ -569,6 +602,92 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       return note.innerHTML;
     });
   }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -624,6 +743,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">Best Practices for Using eBird Data (v2.0)</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
   </div>
 </footer>
 
