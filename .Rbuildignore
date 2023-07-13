@@ -12,3 +12,5 @@
 ^references.bib$
 ^\.nojekyll$
 ^\.quarto$
+^LICENSE\.md$
+^README\.md$

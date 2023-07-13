@@ -20,7 +20,7 @@ Description: A supplement to the paper Analytical guidelines to increase the
   them for robust analyses, including training models to estimate encounter 
   rate, relative abundance, and occupancy, and assessing the performance of 
   these models.
-License: GPL-3
+License: GPL (>= 3)
 URL: https://github.com/ebird/ebird-best-practices
 Depends: 
     R (>= 4.0.0)
