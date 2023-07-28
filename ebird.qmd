@@ -26,11 +26,11 @@ In the interest of making examples concrete, throughout this book, we'll use the
 
 ![](images/ebird-data_download.png)
 
-Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a two text files: one for the EBD (e.g. `ebd_US-GA_woothr_smp_relMay-2023.txt`) containing all the Wood Thrush observations from Georgia and one for the SED (e.g. `ebd_US-GA_woothr_smp_relMay-2023_sampling.txt`) containing all checklists from Georgia. The `relMay-2023` component of the file name describes which version of the EBD this dataset came from; in this case it's the May 2023 release.
+Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a two text files: one for the EBD (e.g. `ebd_US-GA_woothr_smp_relJun-2023.txt`) containing all the Wood Thrush observations from Georgia and one for the SED (e.g. `ebd_US-GA_woothr_smp_relJun-2023_sampling.txt`) containing all checklists from Georgia. The `relJune-2023` component of the file name describes which version of the EBD this dataset came from; in this case it's the June 2023 release.
 
 ## Importing eBird data into R {#sec-ebird-import}
 
-The previous step left us with two tab separated text files, one for the EBD (i.e. observation data) and one for the SED (i.e. checklist data). For this example, we've placed the downloaded text files in the `data-raw/` sub-directory of our working directory. Feel free to put these files in a place that's convenient to you, but make sure to update the file paths in the follwing code blocks.
+The previous step left us with two tab separated text files, one for the EBD (i.e. observation data) and one for the SED (i.e. checklist data). For this example, we've placed the downloaded text files in the `data-raw/` sub-directory of our working directory. Feel free to put these files in a place that's convenient to you, but make sure to update the file paths in the following code blocks.
 
 The `auk` functions [`read_ebd()`](https://cornelllabofornithology.github.io/auk/reference/read_ebd.html) or [`read_sampling()`](https://cornelllabofornithology.github.io/auk/reference/read_ebd.html) are designed to import the EBD and SED, respectively, into R. First let's import the checklist data (SED).
 
@@ -44,7 +44,7 @@ library(lubridate)
 library(readr)
 library(sf)
 
-f_sed <- "data-raw/ebd_US-GA_woothr_smp_relMay-2023_sampling.txt"
+f_sed <- "data-raw/ebd_US-GA_woothr_smp_relJun-2023_sampling.txt"
 checklists <- read_sampling(f_sed)
 glimpse(checklists)
 ```
@@ -52,14 +52,14 @@ glimpse(checklists)
 ::: callout-important
 ## Checkpoint
 
-Take some time to explore the variables in the checklist dataset. If you're unsure about any of the variables, consult the metadata document that came with the data download (`eBird_Basic_Dataset_Metadata_v1.14.pdf`).
+Take some time to explore the variables in the checklist dataset. If you're unsure about any of the variables, consult the metadata document that came with the data download (`eBird_Basic_Dataset_Metadata_v1.15.pdf`).
 :::
 
 Next we'll import the observation data.
 
 ```{r}
 #| label: ebird-import-ebd
-f_ebd <- "data-raw/ebd_US-GA_woothr_smp_relMay-2023.txt"
+f_ebd <- "data-raw/ebd_US-GA_woothr_smp_relJun-2023.txt"
 observations <- read_ebd(f_ebd)
 glimpse(observations)
 ```
@@ -74,11 +74,11 @@ When any of the read functions from `auk` are used, three important processing s
 
 1.  **Variable name and type cleanup**: The read functions assign clean variable names (in `snake_case`) and correct data types to all variables in the eBird datasets.
 2.  **Collapsing group checklist**: eBird allows for [group checklists](https://support.ebird.org/en/support/solutions/articles/48000625567-checklist-sharing-and-group-accounts), those shared by multiple users. These checklists lead to duplication or near duplication of records within the dataset and the function [`auk_unique()`](https://cornelllabofornithology.github.io/auk/reference/auk_unique.html), applied by default by the `auk` read functions, addresses this by only keeping one independent copy of each checklist.
-3.  **Taxonomic rollup**: eBird observations can be made at levels below species (e.g. subspecies) or above species (e.g. a bird that was identified as a duck, but the species could not be determined); however, for most uses we'll want observations at the species level. [`auk_rollup()`](https://cornelllabofornithology.github.io/auk/reference/auk_rollup.html) is applied by default when [`read_ebd`()\`](https://cornelllabofornithology.github.io/auk/reference/read_ebd.html) is used. It drops all observations not identifiable to a species and rolls up all observations reported below species to the species level.
+3.  **Taxonomic rollup**: eBird observations can be made at levels below species (e.g. subspecies) or above species (e.g. a bird that was identified as a duck, but the species could not be determined); however, for most uses we'll want observations at the species level. [`auk_rollup()`](https://cornelllabofornithology.github.io/auk/reference/auk_rollup.html) is applied by default when [`read_ebd()`](https://cornelllabofornithology.github.io/auk/reference/read_ebd.html) is used. It drops all observations not identifiable to a species and rolls up all observations reported below species to the species level.
 
 ### Filtering
 
-The Custom Download form allowed us to apply some basic filters to the eBird data we downloaded: we requested only Wood Thrush observations and only those on checklists from Georgia. However, in most cases you'll want to apply additional filters to the data once you have it imported into R. For most applications, we'll only want complete checklists i.e. those for which all birds seen or heard were recorded, which will allow us to produce zero-filled detection/non-detection data. In addition, for the examples used throughout this book we'll only want observations from June for the last 10 years (2013-2022). We'll also only consider checklists with stationary and traveling protocols. We can apply these filters using the `filter()` function from `dplyr`.
+The Custom Download form allowed us to apply some basic filters to the eBird data we downloaded: we requested only Wood Thrush observations and only those on checklists from Georgia. However, in most cases you'll want to apply additional filters to the data once you have it imported into R. For most applications, we'll only want complete checklists i.e. those for which all birds seen or heard were recorded, which will allow us to produce zero-filled detection/non-detection data. In addition, for the examples used throughout this book we'll only want observations from June for the last 10 years (2014-2023). We'll also only consider checklists with stationary and traveling protocols. We can apply these filters using the `filter()` function from `dplyr`.
 
 ```{r}
 #| label: ebird-import-filter
@@ -86,14 +86,14 @@ The Custom Download form allowed us to apply some basic filters to the eBird dat
 checklists <- checklists %>% 
   filter(all_species_reported,
          protocol_type %in% c("Stationary", "Traveling"),
-         year(observation_date) >= 2013,
+         year(observation_date) >= 2014, year(observation_date) <= 2023, 
          month(observation_date) == 6)
 
 # filter the observation data
 observations <- observations %>% 
   filter(all_species_reported,
          protocol_type %in% c("Stationary", "Traveling"),
-         year(observation_date) >= 2013,
+         year(observation_date) >= 2014, year(observation_date) <= 2023, 
          month(observation_date) == 6)
 ```
 
@@ -105,7 +105,129 @@ observations <- observations %>%
 
 ## Zero-filling {#sec-ebird-zf}
 
-Next, we'll use [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) to combine the checklist and observation data together to produce zero-filled, detection/non-detection data (also called presence/absence data).
+To a large degree, the power of eBird for rigorous analyses comes from the complete checklist concept, and the ability to transform these checklists from presence-only data to detection/non-detection data (also called presence/absence data). The EBD alone is a source of presence-only data, with one record for each taxon (typically species) reported. For complete checklists, information about non-detections can be inferred from the SED: if there is a record in the SED but no record for a species in the EBD, then a count of zero individuals of that species can be inferred. This process is referred to a "zero-filling" the data.
+
+To a large degree, the power of eBird for rigorous analyses comes from the ability to transform the data to produce detection/non-detection information. With presence-only data, but no information of the amount of search effort expended to produce that data, it's challenging even to estimate how rare or common a species is. For example, consider the 10 detections presented in top row of the figure below, and ask yourself how common is this species? The bottom row of the figure presents three possible scenarios for the total number of checklists that generated the detections, from left to right
+
+-   50 checklists: in this case the species is fairly common with 20% of checklists reporting the species.
+-   250 checklists: in this case the species is uncommon with 4% of checklists reporting the species.
+-   1,000 checklists: in this case the species is rare with 1% of checklists reporting the species.
+
+```{r}
+#| label: ebird-zf-motivation
+#| echo: false
+#| warning: false
+library(patchwork)
+
+set.seed(1)
+
+# generate random points
+grid_size <- 0.125
+pts <- data.frame(x = runif(1000, 0, 1) %>% sqrt(),
+                  y = runif(1000, 0, 1)^2) %>%
+  mutate(obs = c(rep("detection", 10), rep("non-detection", 990)) %>%
+           factor(levels = c("detection", "non-detection")),
+         x_grid = x %/% grid_size,
+         y_grid = y %/% grid_size,
+         grid_cell = paste(x_grid, y_grid, sep = "-"))
+
+# only detections
+pts_detections <- filter(pts, obs == "detection")
+gg_detections <- ggplot(pts_detections) +
+  aes(x = x, y, color = obs, size = obs) +
+  geom_point(show.legend = FALSE) +
+  scale_color_manual(values = c("#4daf4a", "#55555599")) +
+  scale_size_discrete(range = c(3, 1)) +
+  labs(x = NULL, y = NULL) +
+  coord_fixed(xlim = c(0, 1), ylim = c(0, 1)) +
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        panel.background = element_rect(),
+        panel.grid = element_blank())
+
+# high frequency
+pts_high <- pts %>%
+  filter(obs == "non-detection") %>%
+  slice_sample(n = 40) %>%
+  bind_rows(pts_detections)
+gg_high <- ggplot(pts_high) +
+  aes(x = x, y, color = obs, size = obs) +
+  geom_point(show.legend = FALSE) +
+  scale_color_manual(values = c("#4daf4a", "#55555577")) +
+  scale_size_discrete(range = c(3, 0.5)) +
+  labs(x = NULL, y = NULL) +
+  coord_fixed(xlim = c(0, 1), ylim = c(0, 1)) +
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        panel.background = element_rect(),
+        panel.grid = element_blank())
+
+# medium frequency
+pts_medium <- pts %>%
+  filter(obs == "non-detection") %>%
+  slice_sample(n = 240) %>%
+  bind_rows(pts_detections)
+gg_medium <- ggplot(pts_medium) +
+  aes(x = x, y, color = obs, size = obs) +
+  geom_point(show.legend = FALSE) +
+  scale_color_manual(values = c("#4daf4a", "#55555577")) +
+  scale_size_discrete(range = c(3, 0.5)) +
+  labs(x = NULL, y = NULL) +
+  coord_fixed(xlim = c(0, 1), ylim = c(0, 1)) +
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        panel.background = element_rect(),
+        panel.grid = element_blank())
+
+# low frequency
+gg_low <- ggplot(pts) +
+  aes(x = x, y, color = obs, size = obs) +
+  geom_point(show.legend = FALSE) +
+  scale_color_manual(values = c("#4daf4a", "#55555577")) +
+  scale_size_discrete(range = c(3, 0.5)) +
+  labs(x = NULL, y = NULL) +
+  coord_fixed(xlim = c(0, 1), ylim = c(0, 1)) +
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        panel.background = element_rect(),
+        panel.grid = element_blank())
+
+# arrange layout
+design <- "
+  #1#
+  234
+"
+gg_detections + labs(title = "Presence-only",
+                     subtitle = "10 detections") +
+  gg_high + labs(subtitle = "50 checklists") +
+  gg_medium + labs(title = "Detection/Non-detection",
+                   subtitle = "250 checklists") +
+  gg_low + labs(subtitle = "1,000 checklists") +
+  plot_layout(design = design)
+```
+
+::: {.callout-caution icon="false"}
+## Exercise
+
+Think of some real world scenarios where presence-only data could be a poor representation of the prevalence of a species.
+:::
+
+::: {.callout-note icon="false" collapse="true"}
+## Solution
+
+There are many cases of this phenomenon. A couple possible examples include:
+
+-   Rare or particularly charismatic species will often have an inflated number of observations because observers specifically seek them out.
+-   Heavily populated (e.g. cities) or easily accessible areas (e.g. near roads) typically have more detections simply because more people visit them. In contrast, more remote areas may have better habitat for certain species, but have fewer observations because fewer birders are visiting these sites.
+:::
+
+::: callout-tip
+## Tip
+
+Remember that the prevalence of a species on eBird checklists (e.g. 10% of checklists detected a species) is only a relative measure of the actual abundance of that species. To appear on an eBird checklist, a species must occur in an area and be detected by the observer. That detectability always plays a role in determining prevalence and it can vary drastically between regions, seasons, and species.
+:::
+
+With that motivation, let's use [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) to combine the checklist and observation data together to produce zero-filled, detection/non-detection data.
 
 ```{r}
 #| label: ebird-zf-zf
@@ -244,7 +366,7 @@ legend("bottomright", bty = "n",
        pch = 19)
 box()
 par(new = TRUE, mar = c(0, 0, 3, 0))
-title("Wood Thrush eBird Observations\nJune 2013-2022")
+title("Wood Thrush eBird Observations\nJune 2014-2023")
 ```
 
 In this map, the spatial bias in eBird data becomes immediately obvious, for example, notice the large number of checklists in areas around Atlanta, the largest city in Georgia, in the northern part of the state.

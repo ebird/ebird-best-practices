@@ -143,7 +143,7 @@ train_count <- train_count %>%
   select(-species_observed, -pred_er)
 ```
 
-We've found that including estimated encounter rate as a predictor in the count model improves predictive performance. So, with this in mind, we predict encounter rate for the training dataset and add it as an additional column. 
+We've found that including estimated encounter rate as a predictor in the count model improves predictive performance. So, with this in mind, we predict encounter rate for the training dataset and add it as an additional column.
 
 ```{r}
 #| label: abundance-hurdle-count-preder
@@ -243,7 +243,7 @@ ppms <- tibble(
 knitr::kable(pivot_longer(ppms, everything()), digits = 3)
 ```
 
-The Spearman’s correlations tell us about the ability of the model to estimate the rank order of counts and relative abundance, something that these models often perform better with. The Pearson’s correlations give us information about the ability of the model to estimate absolute counts on the log scale, a task that is often more difficult to do with eBird data, especially for congregatory species that often have high counts. Again, as with the binary performance metrics, these are useful in comparing model quality across species, region, and season.
+The Spearman's correlations tell us about the ability of the model to estimate the rank order of counts and relative abundance, something that these models often perform better with. The Pearson's correlations give us information about the ability of the model to estimate absolute counts on the log scale, a task that is often more difficult to do with eBird data, especially for congregatory species that often have high counts. Again, as with the binary performance metrics, these are useful in comparing model quality across species, region, and season.
 
 ## Prediction {#sec-abundance-predict}
 
@@ -252,7 +252,7 @@ Just as we did in the @sec-encounter-predict for encounter rate, we can estimate
 ```{r}
 #| label: abundance-predict-grid
 pred_grid_eff <- pred_grid %>% 
-  mutate(observation_date = ymd("2022-06-15"),
+  mutate(observation_date = ymd("2023-06-15"),
          year = year(observation_date),
          day_of_year = yday(observation_date),
          # determined as optimal time for detection in previous chapter
@@ -310,12 +310,12 @@ r_pred <- predictions %>%
 
 # save the raster
 # 3 bands: encounter_rate, count, and relative abundance
-r_pred <- writeRaster(r_pred, "results/abundance_woothr_june-2022.tif", 
+r_pred <- writeRaster(r_pred, "results/abundance_woothr_june-2023.tif", 
                       overwrite = TRUE,
                       gdal = "COMPRESS=DEFLATE")
 ```
 
-Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 hour, 1 km checklist for which counting started at about 6:15AM on June 15, 2022. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
+Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 hour, 1 km checklist for which counting started at about 6:15AM on June 15, 2023. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
 
 Prior to mapping the relative abundance, we'll multiple by the `in_range` layer, which will produce a map showing zero relative abundance where the model predicts that Wood Thrush does not occur.
 
@@ -353,7 +353,7 @@ box()
 
 # legend
 par(new = TRUE, mar = c(0, 0, 0, 0))
-title <- "Wood Thrush Relative Abundance (June 2022)"
+title <- "Wood Thrush Relative Abundance (June 2023)"
 image.plot(zlim = c(0, 1), legend.only = TRUE, 
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
            smallplot = c(0.25, 0.75, 0.06, 0.09),

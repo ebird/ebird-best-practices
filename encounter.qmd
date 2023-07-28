@@ -506,7 +506,7 @@ Now for the fun part: let's use the calibrated random forest model to make a map
 
 ### Standardized effort variables {#sec-encounter-predict-effort}
 
-The prediction grid only includes values for the environmental variables, so to make predictions we'll need to add effort variables to this prediction grid. We'll make predictions for a **standard eBird checklist**: a 1 km, 2 hour traveling count at the peak time of day for detecting this species. Finally, we'll make these predictions for June 15, 2022, the middle of our June focal window for the latest year for which we have eBird data.
+The prediction grid only includes values for the environmental variables, so to make predictions we'll need to add effort variables to this prediction grid. We'll make predictions for a **standard eBird checklist**: a 1 km, 2 hour traveling count at the peak time of day for detecting this species. Finally, we'll make these predictions for June 15, 2023, the middle of our June focal window for the latest year for which we have eBird data.
 
 To find the time of day with the highest detection probability, we can look for the peak of the partial dependence plot. The one caveat to this approach is that it's important we focus on times of day for which there are enough data to make predictions. In particular, there's an increasing trend in detectability with earlier start times, and few checklists late at night, which can cause the model to incorrectly extrapolate that trend to show highest detectability at night. Let's start by looking at a plot to see if this is happening here.
 
@@ -579,7 +579,7 @@ Based on this analysis, the best time for detecting Wood Thrush is at `r human_t
 #| label:  encounter-predict-effort
 # add effort covariates to prediction 
 pred_grid_eff <- pred_grid %>% 
-  mutate(observation_date = ymd("2022-06-15"),
+  mutate(observation_date = ymd("2023-06-15"),
          year = year(observation_date),
          day_of_year = yday(observation_date),
          hours_of_day = t_peak,
@@ -627,7 +627,7 @@ r_pred <- predictions %>%
   setNames(c("in_range", "encounter_rate"))
 
 # save the raster
-r_pred <- writeRaster(r_pred, "results/encounter-rate_woothr_june-2022.tif", 
+r_pred <- writeRaster(r_pred, "results/encounter-rate_woothr_june-2023.tif", 
                       overwrite = TRUE,
                       gdal = "COMPRESS=DEFLATE")
 ```
@@ -666,7 +666,7 @@ box()
 
 # legend
 par(new = TRUE, mar = c(0, 0, 0, 0))
-title <- "Wood Thrush Encounter Rate (June 2022)"
+title <- "Wood Thrush Encounter Rate (June 2023)"
 image.plot(zlim = c(0, 1), legend.only = TRUE, 
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
            smallplot = c(0.25, 0.75, 0.06, 0.09),
@@ -687,7 +687,7 @@ Although this encounter rate map provides more detailed information on the distr
 par(mar = c(0.25, 0.25, 1, 0.25))
 # set up plot area
 plot(study_region, 
-     main = "Wood Thrush Range (June 2022)",
+     main = "Wood Thrush Range (June 2023)",
      col = NA, border = NA)
 plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 

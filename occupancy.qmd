@@ -298,7 +298,7 @@ r_pred <- pred_occ %>%
 
 # save the raster
 # 2 bands: occ_prob, occ_se
-r_pred <- writeRaster(r_pred, "results/occupancy_woothr_june-2022.tif", 
+r_pred <- writeRaster(r_pred, "results/occupancy_woothr_june-2023.tif", 
                       overwrite = TRUE,
                       gdal = "COMPRESS=DEFLATE")
 ```
