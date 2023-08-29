@@ -310,7 +310,7 @@ checklists <- zf_split %>%
 write_csv(checklists, "data/checklists-zf_woothr_june_us-ga.csv", na = "")
 ```
 
-If you'd like to ensure you're using exactly the same data as was used to generate this book, download the [data package](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip) mentioned in the [setup instructions](intro.qmd#sec-intro-setup-data) and place the contents in the `data/` subdirectory of your project directory.
+If you'd like to ensure you're using exactly the same data as was used to generate this book, download the [data package](https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip) mentioned in the [setup instructions](intro.qmd#sec-intro-setup-data) and place the contents in the `data/` subdirectory of your project directory.
 
 ## Exploratory analysis and visualization {#sec-ebird-explore}
 
