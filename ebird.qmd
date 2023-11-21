@@ -39,7 +39,6 @@ The remainder of this guide will demonstrate how to address these challenges usi
 
 ## Downloading data {#sec-ebird-download}
 
-
 eBird data are typically distributed in two parts: observation data and checklist data. In the observation dataset, each row corresponds to the sighting of a single species on a checklist, including the count and any other species-level information (e.g. age, sex, species comments, etc.). In the checklist dataset, each row corresponds to a checklist, including the date, time, location, effort (e.g. distance traveled, time spent, etc.), and any additional checklist-level information (e.g. whether this is a complete checklist or not). The two datasets can be joined together using a unique checklist identifier (sometimes referred to as the sampling event identifier).
 
 The observation and checklist data are released as tab-separated text files referred to as the *eBird Basic Dataset (EBD)* and the *Sampling Event Data (SED)*, respectively. These files are released monthly and contain all validated bird sightings in the eBird database at the time of release. Both of these datasets can be downloaded in their entirety or a subset for a given species, region, or time period can be requested via the *Custom Download* form. We strongly recommend against attempting to download the complete EBD since it's well over 100GB at the time of writing. Instead, we will demonstrate a workflow using the Custom Download approach. In what follows, we will assume you have followed the instructions for requesting access to eBird data outlined in [the previous chapter](intro.qmd#sec-intro-setup-ebird).
@@ -190,23 +189,21 @@ The function [`auk_rollup()`](https://cornelllabofornithology.github.io/auk/refe
 If multiple taxa on a single checklist roll up to the same species, `auk_rollup()` attempts to combine them intelligently. If each observation has a count, those counts are added together, but if any of the observations is missing a count (i.e. the count is "X") the combined observation is also assigned an "X". In the [example checklist](https://ebird.org/checklist/S100099262) from the previous tip, with four taxa all rolling up to Yellow-rumped Warbler, `auk_rollup()` will add the four counts together to get 21 Yellow-rumped Warblers (10 + 5 + 5 + 1).
 :::
 
-## Filtering {#sec-ebird-filter}
+## Filtering to study region and season {#sec-ebird-filter}
 
-The Custom Download form allowed us to apply some basic filters to the eBird data we downloaded: we requested only Wood Thrush observations and only those on checklists from Georgia. However, in most cases you'll want to apply additional filters to the data once you have it imported into R. For most applications, we'll only want complete checklists i.e. those for which all birds seen or heard were recorded, which will allow us to produce zero-filled detection/non-detection data. In addition, for the examples used throughout this guide we'll only want observations from June for the last 10 years (2014-2023). We'll also only consider checklists with stationary and traveling protocols. We can apply these filters using the `filter()` function from `dplyr`.
+The Custom Download form allowed us to apply some basic filters to the eBird data we downloaded: we requested only Wood Thrush observations and only those on checklists from Georgia. However, in most cases you'll want to apply additional spatial and/or temporal filters to the data that are specific to your study. For the examples used throughout this guide we'll only want observations from June for the last 10 years (2014-2023). In addition, we'll only use complete checklists (i.e., those for which all birds seen or heard were reported), which will allow us to produce detection/non-detection data. We can apply these filters using the `filter()` function from `dplyr`. 
 
 ```{r}
 #| label: ebird-ebird-filter
 # filter the checklist data
 checklists <- checklists %>% 
   filter(all_species_reported,
-         protocol_type %in% c("Stationary", "Traveling"),
          year(observation_date) >= 2014, year(observation_date) <= 2023, 
          month(observation_date) == 6)
 
 # filter the observation data
 observations <- observations %>% 
   filter(all_species_reported,
-         protocol_type %in% c("Stationary", "Traveling"),
          year(observation_date) >= 2014, year(observation_date) <= 2023, 
          month(observation_date) == 6)
 ```
@@ -219,9 +216,7 @@ observations <- observations %>%
 
 ## Zero-filling {#sec-ebird-zf}
 
-To a large degree, the power of eBird for rigorous analyses comes from the complete checklist concept, and the ability to transform these checklists from presence-only data to detection/non-detection data (also called presence/absence data). The EBD alone is a source of presence-only data, with one record for each taxon (typically species) reported. For complete checklists, information about non-detections can be inferred from the SED: if there is a record in the SED but no record for a species in the EBD, then a count of zero individuals of that species can be inferred. This process is referred to a "zero-filling" the data.
-
-To a large degree, the power of eBird for rigorous analyses comes from the ability to transform the data to produce detection/non-detection information. With presence-only data, but no information of the amount of search effort expended to produce that data, it's challenging even to estimate how rare or common a species is. For example, consider the 10 detections presented in top row of the figure below, and ask yourself how common is this species? The bottom row of the figure presents three possible scenarios for the total number of checklists that generated the detections, from left to right
+To a large degree, the power of eBird for rigorous analyses comes from the ability to transform the data to produce detection/non-detection data (also referred to as presence/absence data). With presence-only data, but no information of the amount of search effort expended to produce that data, it's challenging even to estimate how rare or common a species is. For example, consider the 10 detections presented in the top row of the figure below, and ask yourself how common is this species? The bottom row of the figure presents three possible scenarios for the total number of checklists that generated the detections, from left to right
 
 -   50 checklists: in this case the species is fairly common with 20% of checklists reporting the species.
 -   250 checklists: in this case the species is uncommon with 4% of checklists reporting the species.
@@ -338,10 +333,10 @@ There are many cases of this phenomenon. A couple possible examples include:
 ::: callout-tip
 ## Tip
 
-Remember that the prevalence of a species on eBird checklists (e.g. 10% of checklists detected a species) is only a relative measure of the actual abundance of that species. To appear on an eBird checklist, a species must occur in an area and be detected by the observer. That detectability always plays a role in determining prevalence and it can vary drastically between regions, seasons, and species.
+Remember that the prevalence of a species on eBird checklists (e.g. 10% of checklists detected a species) is only a relative measure of the actual occupancy probability of that species. To appear on an eBird checklist, a species must occur in an area and be detected by the observer. That detectability always plays a role in determining prevalence and it can vary drastically between regions, seasons, and species.
 :::
 
-With that motivation, let's use [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) to combine the checklist and observation data together to produce zero-filled, detection/non-detection data.
+The EBD alone is a source of presence-only data, with one record for each taxon (typically species) reported. For complete checklists, information about non-detections can be inferred from the SED: if there is a record in the SED but no record for a species in the EBD, then a count of zero individuals of that species can be inferred. This process is referred to a "zero-filling" the data. We can use [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) to combine the checklist and observation data together to produce zero-filled, detection/non-detection data. 
 
 ```{r}
 #| label: ebird-zf-zf
@@ -383,13 +378,14 @@ zf <- zf %>%
 
 ## Accounting for variation in effort {#sec-ebird-effort}
 
-As discussed in the [Introduction](intro.qmd#sec-intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data in the context of eBird Status and Trends, we suggest restricting checklists to those less than 6 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers.
+As discussed in the [Introduction](intro.qmd#sec-intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data in the context of eBird Status and Trends, we suggest restricting checklists to traveling or stationary counts less than 6 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers.
 
 ```{r}
 #| label: ebird-effort-filter
 # additional filtering
 zf_filtered <- zf %>% 
-  filter(effort_hours <= 6,
+  filter(protocol_type %in% c("Stationary", "Traveling"),
+         effort_hours <= 6,
          effort_distance_km <= 10,
          effort_speed_kmph <= 100,
          number_observers <= 10)

@@ -225,7 +225,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
   <li><a href="#sec-ebird-import-shared" id="toc-sec-ebird-import-shared" class="nav-link" data-scroll-target="#sec-ebird-import-shared"><span class="header-section-number">2.4.1</span> Shared checklists</a></li>
   <li><a href="#sec-ebird-import-rollup" id="toc-sec-ebird-import-rollup" class="nav-link" data-scroll-target="#sec-ebird-import-rollup"><span class="header-section-number">2.4.2</span> Taxonomic rollup</a></li>
   </ul></li>
-  <li><a href="#sec-ebird-filter" id="toc-sec-ebird-filter" class="nav-link" data-scroll-target="#sec-ebird-filter"><span class="header-section-number">2.5</span> Filtering</a></li>
+  <li><a href="#sec-ebird-filter" id="toc-sec-ebird-filter" class="nav-link" data-scroll-target="#sec-ebird-filter"><span class="header-section-number">2.5</span> Filtering to study region and season</a></li>
   <li><a href="#sec-ebird-zf" id="toc-sec-ebird-zf" class="nav-link" data-scroll-target="#sec-ebird-zf"><span class="header-section-number">2.6</span> Zero-filling</a></li>
   <li><a href="#sec-ebird-effort" id="toc-sec-ebird-effort" class="nav-link" data-scroll-target="#sec-ebird-effort"><span class="header-section-number">2.7</span> Accounting for variation in effort</a>
   <ul class="collapse">
@@ -583,22 +583,20 @@ Tip
 </section>
 </section>
 <section id="sec-ebird-filter" class="level2" data-number="2.5">
-<h2 data-number="2.5" class="anchored" data-anchor-id="sec-ebird-filter"><span class="header-section-number">2.5</span> Filtering</h2>
-<p>The Custom Download form allowed us to apply some basic filters to the eBird data we downloaded: we requested only Wood Thrush observations and only those on checklists from Georgia. However, in most cases you’ll want to apply additional filters to the data once you have it imported into R. For most applications, we’ll only want complete checklists i.e.&nbsp;those for which all birds seen or heard were recorded, which will allow us to produce zero-filled detection/non-detection data. In addition, for the examples used throughout this guide we’ll only want observations from June for the last 10 years (2014-2023). We’ll also only consider checklists with stationary and traveling protocols. We can apply these filters using the <code>filter()</code> function from <code>dplyr</code>.</p>
+<h2 data-number="2.5" class="anchored" data-anchor-id="sec-ebird-filter"><span class="header-section-number">2.5</span> Filtering to study region and season</h2>
+<p>The Custom Download form allowed us to apply some basic filters to the eBird data we downloaded: we requested only Wood Thrush observations and only those on checklists from Georgia. However, in most cases you’ll want to apply additional spatial and/or temporal filters to the data that are specific to your study. For the examples used throughout this guide we’ll only want observations from June for the last 10 years (2014-2023). In addition, we’ll only use complete checklists (i.e., those for which all birds seen or heard were reported), which will allow us to produce detection/non-detection data. We can apply these filters using the <code>filter()</code> function from <code>dplyr</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the checklist data</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>checklists <span class="ot">&lt;-</span> checklists <span class="sc">%&gt;%</span> </span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(all_species_reported,</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>         protocol_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Stationary"</span>, <span class="st">"Traveling"</span>),</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>         <span class="fu">year</span>(observation_date) <span class="sc">&gt;=</span> <span class="dv">2014</span>, <span class="fu">year</span>(observation_date) <span class="sc">&lt;=</span> <span class="dv">2023</span>, </span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>         <span class="fu">month</span>(observation_date) <span class="sc">==</span> <span class="dv">6</span>)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the observation data</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>observations <span class="ot">&lt;-</span> observations <span class="sc">%&gt;%</span> </span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(all_species_reported,</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>         protocol_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Stationary"</span>, <span class="st">"Traveling"</span>),</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>         <span class="fu">year</span>(observation_date) <span class="sc">&gt;=</span> <span class="dv">2014</span>, <span class="fu">year</span>(observation_date) <span class="sc">&lt;=</span> <span class="dv">2023</span>, </span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>         <span class="fu">month</span>(observation_date) <span class="sc">==</span> <span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>         <span class="fu">year</span>(observation_date) <span class="sc">&gt;=</span> <span class="dv">2014</span>, <span class="fu">year</span>(observation_date) <span class="sc">&lt;=</span> <span class="dv">2023</span>, </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>         <span class="fu">month</span>(observation_date) <span class="sc">==</span> <span class="dv">6</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the observation data</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>observations <span class="ot">&lt;-</span> observations <span class="sc">%&gt;%</span> </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(all_species_reported,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>         <span class="fu">year</span>(observation_date) <span class="sc">&gt;=</span> <span class="dv">2014</span>, <span class="fu">year</span>(observation_date) <span class="sc">&lt;=</span> <span class="dv">2023</span>, </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>         <span class="fu">month</span>(observation_date) <span class="sc">==</span> <span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -616,8 +614,7 @@ Tip
 </section>
 <section id="sec-ebird-zf" class="level2" data-number="2.6">
 <h2 data-number="2.6" class="anchored" data-anchor-id="sec-ebird-zf"><span class="header-section-number">2.6</span> Zero-filling</h2>
-<p>To a large degree, the power of eBird for rigorous analyses comes from the complete checklist concept, and the ability to transform these checklists from presence-only data to detection/non-detection data (also called presence/absence data). The EBD alone is a source of presence-only data, with one record for each taxon (typically species) reported. For complete checklists, information about non-detections can be inferred from the SED: if there is a record in the SED but no record for a species in the EBD, then a count of zero individuals of that species can be inferred. This process is referred to a “zero-filling” the data.</p>
-<p>To a large degree, the power of eBird for rigorous analyses comes from the ability to transform the data to produce detection/non-detection information. With presence-only data, but no information of the amount of search effort expended to produce that data, it’s challenging even to estimate how rare or common a species is. For example, consider the 10 detections presented in top row of the figure below, and ask yourself how common is this species? The bottom row of the figure presents three possible scenarios for the total number of checklists that generated the detections, from left to right</p>
+<p>To a large degree, the power of eBird for rigorous analyses comes from the ability to transform the data to produce detection/non-detection data (also referred to as presence/absence data). With presence-only data, but no information of the amount of search effort expended to produce that data, it’s challenging even to estimate how rare or common a species is. For example, consider the 10 detections presented in the top row of the figure below, and ask yourself how common is this species? The bottom row of the figure presents three possible scenarios for the total number of checklists that generated the detections, from left to right</p>
 <ul>
 <li>50 checklists: in this case the species is fairly common with 20% of checklists reporting the species.</li>
 <li>250 checklists: in this case the species is uncommon with 4% of checklists reporting the species.</li>
@@ -675,10 +672,10 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Remember that the prevalence of a species on eBird checklists (e.g.&nbsp;10% of checklists detected a species) is only a relative measure of the actual abundance of that species. To appear on an eBird checklist, a species must occur in an area and be detected by the observer. That detectability always plays a role in determining prevalence and it can vary drastically between regions, seasons, and species.</p>
+<p>Remember that the prevalence of a species on eBird checklists (e.g.&nbsp;10% of checklists detected a species) is only a relative measure of the actual occupancy probability of that species. To appear on an eBird checklist, a species must occur in an area and be detected by the observer. That detectability always plays a role in determining prevalence and it can vary drastically between regions, seasons, and species.</p>
 </div>
 </div>
-<p>With that motivation, let’s use <a href="https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html"><code>auk_zerofill()</code></a> to combine the checklist and observation data together to produce zero-filled, detection/non-detection data.</p>
+<p>The EBD alone is a source of presence-only data, with one record for each taxon (typically species) reported. For complete checklists, information about non-detections can be inferred from the SED: if there is a record in the SED but no record for a species in the EBD, then a count of zero individuals of that species can be inferred. This process is referred to a “zero-filling” the data. We can use <a href="https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html"><code>auk_zerofill()</code></a> to combine the checklist and observation data together to produce zero-filled, detection/non-detection data.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>zf <span class="ot">&lt;-</span> <span class="fu">auk_zerofill</span>(observations, checklists, <span class="at">collapse =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -714,14 +711,15 @@ Tip
 </section>
 <section id="sec-ebird-effort" class="level2" data-number="2.7">
 <h2 data-number="2.7" class="anchored" data-anchor-id="sec-ebird-effort"><span class="header-section-number">2.7</span> Accounting for variation in effort</h2>
-<p>As discussed in the <a href="./intro.html#sec-intro-intro">Introduction</a>, variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data in the context of eBird Status and Trends, we suggest restricting checklists to those less than 6 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers.</p>
+<p>As discussed in the <a href="./intro.html#sec-intro-intro">Introduction</a>, variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data in the context of eBird Status and Trends, we suggest restricting checklists to traveling or stationary counts less than 6 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># additional filtering</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>zf_filtered <span class="ot">&lt;-</span> zf <span class="sc">%&gt;%</span> </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(effort_hours <span class="sc">&lt;=</span> <span class="dv">6</span>,</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>         effort_distance_km <span class="sc">&lt;=</span> <span class="dv">10</span>,</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>         effort_speed_kmph <span class="sc">&lt;=</span> <span class="dv">100</span>,</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>         number_observers <span class="sc">&lt;=</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(protocol_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Stationary"</span>, <span class="st">"Traveling"</span>),</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>         effort_hours <span class="sc">&lt;=</span> <span class="dv">6</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>         effort_distance_km <span class="sc">&lt;=</span> <span class="dv">10</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>         effort_speed_kmph <span class="sc">&lt;=</span> <span class="dv">100</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>         number_observers <span class="sc">&lt;=</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note that these filtering parameters are based on making predictions at weekly spatial resolution and 3 km spatial resolution. For applications requiring higher spatial precision, stricter filtering on <code>effort_distance_km</code> should be used.</p>
 <div class="callout callout-style-default callout-caution no-icon callout-titled">
