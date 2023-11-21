@@ -14,7 +14,7 @@ The relative abundance model presented here is similar to and a natural extensio
 
 ## Data preparation {#sec-encounter-data}
 
-Let's get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to [download the data package](https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip), and unzip it to your project directory, to ensure you're working with exactly the same data as was used in the creation of this book.
+Let's get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to [download the data package](https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip), and unzip it to your project directory, to ensure you're working with exactly the same data as was used in the creation of this guide.
 
 ```{r}
 #| label: encounter-data-load
@@ -338,7 +338,7 @@ brks <- ifel(r_plot > 0, r_plot, NA) %>%
 # label the bottom, middle, and top value
 lbls <- round(c(min(brks), median(brks), max(brks)), 2)
 # ebird status and trends color palette
-pal <- abundance_palette(length(brks) - 1)
+pal <- ebirdst_palettes(length(brks) - 1)
 plot(r_plot, 
      col = c("#e6e6e6", pal), breaks = c(0, brks), 
      maxpixels = ncell(r_plot),

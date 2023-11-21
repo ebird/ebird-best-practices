@@ -37,7 +37,7 @@ knitr:
     comment: "#>"
     collapse: true
     cache: false
-    warn: false
+    warning: false
     error: false
     message: false
     out.width: "\\textwidth"

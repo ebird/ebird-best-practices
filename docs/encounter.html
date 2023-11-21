@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.353">
+<meta name="generator" content="quarto-1.3.433">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -111,7 +111,8 @@ div.csl-indent {
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-0QV88WCBNB"></script>
@@ -141,7 +142,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
       <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./encounter.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Encounter Rate</span></a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
-      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -155,7 +156,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Best Practices for Using eBird Data</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/ebird/ebird-best-practices/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/ebird/ebird-best-practices/" rel="" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
@@ -269,7 +270,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </section>
 <section id="sec-encounter-data" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="sec-encounter-data"><span class="header-section-number">4.2</span> Data preparation</h2>
-<p>Let’s get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to <a href="https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip">download the data package</a>, and unzip it to your project directory, to ensure you’re working with exactly the same data as was used in the creation of this book.</p>
+<p>Let’s get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to <a href="https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip">download the data package</a>, and unzip it to your project directory, to ensure you’re working with exactly the same data as was used in the creation of this guide.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ebirdst)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fields)</span>
@@ -346,7 +347,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </div>
 </div>
 </div>
-<p>In the above plot, the full set of points is shown in black and the subsampled points are shown in red. Now let’s apply exactly the same approach to subsampling the real eBird checklists; however, now we subsample temporally in addition to spatially, and sample detections and non-detections separately. Also, recall from <a href="ebird.html#sec-ebird-testtrain"><span>Section&nbsp;2.6</span></a> that we split the data 80/20 into train/test sets. Using the <code>sample_by</code> argument to <code>grid_sample_stratified()</code>, we can independently sample from the train and test sets to remove bias from both.</p>
+<p>In the above plot, the full set of points is shown in black and the subsampled points are shown in red. Now let’s apply exactly the same approach to subsampling the real eBird checklists; however, now we subsample temporally in addition to spatially, and sample detections and non-detections separately. Also, recall from <a href="ebird.html#sec-ebird-testtrain"><span>Section&nbsp;2.8</span></a> that we split the data 80/20 into train/test sets. Using the <code>sample_by</code> argument to <code>grid_sample_stratified()</code>, we can independently sample from the train and test sets to remove bias from both.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sample one checklist per 3km x 3km x 1 week grid for each year</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># sample detection/non-detection independently </span></span>
@@ -780,7 +781,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </div>
 </div>
 </div>
-<p>There are a range of interesting responses here. As seen in <a href="ebird.html#sec-ebird-explore"><span>Section&nbsp;2.7</span></a>, the encounter rate for Wood Thrush peaks early in the morning when they’re most likely to be singing, then quickly drops off in the middle of the day, before slightly increasing in the evening. Some other predictors show a more smoothly increasing relationship with encounter rate, for example, as the landscape contains more deciduous forest, the encounter rate increases.</p>
+<p>There are a range of interesting responses here. As seen in <a href="ebird.html#sec-ebird-explore"><span>Section&nbsp;2.9</span></a>, the encounter rate for Wood Thrush peaks early in the morning when they’re most likely to be singing, then quickly drops off in the middle of the day, before slightly increasing in the evening. Some other predictors show a more smoothly increasing relationship with encounter rate, for example, as the landscape contains more deciduous forest, the encounter rate increases.</p>
 <p>The random forest model has a number of interactions, which are not displayed in these partial dependence plots. When interpreting these, bear in mind that there are likely some more complex interaction effects beneath these individual plots.</p>
 </section>
 </section>
@@ -917,7 +918,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="co"># label the bottom, middle, and top value</span></span>
 <span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>lbls <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">median</span>(brks), <span class="fu">max</span>(brks)), <span class="dv">2</span>)</span>
 <span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co"># ebird status and trends color palette</span></span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>pal <span class="ot">&lt;-</span> <span class="fu">abundance_palette</span>(<span class="fu">length</span>(brks) <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>pal <span class="ot">&lt;-</span> <span class="fu">ebirdst_palettes</span>(<span class="fu">length</span>(brks) <span class="sc">-</span> <span class="dv">1</span>)</span>
 <span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(r_pred[[<span class="st">"encounter_rate"</span>]], </span>
 <span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> pal, <span class="at">breaks =</span> brks, </span>
 <span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">maxpixels =</span> <span class="fu">ncell</span>(r_pred),</span>

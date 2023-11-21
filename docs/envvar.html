@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.353">
+<meta name="generator" content="quarto-1.3.433">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -111,7 +111,8 @@ div.csl-indent {
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-0QV88WCBNB"></script>
@@ -139,7 +140,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
       <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./envvar.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environmental Variables</span></a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
-      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -153,7 +154,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Best Practices for Using eBird Data</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/ebird/ebird-best-practices/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/ebird/ebird-best-practices/" rel="" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
@@ -252,8 +253,8 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </section>
 <section id="sec-envvar-landcover" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="sec-envvar-landcover"><span class="header-section-number">3.2</span> Landcover</h2>
-<p>For the examples in this book, we’ll use land cover variables derived from the <a href="https://lpdaac.usgs.gov/products/mcd12q1v006/">MODIS MCD12Q1 v006</a> land cover product <span class="citation" data-cites="friedlMCD12Q1MODISTerra2015">(<a href="references.html#ref-friedlMCD12Q1MODISTerra2015" role="doc-biblioref">Friedl and Sulla-Menashe 2015</a>)</span>. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We’ll use the University of Maryland classification system, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 15 different land cover classes. The <code>terra</code> package includes a <a href="https://rspatial.org/modis/1-introduction.html">nice tutorial</a> for how to download and pre-processing MODIS data like this using the <a href="https://github.com/rspatial/luna"><code>luna</code> R package</a>.</p>
-<p>The 2013-2021 data for our focal region (i.e.&nbsp;Georgia) is in the data package in the file <code>data/modis_mcd12q1_umd_2013-2021.tif</code>. This is a multi-band <a href="https://en.wikipedia.org/wiki/GeoTIFF">GeoTIFF</a> in which each band corresponds to a year of landcover data. In R, we’ll use the <a href="https://rspatial.github.io/terra/"><code>terra</code> package</a> to work with <a href="https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/">raster data</a>.</p>
+<p>For the examples in this guide, we’ll use land cover variables derived from the <a href="https://lpdaac.usgs.gov/products/mcd12q1v006/">MODIS MCD12Q1 v006</a> land cover product <span class="citation" data-cites="friedlMCD12Q1MODISTerra2015">(<a href="references.html#ref-friedlMCD12Q1MODISTerra2015" role="doc-biblioref">Friedl and Sulla-Menashe 2015</a>)</span>. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We’ll use the University of Maryland classification system, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 15 different land cover classes. The <code>terra</code> package includes a <a href="https://rspatial.org/modis/1-introduction.html">nice tutorial</a> for how to download and pre-processing MODIS data like this using the <a href="https://github.com/rspatial/luna"><code>luna</code> R package</a>.</p>
+<p>The 2013-2021 data for our focal region (i.e.&nbsp;Georgia) is in the data package in the file <code>data-raw/modis_mcd12q1_umd_2013-2021.tif</code>. This is a multi-band <a href="https://en.wikipedia.org/wiki/GeoTIFF">GeoTIFF</a> in which each band corresponds to a year of landcover data. In R, we’ll use the <a href="https://rspatial.github.io/terra/"><code>terra</code> package</a> to work with <a href="https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/">raster data</a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(exactextractr)</span>
@@ -267,7 +268,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># load and inspect the landcover data</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>landcover <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"data/modis_mcd12q1_umd_2013-2021.tif"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>landcover <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"data-raw/modis_mcd12q1_umd_2013-2021.tif"</span>)</span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(landcover)</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; class       : SpatRaster </span></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; dimensions  : 1174, 1249, 9  (nrow, ncol, nlyr)</span></span>
@@ -291,9 +292,9 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </div>
 </div>
 </div>
-<p>We’ve also included a lookup table in the data package (<code>data/mcd12q1_fao_classes.csv</code>) that provides descriptions of each of these classes.</p>
+<p>We’ve also included a lookup table in the data package (<code>data-raw/mcd12q1_fao_classes.csv</code>) that provides descriptions of each of these classes.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lc_classes <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/mcd12q1_umd_classes.csv"</span>)</span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lc_classes <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data-raw/mcd12q1_umd_classes.csv"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(lc_classes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
@@ -407,9 +408,9 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </div>
 </div>
 <p>At this point we could use the MODIS land cover data directly, simply extracting the land cover class for each checklist location. However, we instead advocate summarizing the land cover data within a neighborhood around the checklist locations. As discussed in <a href="intro.html#sec-intro-intro"><span>Section&nbsp;1.1</span></a>, checklist locations are not precise, so it’s more appropriate to use the habitat in the surrounding area, rather than only at the checklist location. More fundamentally, organisms interact with their environment not at a single point, but at the scale of a landscape, so it’s important to include habitat information characterizing a suitably-sized landscape around the observation location. Based on our experience working with eBird data, a 3km diameter circular neighborhood centered on each checklist location is sufficient to account for the spatial precision in the data when the maximum distance of travelling counts has been limited to 10km, while also being a relevant ecological scale for many bird species.</p>
-<p>There are a variety of <strong>landscape metrics</strong> that can be used to characterize the composition (what habitat is available) and configuration (how that habitat is arranged spatially) of landscapes. Many of these metrics can be calculated using the R package <a href="https://r-spatialecology.github.io/landscapemetrics/"><code>landscapemetrics</code></a>. We’ll use two simple metrics to summarize landcover data in this book: percent landcover, a measure of composition, and edge density, a measure of configuration. For each landcover class, <a href="https://r-spatialecology.github.io/landscapemetrics/reference/lsm_c_cpland.html">percent landcover</a> (abbreviated as <code>pland</code>) is the percent of the landscape that is composed of that class and <a href="https://r-spatialecology.github.io/landscapemetrics/reference/lsm_c_ed.html">edge density</a> (abbreviated as <code>ed</code>) is the total boundary length of all patches of that class per unit area. For a broad range of scenarios, these two metrics are a reliable choice for calculating environmental covariates in distribution modeling.</p>
+<p>There are a variety of <strong>landscape metrics</strong> that can be used to characterize the composition (what habitat is available) and configuration (how that habitat is arranged spatially) of landscapes. Many of these metrics can be calculated using the R package <a href="https://r-spatialecology.github.io/landscapemetrics/"><code>landscapemetrics</code></a>. We’ll use two simple metrics to summarize landcover data in this guide: percent landcover, a measure of composition, and edge density, a measure of configuration. For each landcover class, <a href="https://r-spatialecology.github.io/landscapemetrics/reference/lsm_c_cpland.html">percent landcover</a> (abbreviated as <code>pland</code>) is the percent of the landscape that is composed of that class and <a href="https://r-spatialecology.github.io/landscapemetrics/reference/lsm_c_ed.html">edge density</a> (abbreviated as <code>ed</code>) is the total boundary length of all patches of that class per unit area. For a broad range of scenarios, these two metrics are a reliable choice for calculating environmental covariates in distribution modeling.</p>
 <p>We’ll start by finding the full set of unique checklists locations for each year in the eBird data and buffer the points by 1.5km to generate 3km diameter circular neighborhoods centered on each checklist location. Note that the MODIS landcover data are not available for 2022 and 2023, so we use the 2021 layer for 2022-2023 checklists.</p>
-<div class="cell" data-layout-align="center" data-cahce-path="cache" data-hash="cache/envvar-landcover-buffer_0ebd299c8e4c7458eed471fc301bf2d4">
+<div class="cell" data-layout-align="center" data-cahce-path="cache" data-hash="cache/envvar-landcover-buffer_e2b6434dbd0442fcbeda728db652268e">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ebird checklist locations</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>checklists <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/checklists-zf_woothr_june_us-ga.csv"</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># landcover data not availble for the full period, so we use the closest year</span></span>
@@ -424,7 +425,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_buffer</span>(<span class="at">dist =</span> <span class="fu">set_units</span>(<span class="fl">1.5</span>, <span class="st">"km"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, for each location, we crop and mask the landcover layer corresponding to the checklist year to the circular neighborhood around that checklist. Then we use <code>calculate_lsm()</code> from <code>landscapemetrics</code> to calculate <code>pland</code> and <code>ed</code> metrics within each neighborhood. <strong>This step may take 30 minute or longer to run.</strong></p>
-<div class="cell" data-layout-align="center" data-hash="cache/envvar-landcover-lsm_c0f750870329b421f4452a3520727498">
+<div class="cell" data-layout-align="center" data-hash="cache/envvar-landcover-lsm_f27554fc80e6a0fbcb3e7d91ed3c12dd">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>lsm <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(buffers))) {</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  buffer_i <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(buffers[i, ], <span class="at">crs =</span> <span class="fu">crs</span>(landcover))</span>
@@ -442,7 +443,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>lsm <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(lsm) <span class="sc">%&gt;%</span> </span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(locality_id, year_lc, class, metric, value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Finally, we’ll transform the data frame so there’s one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don’t appear within the buffer will not have associated <code>pland</code> and <code>ed</code> metrics; at this stage, we replace these implicit missing values with zeros using the complete list of classes in <code>lc_classes</code>. We also replace the opaque class numbers with more meaningful names from the class description file <code>data/mcd12q1_umd_classes.csv</code>.</p>
+<p>Finally, we’ll transform the data frame so there’s one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don’t appear within the buffer will not have associated <code>pland</code> and <code>ed</code> metrics; at this stage, we replace these implicit missing values with zeros using the complete list of classes in <code>lc_classes</code>. We also replace the opaque class numbers with more meaningful names from the class description file <code>data-raw/mcd12q1_umd_classes.csv</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>lsm_wide <span class="ot">&lt;-</span> lsm <span class="sc">%&gt;%</span> </span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># fill missing classes with zeros</span></span>
@@ -463,11 +464,11 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <section id="sec-envvar-elevation" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="sec-envvar-elevation"><span class="header-section-number">3.3</span> Elevation</h2>
 <p>In this section we’ll demonstrate how to assign elevation variables, which frequently play an important role in shaping species distributions. Amatulli et al. <span class="citation" data-cites="amatulliSuiteGlobalCrossscale2018">(<a href="references.html#ref-amatulliSuiteGlobalCrossscale2018" role="doc-biblioref">2018</a>)</span> provide a suite of global, 1km resolution topographic variables designed for use in distribution modeling. A range of variables are available, including elevation, slope, roughness, and many others; we’ll focus on elevation here, but the approach can easily be applied to other variables.</p>
-<p>To access the data, visit <a href="http://www.earthenv.org/topography">the website for these data</a>, download the 1 km resolution median elevation product, and save the file (<code>elevation_1KMmd_GMTEDmd.tif</code>) in the <code>data/</code> subdirectory of your RStudio project. If you’re unable to download the data, we’ve also provided a small subset of the data covering our study extent in the <a href="./intro.html#sec-intro-setup-data">data package</a>.</p>
+<p>To access the data, visit <a href="http://www.earthenv.org/topography">the website for these data</a>, download the 1 km resolution median elevation product, and save the file (<code>elevation_1KMmd_GMTEDmd.tif</code>) in the <code>data-raw/</code> subdirectory of your RStudio project. If you’re unable to download the data, we’ve also provided a small subset of the data covering our study extent in the <a href="./intro.html#sec-intro-setup-data">data package</a>.</p>
 <p>Analogous to how we assigned landcover variables, we’ll calculate the mean and standard deviation of the elevation within 3km diameter circular neighborhoods centered on each checklist location.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># elevation raster</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>elevation <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"data/elevation_1KMmd_GMTEDmd.tif"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>elevation <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"data-raw/elevation_1KMmd_GMTEDmd.tif"</span>)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># mean and standard deviation within each circular neighborhood</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>elev_buffer <span class="ot">&lt;-</span> <span class="fu">exact_extract</span>(elevation, buffers, <span class="at">fun =</span> <span class="fu">c</span>(<span class="st">"mean"</span>, <span class="st">"stdev"</span>),</span>
@@ -521,7 +522,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">gdal =</span> <span class="st">"COMPRESS=DEFLATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, we extract the coordinates of the cell centers from the raster we just created, convert these to <code>sf</code> point features, and buffer these to generate 3km circular neighborhoods.</p>
-<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-buffer_e4378cedd42f7f96420658c6c0978ced">
+<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-buffer_159b7a4af361de490aee6d42c970d320">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># generate neighborhoods for the prediction grid cell centers</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>buffers_ps <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(r, <span class="at">cells =</span> <span class="cn">TRUE</span>, <span class="at">xy =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">cell_id =</span> cell, x, y) <span class="sc">%&gt;%</span> </span>
@@ -530,7 +531,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_buffer</span>(<span class="fu">set_units</span>(<span class="dv">3</span>, <span class="st">"km"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now we can calculate the landcover and elevation variables exactly as we did for the eBird checklists in the previous two sections. First, the landscape metrics <code>pland</code> and <code>ed</code> from the landcover data. Note that we use the most recent year of landcover data (i.e.&nbsp;2021) in this case.</p>
-<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-lsm_7192ac448480a042b89a11355ca78e5a">
+<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-lsm_a26b5a9dac71676a7de6c1adf8d87302">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># estimate landscape metrics for each cell in the prediction grid</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>lsm_ps <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(buffers_ps))) {</span>

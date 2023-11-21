@@ -4,9 +4,10 @@
 .Ruserdata
 
 /.quarto/
-data-raw/
 .Rdata
 .httr-oauth
 .DS_Store
 
 *cache/
+data-figures-prep/
+data-raw/ebd_*
