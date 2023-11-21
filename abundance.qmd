@@ -321,10 +321,11 @@ Prior to mapping the relative abundance, we'll multiple by the `in_range` layer,
 
 ```{r}
 #| label: abundance-predict-map
+#| fig.asp: 1.15
 # in range abundance
 r_plot <- r_pred[["abundance"]] * r_pred[["in_range"]]
 
-par(mar = c(3.5, 0.25, 0.25, 0.25))
+par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
 plot(study_region, col = NA, border = NA)
 plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
@@ -356,7 +357,7 @@ par(new = TRUE, mar = c(0, 0, 0, 0))
 title <- "Wood Thrush Relative Abundance (June 2023)"
 image.plot(zlim = c(0, 1), legend.only = TRUE, 
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
-           smallplot = c(0.25, 0.75, 0.06, 0.09),
+           smallplot = c(0.25, 0.75, 0.03, 0.06),
            horizontal = TRUE,
            axis.args = list(at = c(0, 0.5, 1), labels = lbls,
                             fg = "black", col.axis = "black",

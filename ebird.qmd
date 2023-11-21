@@ -471,6 +471,7 @@ Before proceeding to training species distribution models with these data, it's 
 
 ```{r}
 #| label: ebird-explore-map
+#| fig.asp: 1.15
 # load and project gis data to albers equal area conic projection
 map_proj <- st_crs("ESRI:102003")
 ne_land <- read_sf("data/gis-data.gpkg", "ne_land") %>% 
@@ -495,12 +496,14 @@ checklists_sf <- checklists %>%
   select(species_observed)
 
 # map
-par(mar = c(0.25, 0.25, 0.25, 0.25))
+par(mar = c(0.25, 0.25, 4, 0.25))
 # set up plot area
-plot(st_geometry(checklists_sf), col = NA)
+plot(st_geometry(checklists_sf), 
+     main = "Wood Thrush eBird Observations\nJune 2014-2023",
+     col = NA, border = NA)
 # contextual gis data
-plot(ne_land, col = "#dddddd", border = "#888888", lwd = 0.5, add = TRUE)
-plot(ga_boundary, col = "#cccccc", border = NA, add = TRUE)
+plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
+plot(ga_boundary, col = "#e6e6e6", border = NA, add = TRUE)
 plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
 plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
 # ebird observations
@@ -518,8 +521,6 @@ legend("bottomright", bty = "n",
        legend = c("eBird checklists", "Wood Thrush sightings"),
        pch = 19)
 box()
-par(new = TRUE, mar = c(0, 0, 3, 0))
-title("Wood Thrush eBird Observations\nJune 2014-2023")
 ```
 
 In this map, the spatial bias in eBird data becomes immediately obvious, for example, notice the large number of checklists in areas around Atlanta, the largest city in Georgia, in the northern part of the state.

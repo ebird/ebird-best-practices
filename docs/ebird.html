@@ -813,7 +813,7 @@ Solution
 <section id="sec-ebird-explore" class="level2" data-number="2.9">
 <h2 data-number="2.9" class="anchored" data-anchor-id="sec-ebird-explore"><span class="header-section-number">2.9</span> Exploratory analysis and visualization</h2>
 <p>Before proceeding to training species distribution models with these data, it’s worth exploring the dataset to see what we’re working with. Let’s start by making a simple map of the observations. This map uses GIS data available for <a href="https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip">download in the data package</a>. Place the contents of the zip file in the <code>data/</code> subdirectory of your project directory.</p>
-<div class="cell" data-layout-align="center">
+<div class="cell" data-layout-align="center" data-fig.asp="1.15">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load and project gis data to albers equal area conic projection</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>map_proj <span class="ot">&lt;-</span> <span class="fu">st_crs</span>(<span class="st">"ESRI:102003"</span>)</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>ne_land <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"data/gis-data.gpkg"</span>, <span class="st">"ne_land"</span>) <span class="sc">%&gt;%</span> </span>
@@ -838,31 +838,31 @@ Solution
 <span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(species_observed)</span>
 <span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="co"># map</span></span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>))</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="dv">4</span>, <span class="fl">0.25</span>))</span>
 <span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="co"># set up plot area</span></span>
-<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(checklists_sf), <span class="at">col =</span> <span class="cn">NA</span>)</span>
-<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a><span class="co"># contextual gis data</span></span>
-<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_land, <span class="at">col =</span> <span class="st">"#dddddd"</span>, <span class="at">border =</span> <span class="st">"#888888"</span>, <span class="at">lwd =</span> <span class="fl">0.5</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ga_boundary, <span class="at">col =</span> <span class="st">"#cccccc"</span>, <span class="at">border =</span> <span class="cn">NA</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_state_lines, <span class="at">col =</span> <span class="st">"#ffffff"</span>, <span class="at">lwd =</span> <span class="fl">0.75</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_country_lines, <span class="at">col =</span> <span class="st">"#ffffff"</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="co"># ebird observations</span></span>
-<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a><span class="co"># not observed</span></span>
-<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">filter</span>(checklists_sf, <span class="sc">!</span>species_observed),</span>
-<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> <span class="fl">0.1</span>, <span class="at">col =</span> <span class="fu">alpha</span>(<span class="st">"#555555"</span>, <span class="fl">0.25</span>),</span>
-<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>     <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a><span class="co"># observed</span></span>
-<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">filter</span>(checklists_sf, species_observed),</span>
-<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> <span class="fl">0.3</span>, <span class="at">col =</span> <span class="fu">alpha</span>(<span class="st">"#4daf4a"</span>, <span class="dv">1</span>),</span>
-<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>     <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a><span class="co"># legend</span></span>
-<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"bottomright"</span>, <span class="at">bty =</span> <span class="st">"n"</span>,</span>
-<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"#555555"</span>, <span class="st">"#4daf4a"</span>),</span>
-<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"eBird checklists"</span>, <span class="st">"Wood Thrush sightings"</span>),</span>
-<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>       <span class="at">pch =</span> <span class="dv">19</span>)</span>
-<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a><span class="fu">box</span>()</span>
-<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">new =</span> <span class="cn">TRUE</span>, <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">3</span>, <span class="dv">0</span>))</span>
-<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a><span class="fu">title</span>(<span class="st">"Wood Thrush eBird Observations</span><span class="sc">\n</span><span class="st">June 2014-2023"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(checklists_sf), </span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Wood Thrush eBird Observations</span><span class="sc">\n</span><span class="st">June 2014-2023"</span>,</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="cn">NA</span>, <span class="at">border =</span> <span class="cn">NA</span>)</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="co"># contextual gis data</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_land, <span class="at">col =</span> <span class="st">"#cfcfcf"</span>, <span class="at">border =</span> <span class="st">"#888888"</span>, <span class="at">lwd =</span> <span class="fl">0.5</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ga_boundary, <span class="at">col =</span> <span class="st">"#e6e6e6"</span>, <span class="at">border =</span> <span class="cn">NA</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_state_lines, <span class="at">col =</span> <span class="st">"#ffffff"</span>, <span class="at">lwd =</span> <span class="fl">0.75</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_country_lines, <span class="at">col =</span> <span class="st">"#ffffff"</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a><span class="co"># ebird observations</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a><span class="co"># not observed</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">filter</span>(checklists_sf, <span class="sc">!</span>species_observed),</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> <span class="fl">0.1</span>, <span class="at">col =</span> <span class="fu">alpha</span>(<span class="st">"#555555"</span>, <span class="fl">0.25</span>),</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>     <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a><span class="co"># observed</span></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">filter</span>(checklists_sf, species_observed),</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> <span class="fl">0.3</span>, <span class="at">col =</span> <span class="fu">alpha</span>(<span class="st">"#4daf4a"</span>, <span class="dv">1</span>),</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>     <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a><span class="co"># legend</span></span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"bottomright"</span>, <span class="at">bty =</span> <span class="st">"n"</span>,</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"#555555"</span>, <span class="st">"#4daf4a"</span>),</span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"eBird checklists"</span>, <span class="st">"Wood Thrush sightings"</span>),</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>       <span class="at">pch =</span> <span class="dv">19</span>)</span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a><span class="fu">box</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">

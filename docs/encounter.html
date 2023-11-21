@@ -904,8 +904,8 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <section id="sec-encounter-predict-map" class="level3" data-number="4.6.3">
 <h3 data-number="4.6.3" class="anchored" data-anchor-id="sec-encounter-predict-map"><span class="header-section-number">4.6.3</span> Mapping</h3>
 <p>Finally, we can make a map of these encounter rate predictions!</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="fl">3.5</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>))</span>
+<div class="cell" data-layout-align="center" data-fig.asp="1.15">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>))</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># set up plot area</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(study_region, <span class="at">col =</span> <span class="cn">NA</span>, <span class="at">border =</span> <span class="cn">NA</span>)</span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ne_land, <span class="at">col =</span> <span class="st">"#dddddd"</span>, <span class="at">border =</span> <span class="st">"#888888"</span>, <span class="at">lwd =</span> <span class="fl">0.5</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
@@ -936,7 +936,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>title <span class="ot">&lt;-</span> <span class="st">"Wood Thrush Encounter Rate (June 2023)"</span></span>
 <span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a><span class="fu">image.plot</span>(<span class="at">zlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">legend.only =</span> <span class="cn">TRUE</span>, </span>
 <span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>           <span class="at">col =</span> pal, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="fu">length</span>(brks)),</span>
-<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>           <span class="at">smallplot =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">0.06</span>, <span class="fl">0.09</span>),</span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>           <span class="at">smallplot =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">0.03</span>, <span class="fl">0.06</span>),</span>
 <span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>           <span class="at">horizontal =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>           <span class="at">axis.args =</span> <span class="fu">list</span>(<span class="at">at =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>), <span class="at">labels =</span> lbls,</span>
 <span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>                            <span class="at">fg =</span> <span class="st">"black"</span>, <span class="at">col.axis =</span> <span class="st">"black"</span>,</span>
@@ -954,8 +954,8 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </div>
 </div>
 <p>Although this encounter rate map provides more detailed information on the distribution of Wood Thrush, for many applications a simple range map may be more desirable. For this, we can map the <code>in_range</code> layer of the raster of predictions we created.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="dv">1</span>, <span class="fl">0.25</span>))</span>
+<div class="cell" data-layout-align="center" data-fig.asp="1.15">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">1.25</span>, <span class="fl">0.25</span>))</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># set up plot area</span></span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(study_region, </span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Wood Thrush Range (June 2023)"</span>,</span>
