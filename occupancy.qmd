@@ -31,10 +31,6 @@ library(tidyverse)
 # set random number seed to insure fully repeatable results
 set.seed(1)
 
-# setup results directory for saved results
-dir.create("results/", showWarnings = FALSE, recursive = TRUE)
-
-
 # habitat variables: landcover and elevation
 habitat <- read_csv("data/environmental-variables_checklists.csv")
 
@@ -295,12 +291,7 @@ r_pred <- pred_occ %>%
   st_as_sf(coords = c("x", "y"), crs = crs) %>% 
   rasterize(r, field = c("occ_prob", "occ_se")) %>% 
   setNames(c("occ_prob", "occ_se"))
-
-# save the raster
-# 2 bands: occ_prob, occ_se
-r_pred <- writeRaster(r_pred, "results/occupancy_woothr_june-2023.tif", 
-                      overwrite = TRUE,
-                      gdal = "COMPRESS=DEFLATE")
+print(r_pred)
 ```
 
 Finally, we can map these predictions!

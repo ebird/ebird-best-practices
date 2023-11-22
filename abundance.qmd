@@ -31,9 +31,6 @@ library(tidyverse)
 # set random number seed to insure fully repeatable results
 set.seed(1)
 
-# setup results directory for saved results
-dir.create("results/", showWarnings = FALSE, recursive = TRUE)
-
 # habitat variables: landcover and elevation
 habitat <- read_csv("data/environmental-variables_checklists.csv")
 
@@ -307,12 +304,7 @@ r_pred <- predictions %>%
   rasterize(r, field = c("in_range", "encounter_rate", "count", "abundance"),
             fun = "mean") %>% 
   setNames(c("in_range", "encounter_rate", "count", "abundance"))
-
-# save the raster
-# 3 bands: encounter_rate, count, and relative abundance
-r_pred <- writeRaster(r_pred, "results/abundance_woothr_june-2023.tif", 
-                      overwrite = TRUE,
-                      gdal = "COMPRESS=DEFLATE")
+print(r_pred)
 ```
 
 Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 hour, 1 km checklist for which counting started at about 6:15AM on June 15, 2023. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.

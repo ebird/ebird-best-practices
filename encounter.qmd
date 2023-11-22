@@ -34,9 +34,6 @@ library(tidyverse)
 # set random number seed to insure fully repeatable results
 set.seed(1)
 
-# setup results directory for saved results
-dir.create("results/", showWarnings = FALSE, recursive = )
-
 # habitat variables: landcover and elevation
 habitat <- read_csv("data/environmental-variables_checklists.csv")
 
@@ -127,7 +124,7 @@ pct_after <- mean(checklists_ss$species_observed) %>%
   scales::percent(accuracy = 0.1)
 ```
 
-So, the subsampling *decreased* the overall number of checklists by a factor of about `round(nrow(checklists) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`. This increase in detections will help the random forests model distinguish where birds are being observed; however, this does affect the prevalence rate of the detections in the data. As a result, the estimated encounter rate based on these subsampled data will be larger than the true encounter rate. When examining the outputs from the models it will be important to recall that we altered the prevalence rate at this stage. Now let's look at how the subsampling affects the spatial distribution of the training observations.
+So, the subsampling *decreased* the overall number of checklists by a factor of about `r round(nrow(checklists) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`. This increase in detections will help the random forests model distinguish where birds are being observed; however, this does affect the prevalence rate of the detections in the data. As a result, the estimated encounter rate based on these subsampled data will be larger than the true encounter rate. When examining the outputs from the models it will be important to recall that we altered the prevalence rate at this stage. Now let's look at how the subsampling affects the spatial distribution of the training observations.
 
 ```{r}
 #| label: encounter-sss-map
@@ -184,7 +181,7 @@ For Wood Thrush, subsampling the detections and non-detections independently is 
 
 ## Random forests {#sec-encounter-rf}
 
-Now we'll use a random forests model to relate detection/non-detection of Wood Thrush to the environmental variables we calculate in [Chapter -@sec-envvar] (MODIS land cover and elevation), while also accounting for variation in detectability by including a suite of effort covariates. At this stage, we filter to just the training set, leaving the test set to assess predictive performance later.
+Now we'll use a random forests model to relate detection/non-detection of Wood Thrush to the environmental variables we calculated in [Chapter -@sec-envvar] (MODIS land cover and elevation), while also accounting for variation in detectability by including a suite of effort covariates. At this stage, we filter to just the training set, leaving the test set to assess predictive performance later.
 
 ```{r}
 #| label: encounter-rf-split
@@ -222,9 +219,9 @@ er_model <- ranger(formula =  as.factor(species_observed) ~ .,
 
 ### Calibration {#sec-encounter-rf-cal}
 
-For various reasons, the predicted probabilities from models do not always align with the observed frequencies of detections. For example, we would hope that if we look at all sites with a estimated probability of encounter of 0.2, that 20% of these would record the species. However, these probabilities are not always so well aligned. This will clearly be the case in our example, because we have deliberately inflated the prevalence of detection records in the data through the spatiotemporal subsampling process. We can produce a **calibration** of the predictions, which can be a useful diagnostic tool to understand the model predictions, and in some cases can be used to realign the predictions with observations. For information on calibration in species distribution models see Vaughan and Ormerod [-@vaughanContinuingChallengesTesting2005] and for more fundamental references on calibration see Platt [-@plattProbabilisticOutputsSupport1999], Murphy [-@murphyNewVectorPartition1973], and Niculescu-Mizil and Caruana [-@niculescu-mizilPredictingGoodProbabilities2005].
+For various reasons, the predicted probabilities from models do not always align with the observed frequencies of detections. For example, we would hope that if we look at all sites with a estimated probability of encounter of 0.2, that 20% of these would record the species. However, these probabilities are not always so well aligned. This will clearly be the case in our example, because we have deliberately inflated the prevalence of detection records in the data through the spatiotemporal subsampling process. We can produce a **calibration model** for the predictions, which can be a useful diagnostic tool to understand the model predictions, and in some cases can be used to realign the predictions with observations. For information on calibration in species distribution models see Vaughan and Ormerod [-@vaughanContinuingChallengesTesting2005] and for more fundamental references on calibration see Platt [-@plattProbabilisticOutputsSupport1999], Murphy [-@murphyNewVectorPartition1973], and Niculescu-Mizil and Caruana [-@niculescu-mizilPredictingGoodProbabilities2005].
 
-To view the calibration of our model results, we predict encounter rate for each checklist in the training set, then fit a binomial Generalized Additive Model (GAM) with the real observed encounter rate as the response and the predicted encounter rate as the predictor variable. Whereas GLMs fit a linear relationship between a response and predictors, GAMs allow non-linear relationships. Although GAMs provide a degree of flexibility, in some situations they may overfit and provide unrealistic and unhelpful calibrations. We have a strong *a priori* expectation that higher real values will also be associated with higher estimated encounter rates. In order to maintain the ranking of predictions, it is important that we respect this ordering and to do this we'll use a GAM that is constrained to only increase. To fit the GAM, we'll use the R package [`scam`](https://CRAN.R-project.org/package=scam), so the shape can be constrained to be monotonically increasing. Note that predictions from `ranger` are in the form of a matrix of probabilities for each class, and we want the probability of detections, which is the second column of this matrix.
+To train a calibration model for our predictions, we predict encounter rate for each checklist in the training set, then fit a binomial Generalized Additive Model (GAM) with the real observed encounter rate as the response and the predicted encounter rate as the predictor variable. Whereas GLMs fit a linear relationship between a response and predictors, GAMs allow non-linear relationships. Although GAMs provide a degree of flexibility, in some situations they may overfit and provide unrealistic and unhelpful calibrations. We have a strong *a priori* expectation that higher real values will also be associated with higher estimated encounter rates. In order to maintain the ranking of predictions, it is important that we respect this ordering and to do this we'll use a GAM that is constrained to only increase. To fit the GAM, we'll use the R package [`scam`](https://CRAN.R-project.org/package=scam), so the shape can be constrained to be monotonically increasing. Note that predictions from `ranger` are in the form of a matrix of probabilities for each class, and we want the probability of detections, which is the second column of this matrix.
 
 ```{r}
 #| label: encounter-rf-cal-train
@@ -276,7 +273,7 @@ ggplot(cal_pred) +
   coord_equal(xlim = c(0, 1), ylim = c(0, 1))
 ```
 
-From this plot we can clearly see that the estimated encounter rates are mostly much larger than the observed encounter rates (all points fall below the dashed $x = y$ line. So we see that the model is not well calibrated. However, we do see from the points that the relative ranking of predictions is largely good: sites with estimated higher encounter rate do mostly have higher observed encounter rates.
+From this plot we can clearly see that the estimated encounter rates are mostly much larger than the observed encounter rates (all points fall below the dashed $x = y$ line). So we see that the model is not well calibrated. However, we do see from the points that the relative ranking of predictions is largely good: sites with estimated higher encounter rate do mostly have higher observed encounter rates.
 
 From this we have learnt that the model is good at distinguishing sites with high rates from those with low rates. For those readers familiar with using AUC scores to assess the quality of species distribution models, the graph is telling us that the model should have a high AUC value. However, the model is not so good at estimating encounter rates accurately.
 
@@ -625,11 +622,7 @@ r_pred <- predictions %>%
   rasterize(r, field = c("in_range", "encounter_rate"),
             fun = "mean") %>% 
   setNames(c("in_range", "encounter_rate"))
-
-# save the raster
-r_pred <- writeRaster(r_pred, "results/encounter-rate_woothr_june-2023.tif", 
-                      overwrite = TRUE,
-                      gdal = "COMPRESS=DEFLATE")
+print(r_pred)
 ```
 
 ### Mapping {#sec-encounter-predict-map}
