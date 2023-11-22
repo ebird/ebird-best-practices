@@ -71,7 +71,7 @@ ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") %>%
 
 First, will extract a subset of the eBird data that meets the assumptions of occupancy models, and then we perform spatiotemporal subsampling to deal with spatial bias in the data.
 
-Let's start by filtering our data to include only checklists shorter than 5km in length, 5 hours in duration, and with 5 or fewer observers, to reduce sources of variation in detectability, and because there are very few checklists with more than 5 observers. In addition, we'll subset observations to the most recent year for which we have data (`r max(checklists$year)`) to fit a single-season occupancy model.
+Let's start by filtering our data to include only checklists shorter than 5 km in length, 5 hours in duration, and with 5 or fewer observers, to reduce sources of variation in detectability, and because there are very few checklists with more than 5 observers. In addition, we'll subset observations to the most recent year for which we have data (`r max(checklists$year)`) to fit a single-season occupancy model.
 
 ```{r}
 #| label: occupancy-data-filter

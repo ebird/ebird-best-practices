@@ -300,7 +300,13 @@ Tip
 <h2 data-number="2.3" class="anchored" data-anchor-id="sec-ebird-download"><span class="header-section-number">2.3</span> Downloading data</h2>
 <p>eBird data are typically distributed in two parts: observation data and checklist data. In the observation dataset, each row corresponds to the sighting of a single species on a checklist, including the count and any other species-level information (e.g.&nbsp;age, sex, species comments, etc.). In the checklist dataset, each row corresponds to a checklist, including the date, time, location, effort (e.g.&nbsp;distance traveled, time spent, etc.), and any additional checklist-level information (e.g.&nbsp;whether this is a complete checklist or not). The two datasets can be joined together using a unique checklist identifier (sometimes referred to as the sampling event identifier).</p>
 <p>The observation and checklist data are released as tab-separated text files referred to as the <em>eBird Basic Dataset (EBD)</em> and the <em>Sampling Event Data (SED)</em>, respectively. These files are released monthly and contain all validated bird sightings in the eBird database at the time of release. Both of these datasets can be downloaded in their entirety or a subset for a given species, region, or time period can be requested via the <em>Custom Download</em> form. We strongly recommend against attempting to download the complete EBD since it’s well over 100GB at the time of writing. Instead, we will demonstrate a workflow using the Custom Download approach. In what follows, we will assume you have followed the instructions for requesting access to eBird data outlined in <a href="./intro.html#sec-intro-setup-ebird">the previous chapter</a>.</p>
-<p>In the interest of making examples concrete, throughout this guide, we’ll use the specific example of <a href="https://ebird.org/species/woothr">Wood Thrush</a> observations from Georgia (the US state, not the country) in June for our analyses. We’ll start by downloading the corresponding eBird observation (EBD) and checklist (SED) data by visiting the <a href="https://ebird.org/data/download/ebd">eBird Basic Dataset</a> download page and filling out the Custom Download form to request Wood Thrush observations from Georgia. <strong>Make sure you check the box “Include sampling event data”</strong>, which will include the SED in the data download in addition to the EBD.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/woothr_60255811.jpg" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Wood Thrush © Veronica Araya Garcia, Macaulay Library (ML60255811)</figcaption>
+</figure>
+</div>
+<p>In the interest of making examples concrete, throughout this guide, we’ll focus on moedeling the distribution of <a href="https://ebird.org/species/woothr">Wood Thrush</a> in Georgia (the US state, not the country) in June. Wood Thrush breed in deciduous forests of the eastern United States. We’ll start by downloading the corresponding eBird observation (EBD) and checklist (SED) data by visiting the <a href="https://ebird.org/data/download/ebd">eBird Basic Dataset</a> download page and filling out the Custom Download form to request Wood Thrush observations from Georgia. <strong>Make sure you check the box “Include sampling event data”</strong>, which will include the SED in the data download in addition to the EBD.</p>
 <p><img src="images/ebird-data_download.png" class="img-fluid"></p>
 <p>Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a two text files: one for the EBD (e.g.&nbsp;<code>ebd_US-GA_woothr_smp_relJun-2023.txt</code>) containing all the Wood Thrush observations from Georgia and one for the SED (e.g.&nbsp;<code>ebd_US-GA_woothr_smp_relJun-2023_sampling.txt</code>) containing all checklists from Georgia. The <code>relJune-2023</code> component of the file name describes which version of the EBD this dataset came from; in this case it’s the June 2023 release.</p>
 </section>
@@ -393,7 +399,7 @@ Solution
 </div>
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>More than 95% of checklists are less than 10km in length; however, some checklists are as long as 80km in length. Long traveling checklists have lower spatial precision so they should generally be removed prior to analysis.</p>
+<p>More than 95% of checklists are less than 10 km in length; however, some checklists are as long as 80 km in length. Long traveling checklists have lower spatial precision so they should generally be removed prior to analysis.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>checklists_traveling <span class="ot">&lt;-</span> <span class="fu">filter</span>(checklists, protocol_type <span class="sc">==</span> <span class="st">"Traveling"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(checklists_traveling) <span class="sc">+</span></span>
@@ -711,7 +717,7 @@ Tip
 </section>
 <section id="sec-ebird-effort" class="level2" data-number="2.7">
 <h2 data-number="2.7" class="anchored" data-anchor-id="sec-ebird-effort"><span class="header-section-number">2.7</span> Accounting for variation in effort</h2>
-<p>As discussed in the <a href="./intro.html#sec-intro-intro">Introduction</a>, variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data in the context of eBird Status and Trends, we suggest restricting checklists to traveling or stationary counts less than 6 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers.</p>
+<p>As discussed in the <a href="./intro.html#sec-intro-intro">Introduction</a>, variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data in the context of eBird Status and Trends, we suggest restricting checklists to traveling or stationary counts less than 6 hours in duration and 10 km in length, at speeds below 100km/h, and with 10 or fewer observers.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># additional filtering</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>zf_filtered <span class="ot">&lt;-</span> zf <span class="sc">%&gt;%</span> </span>
@@ -780,7 +786,7 @@ Solution
 <p><img src="images/precision_location-error.png" class="img-fluid"></p>
 <p>As a proxy for checklist compactness, we calculated the minimum radius of a circle fully containing the GPS track of each checklist. Again, we plot the cumulative distribution of this compactness measure for different maximum checklist distances.</p>
 <p><img src="images/precision_compactness.png" class="img-fluid"></p>
-<p>For the specific example of checklists with distances less than 6 km (the cutoff applied above), 92% of traveling checklists are contained within a 1 km radius circle and 77% of traveling checklists have location error less than 500 m. This will inform the spatial scale that we use to make predictions in the <a href="./envvar.html#sec-envvar-pred">next chapter</a>. Depending on the precision required for your application, you can use the above plots to adjust the checklist effort filters to control spatial precision.</p>
+<p>For the specific example of checklists with distances less than 10 km (the cutoff applied above), 94% of traveling checklists are contained within a 1.5 km radius circle and 74% of traveling checklists have location error less than 500 m. This will inform the spatial scale that we use to make predictions in the <a href="./envvar.html#sec-envvar-pred">next chapter</a>. Depending on the precision required for your application, you can use the above plots to adjust the checklist effort filters to control spatial precision.</p>
 </section>
 </section>
 <section id="sec-ebird-testtrain" class="level2" data-number="2.8">
@@ -952,7 +958,7 @@ Solution
 <span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> breaks) <span class="sc">+</span></span>
 <span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>comma) <span class="sc">+</span></span>
-<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Checklist duration (hours)"</span>,</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Checklist duration [hours]"</span>,</span>
 <span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"# checklists"</span>,</span>
 <span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Distribution of checklist durations"</span>)</span>
 <span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a></span>
@@ -963,7 +969,7 @@ Solution
 <span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> breaks) <span class="sc">+</span></span>
 <span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
-<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Checklist duration (hours)"</span>,</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Checklist duration [hours]"</span>,</span>
 <span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"% checklists with detections"</span>,</span>
 <span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Detection frequency"</span>)</span>
 <span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a></span>
@@ -1005,7 +1011,7 @@ Solution
 <span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> breaks) <span class="sc">+</span></span>
 <span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>comma) <span class="sc">+</span></span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Distance travelled (km)"</span>,</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Distance travelled [km]"</span>,</span>
 <span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"# checklists"</span>,</span>
 <span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Distribution of distance travelled"</span>)</span>
 <span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a></span>
@@ -1016,7 +1022,7 @@ Solution
 <span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> breaks) <span class="sc">+</span></span>
 <span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
-<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Distance travelled (km)"</span>,</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Distance travelled [km]"</span>,</span>
 <span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"% checklists with detections"</span>,</span>
 <span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Detection frequency"</span>)</span>
 <span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a></span>

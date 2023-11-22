@@ -43,7 +43,9 @@ eBird data are typically distributed in two parts: observation data and checklis
 
 The observation and checklist data are released as tab-separated text files referred to as the *eBird Basic Dataset (EBD)* and the *Sampling Event Data (SED)*, respectively. These files are released monthly and contain all validated bird sightings in the eBird database at the time of release. Both of these datasets can be downloaded in their entirety or a subset for a given species, region, or time period can be requested via the *Custom Download* form. We strongly recommend against attempting to download the complete EBD since it's well over 100GB at the time of writing. Instead, we will demonstrate a workflow using the Custom Download approach. In what follows, we will assume you have followed the instructions for requesting access to eBird data outlined in [the previous chapter](intro.qmd#sec-intro-setup-ebird).
 
-In the interest of making examples concrete, throughout this guide, we'll use the specific example of [Wood Thrush](https://ebird.org/species/woothr) observations from Georgia (the US state, not the country) in June for our analyses. We'll start by downloading the corresponding eBird observation (EBD) and checklist (SED) data by visiting the [eBird Basic Dataset](https://ebird.org/data/download/ebd) download page and filling out the Custom Download form to request Wood Thrush observations from Georgia. **Make sure you check the box "Include sampling event data"**, which will include the SED in the data download in addition to the EBD.
+![Wood Thrush © Veronica Araya Garcia, Macaulay Library (ML60255811)](images/woothr_60255811.jpg)
+
+In the interest of making examples concrete, throughout this guide, we'll focus on moedeling the distribution of [Wood Thrush](https://ebird.org/species/woothr) in Georgia (the US state, not the country) in June. Wood Thrush breed in deciduous forests of the eastern United States. We'll start by downloading the corresponding eBird observation (EBD) and checklist (SED) data by visiting the [eBird Basic Dataset](https://ebird.org/data/download/ebd) download page and filling out the Custom Download form to request Wood Thrush observations from Georgia. **Make sure you check the box "Include sampling event data"**, which will include the SED in the data download in addition to the EBD.
 
 ![](images/ebird-data_download.png)
 
@@ -87,7 +89,7 @@ Make a histogram of the distribution of distance traveling for traveling protoco
 ::: {.callout-note icon="false" collapse="true"}
 ## Solution
 
-More than 95% of checklists are less than 10km in length; however, some checklists are as long as 80km in length. Long traveling checklists have lower spatial precision so they should generally be removed prior to analysis.
+More than 95% of checklists are less than 10 km in length; however, some checklists are as long as 80 km in length. Long traveling checklists have lower spatial precision so they should generally be removed prior to analysis.
 
 ```{r}
 #| label: ebird-import-distance-sol
@@ -378,7 +380,7 @@ zf <- zf %>%
 
 ## Accounting for variation in effort {#sec-ebird-effort}
 
-As discussed in the [Introduction](intro.qmd#sec-intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data in the context of eBird Status and Trends, we suggest restricting checklists to traveling or stationary counts less than 6 hours in duration and 10km in length, at speeds below 100km/h, and with 10 or fewer observers.
+As discussed in the [Introduction](intro.qmd#sec-intro-intro), variation in effort between checklists makes inference challenging, because it is associated with variation in detectability. When working with semi-structured datasets like eBird, one approach to dealing with this variation is to impose some more consistent structure on the data by filtering observations on the effort variables. This reduces the variation in detectability between checklists. Based on our experience working with these data in the context of eBird Status and Trends, we suggest restricting checklists to traveling or stationary counts less than 6 hours in duration and 10 km in length, at speeds below 100km/h, and with 10 or fewer observers.
 
 ```{r}
 #| label: ebird-effort-filter
@@ -433,7 +435,7 @@ As a proxy for checklist compactness, we calculated the minimum radius of a circ
 
 ![](images/precision_compactness.png)
 
-For the specific example of checklists with distances less than 6 km (the cutoff applied above), 92% of traveling checklists are contained within a 1 km radius circle and 77% of traveling checklists have location error less than 500 m. This will inform the spatial scale that we use to make predictions in the [next chapter](envvar.qmd#sec-envvar-pred). Depending on the precision required for your application, you can use the above plots to adjust the checklist effort filters to control spatial precision.
+For the specific example of checklists with distances less than 10 km (the cutoff applied above), 94% of traveling checklists are contained within a 1.5 km radius circle and 74% of traveling checklists have location error less than 500 m. This will inform the spatial scale that we use to make predictions in the [next chapter](envvar.qmd#sec-envvar-pred). Depending on the precision required for your application, you can use the above plots to adjust the checklist effort filters to control spatial precision.
 
 ## Test-train split {#sec-ebird-testtrain}
 
@@ -606,7 +608,7 @@ g_duration_hist <- ggplot(checklists_duration) +
   geom_point() +
   scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::comma) +
-  labs(x = "Checklist duration (hours)",
+  labs(x = "Checklist duration [hours]",
        y = "# checklists",
        title = "Distribution of checklist durations")
 
@@ -617,7 +619,7 @@ g_duration_freq <- ggplot(checklists_duration %>% filter(n_checklists > 100)) +
   geom_point() +
   scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::percent) +
-  labs(x = "Checklist duration (hours)",
+  labs(x = "Checklist duration [hours]",
        y = "% checklists with detections",
        title = "Detection frequency")
 
@@ -656,7 +658,7 @@ g_dist_hist <- ggplot(checklists_dist) +
   geom_point() +
   scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::comma) +
-  labs(x = "Distance travelled (km)",
+  labs(x = "Distance travelled [km]",
        y = "# checklists",
        title = "Distribution of distance travelled")
 
@@ -667,7 +669,7 @@ g_dist_freq <- ggplot(checklists_dist %>% filter(n_checklists > 100)) +
   geom_point() +
   scale_x_continuous(breaks = breaks) +
   scale_y_continuous(labels = scales::percent) +
-  labs(x = "Distance travelled (km)",
+  labs(x = "Distance travelled [km]",
        y = "% checklists with detections",
        title = "Detection frequency")
 
