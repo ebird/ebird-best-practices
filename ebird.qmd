@@ -28,12 +28,12 @@ We use the terms **detection** and **non-detection** rather than the more common
 
 Despite the strengths of eBird data, species observations collected through citizen science projects present a number of challenges that are not found in conventional scientific data. The following are some of the primary challenges associated these data; challenges that will be addressed throughout this guide:
 
-- **Taxonomic bias:** participants often have preferences for certain species, which may lead to preferential recording of some species over others [@greenwoodCitizensScienceBird2007; @tullochBehaviouralEcologyApproach2012]. Restricting analyses to complete checklists largely mitigates this issue.
-- **Spatial bias:** most participants in citizen science surveys sample near their homes [@luckAlleviatingSpatialConflict2004], in easily accessible areas such as roadsides [@kadmonEffectRoadsideBias2004], or in areas and habitats of known high biodiversity [@prendergastCorrectingVariationRecording1993]. A simple method to reduce the spatial bias that we describe is to create an equal area grid over the region of interest, and sample a given number of checklists from within each grid cell.
-- **Temporal bias:** participants preferentially sample when they are available, such as weekends [@courterWeekendBiasCitizen2013], and at times of year when they expect to observe more birds, notably in the United States there is a large increase in eBird submissions during spring migration [@sullivanEBirdEnterpriseIntegrated2014]. Furthermore, eBird  has steadily increased in popularity over time, leading a strong bias towards more data in recent years. To address the weekend bias, we recommend using a temporal scale of a week or multiple weeks for most analyses. Temporal biases at longer time scales can be addressed by subsampling the data to produce a more even temporal distribution.
-- **Class imbalance:** bird species that are rare or hard to detect may have data with high class imbalance, with many more checklists with non-detections than detections. For these species, a distribution model predicting that the species is absent everywhere will have high accuracy, but no ecological value. We'll follow the methods for addressing class imbalance proposed by Robinson et al. [-@robinsonUsingCitizenScience2018], sampling the data to artifically increase the prevalence of detections prior to modeling.
-- **Spatial precision:** the spatial location of an eBird checklist is given as a single latitude-longitude point; however, this may not be precise for two main reasons. First, for traveling checklists, this location represents just one point on the journey. Second, eBird checklists are often assigned to a **hotspot** (a common location for all birders visiting a popular birding site) rather than their true location. For these reasons, it's not appropriate to align the eBird locations with very precise habitat variables, and we recommend summarizing variables within a neighborhood around the checklist location.
-- **Variation in detectability/effort:** detectability describes the probability of a species that is present in an area being detected and identified. Detectability varies by season, habitat, and species [@johnstonSpeciesTraitsExplain2014; @johnstonEstimatesObserverExpertise2018]. Furthermore, eBird data are collected with high variation in effort, time of day, number of observers, and external conditions such as weather, all of which can affect the detectability of species [@ellisEffectsWeatherTime2018; @oliveiraObservationDiurnalSoaring2018]. Therefore, detectability is particularly important to consider when comparing between seasons, habitats or species. Since eBird uses a semi-structured protocol, that collects data on the observation process, we'll be able to account for a larger proportion of this variation in our analyses.
+-   **Taxonomic bias:** participants often have preferences for certain species, which may lead to preferential recording of some species over others [@greenwoodCitizensScienceBird2007; @tullochBehaviouralEcologyApproach2012]. Restricting analyses to complete checklists largely mitigates this issue.
+-   **Spatial bias:** most participants in citizen science surveys sample near their homes [@luckAlleviatingSpatialConflict2004], in easily accessible areas such as roadsides [@kadmonEffectRoadsideBias2004], or in areas and habitats of known high biodiversity [@prendergastCorrectingVariationRecording1993]. A simple method to reduce the spatial bias that we describe is to create an equal area grid over the region of interest, and sample a given number of checklists from within each grid cell.
+-   **Temporal bias:** participants preferentially sample when they are available, such as weekends [@courterWeekendBiasCitizen2013], and at times of year when they expect to observe more birds, notably in the United States there is a large increase in eBird submissions during spring migration [@sullivanEBirdEnterpriseIntegrated2014]. Furthermore, eBird has steadily increased in popularity over time, leading a strong bias towards more data in recent years. To address the weekend bias, we recommend using a temporal scale of a week or multiple weeks for most analyses. Temporal biases at longer time scales can be addressed by subsampling the data to produce a more even temporal distribution.
+-   **Class imbalance:** bird species that are rare or hard to detect may have data with high class imbalance, with many more checklists with non-detections than detections. For these species, a distribution model predicting that the species is absent everywhere will have high accuracy, but no ecological value. We'll follow the methods for addressing class imbalance proposed by Robinson et al. [-@robinsonUsingCitizenScience2018], sampling the data to artifically increase the prevalence of detections prior to modeling.
+-   **Spatial precision:** the spatial location of an eBird checklist is given as a single latitude-longitude point; however, this may not be precise for two main reasons. First, for traveling checklists, this location represents just one point on the journey. Second, eBird checklists are often assigned to a **hotspot** (a common location for all birders visiting a popular birding site) rather than their true location. For these reasons, it's not appropriate to align the eBird locations with very precise habitat variables, and we recommend summarizing variables within a neighborhood around the checklist location.
+-   **Variation in detectability/effort:** detectability describes the probability of a species that is present in an area being detected and identified. Detectability varies by season, habitat, and species [@johnstonSpeciesTraitsExplain2014; @johnstonEstimatesObserverExpertise2018]. Furthermore, eBird data are collected with high variation in effort, time of day, number of observers, and external conditions such as weather, all of which can affect the detectability of species [@ellisEffectsWeatherTime2018; @oliveiraObservationDiurnalSoaring2018]. Therefore, detectability is particularly important to consider when comparing between seasons, habitats or species. Since eBird uses a semi-structured protocol, that collects data on the observation process, we'll be able to account for a larger proportion of this variation in our analyses.
 
 The remainder of this guide will demonstrate how to address these challenges using real data from eBird to produce reliable estimates of species distributions. In general, we'll take a two-pronged approach to dealing with unstructured data and maximizing the value of citizen science data: imposing more structure onto the data via data filtering and including predictor variables describing the obsservation process in our models to account for the remaining variation.
 
@@ -191,9 +191,35 @@ The function [`auk_rollup()`](https://cornelllabofornithology.github.io/auk/refe
 If multiple taxa on a single checklist roll up to the same species, `auk_rollup()` attempts to combine them intelligently. If each observation has a count, those counts are added together, but if any of the observations is missing a count (i.e. the count is "X") the combined observation is also assigned an "X". In the [example checklist](https://ebird.org/checklist/S100099262) from the previous tip, with four taxa all rolling up to Yellow-rumped Warbler, `auk_rollup()` will add the four counts together to get 21 Yellow-rumped Warblers (10 + 5 + 5 + 1).
 :::
 
+To demonstrate how taxonomic rollup works, we'll use a small example dataset provided with the `auk` package.
+
+```{r}
+#| label: ebird-import-shared-auk
+# import one of the auk example datasets without rolling up taxonomy
+obs_ex <- system.file("extdata/ebd-rollup-ex.txt", package = "auk") %>% 
+  read_ebd(rollup = FALSE)
+# rollup taxonomy
+obs_ex_rollup <- auk_rollup(obs_ex)
+
+# all taxa not identifiable to species are dropped
+unique(obs_ex$category)
+unique(obs_ex_rollup$category)
+
+# without rollup, there are three observations
+obs_ex %>%
+  filter(common_name == "Yellow-rumped Warbler") %>% 
+  select(checklist_id, category, common_name, subspecies_common_name, 
+         observation_count)
+# with rollup, they have been combined
+obs_ex_rollup %>%
+  filter(common_name == "Yellow-rumped Warbler") %>% 
+  select(checklist_id, category, common_name, observation_count)
+```
+
+
 ## Filtering to study region and season {#sec-ebird-filter}
 
-The Custom Download form allowed us to apply some basic filters to the eBird data we downloaded: we requested only Wood Thrush observations and only those on checklists from Georgia. However, in most cases you'll want to apply additional spatial and/or temporal filters to the data that are specific to your study. For the examples used throughout this guide we'll only want observations from June for the last 10 years (2014-2023). In addition, we'll only use complete checklists (i.e., those for which all birds seen or heard were reported), which will allow us to produce detection/non-detection data. We can apply these filters using the `filter()` function from `dplyr`. 
+The Custom Download form allowed us to apply some basic filters to the eBird data we downloaded: we requested only Wood Thrush observations and only those on checklists from Georgia. However, in most cases you'll want to apply additional spatial and/or temporal filters to the data that are specific to your study. For the examples used throughout this guide we'll only want observations from June for the last 10 years (2014-2023). In addition, we'll only use complete checklists (i.e., those for which all birds seen or heard were reported), which will allow us to produce detection/non-detection data. We can apply these filters using the `filter()` function from `dplyr`.
 
 ```{r}
 #| label: ebird-ebird-filter
@@ -338,7 +364,7 @@ There are many cases of this phenomenon. A couple possible examples include:
 Remember that the prevalence of a species on eBird checklists (e.g. 10% of checklists detected a species) is only a relative measure of the actual occupancy probability of that species. To appear on an eBird checklist, a species must occur in an area and be detected by the observer. That detectability always plays a role in determining prevalence and it can vary drastically between regions, seasons, and species.
 :::
 
-The EBD alone is a source of presence-only data, with one record for each taxon (typically species) reported. For complete checklists, information about non-detections can be inferred from the SED: if there is a record in the SED but no record for a species in the EBD, then a count of zero individuals of that species can be inferred. This process is referred to a "zero-filling" the data. We can use [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) to combine the checklist and observation data together to produce zero-filled, detection/non-detection data. 
+The EBD alone is a source of presence-only data, with one record for each taxon (typically species) reported. For complete checklists, information about non-detections can be inferred from the SED: if there is a record in the SED but no record for a species in the EBD, then a count of zero individuals of that species can be inferred. This process is referred to a "zero-filling" the data. We can use [`auk_zerofill()`](https://cornelllabofornithology.github.io/auk/reference/auk_zerofill.html) to combine the checklist and observation data together to produce zero-filled, detection/non-detection data.
 
 ```{r}
 #| label: ebird-zf-zf
@@ -393,7 +419,7 @@ zf_filtered <- zf %>%
          number_observers <= 10)
 ```
 
-Note that these filtering parameters are based on making predictions at weekly spatial resolution and 3 km spatial resolution. For applications requiring higher spatial precision, stricter filtering on `effort_distance_km` should be used. 
+Note that these filtering parameters are based on making predictions at weekly spatial resolution and 3 km spatial resolution. For applications requiring higher spatial precision, stricter filtering on `effort_distance_km` should be used.
 
 ::: {.callout-caution icon="false"}
 ## Exercise
@@ -423,11 +449,11 @@ ggplot(zf_filtered) +
 
 For each eBird checklists we are provided a single location (longitude/latitude coordinates) specifying where the bird observations occurred. Ideally we want that checklist location to closely match where an observed bird was located. However, there are three main reasons why that may not be the case:
 
-1. The bird and observer may not overlap in space. For example, raptors may be observed soaring at a great distance from the observer. 
-2. The checklist location may correspond to an [eBird hotspot](https://support.ebird.org/en/support/solutions/articles/48001009443-ebird-hotspot-faqs) location rather than the location of the observer. eBird hotspots are public birding locations used to aggregate eBird data, for example, so all checklists at a park or wetland can be grouped together. If observers assign their checklists to an eBird hotspot, the coordinates in the ERD and SED will be those of the hotspot. In some cases, these locations will be a good representation of where the observations occurred, in others they may not be a good representation, for example, if the hotspot location is at the center of a large park but the observations occurred at the edge.
-3. Traveling checklists survey an area rather than a single point. The amount of area covered will depend on the distance traveled and the compactness of the route taken. For example, a 1 km checklist in a straight line may survey areas further from the checklist coordinates than a 10 km checklist that takes a very circuitous route.
+1.  The bird and observer may not overlap in space. For example, raptors may be observed soaring at a great distance from the observer.
+2.  The checklist location may correspond to an [eBird hotspot](https://support.ebird.org/en/support/solutions/articles/48001009443-ebird-hotspot-faqs) location rather than the location of the observer. eBird hotspots are public birding locations used to aggregate eBird data, for example, so all checklists at a park or wetland can be grouped together. If observers assign their checklists to an eBird hotspot, the coordinates in the ERD and SED will be those of the hotspot. In some cases, these locations will be a good representation of where the observations occurred, in others they may not be a good representation, for example, if the hotspot location is at the center of a large park but the observations occurred at the edge.
+3.  Traveling checklists survey an area rather than a single point. The amount of area covered will depend on the distance traveled and the compactness of the route taken. For example, a 1 km checklist in a straight line may survey areas further from the checklist coordinates than a 10 km checklist that takes a very circuitous route.
 
-All three of these factors impact the spatial precision of eBird data. Fortunately, many eBird checklists have GPS tracks associated with them. Although these tracks are not available for public use, we can use them to quantify the spatial precision of eBird data. In analyses to inform eBird Status and Trends, we calculated the centroid of all GPS tracks and estimated the distance between that centroid and the reported checklist location. For different maximum checklist distances, we can look at the cumulative distribution of checklists as a function of location error. 
+All three of these factors impact the spatial precision of eBird data. Fortunately, many eBird checklists have GPS tracks associated with them. Although these tracks are not available for public use, we can use them to quantify the spatial precision of eBird data. In analyses to inform eBird Status and Trends, we calculated the centroid of all GPS tracks and estimated the distance between that centroid and the reported checklist location. For different maximum checklist distances, we can look at the cumulative distribution of checklists as a function of location error.
 
 ![](images/precision_location-error.png)
 
@@ -465,11 +491,11 @@ checklists <- zf_split %>%
 write_csv(checklists, "data/checklists-zf_woothr_june_us-ga.csv", na = "")
 ```
 
-If you'd like to ensure you're using exactly the same data as was used to generate this guide, download the [data package](https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip) mentioned in the [setup instructions](intro.qmd#sec-intro-setup-data) and place the contents in the `data/` subdirectory of your project directory.
+If you'd like to ensure you're using exactly the same data as was used to generate this guide, download the [data package](https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip) mentioned in the [setup instructions](intro.qmd#sec-intro-setup-data). Unzip this data package and place the contents in your RStudio project folder.
 
 ## Exploratory analysis and visualization {#sec-ebird-explore}
 
-Before proceeding to training species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip). Place the contents of the zip file in the `data/` subdirectory of your project directory.
+Before proceeding to training species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip). Unzip this data package and place the contents in your RStudio project folder.
 
 ```{r}
 #| label: ebird-explore-map
