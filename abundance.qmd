@@ -41,9 +41,8 @@ checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>%
 # prediction grid
 pred_grid <- read_csv("data/environmental-variables_prediction-grid_us-ga.csv")
 # raster template for the grid
-r <- rast("data/prediction-grid_us-ga.tif") %>% 
-  # this second rast() call removes all the values from the raster template
-  rast()
+r <- rast("data/prediction-grid_us-ga.tif")
+# get the coordinate reference system of the prediction grid
 crs <- st_crs(r)
 
 # load gis data for making maps
@@ -113,8 +112,8 @@ er_model <- ranger(formula =  as.factor(species_observed) ~ .,
                    sample.fraction = c(detection_freq, detection_freq))
 
 # select the mcc-f1 optimizing occurrence threshold
-obs_pred <- tibble(obs = as.integer(train_er$species_observed), 
-                   pred = er_model$predictions[, 2])
+obs_pred <- data.frame(obs = as.integer(train_er$species_observed), 
+                       pred = er_model$predictions[, 2])
 mcc_f1 <- mccf1(response = obs_pred$obs, predictor = obs_pred$pred)
 mcc_f1_summary <- summary(mcc_f1)
 threshold <- mcc_f1_summary$best_threshold[1]
@@ -125,7 +124,7 @@ calibration_model <- scam(obs ~ s(pred, k = 6, bs = "mpi"),
                           data = obs_pred)
 ```
 
-### Step 2: Expected count {#sec-abundance-hurdle-count}
+### Step 2: Count {#sec-abundance-hurdle-count}
 
 For the second step, we train a random forests model to estimate the expected count of individuals on eBird checklists where the species was detected or predicted to be detected by the encounter rate model. So, we'll start by subsetting the data to just these checklists. In addition, we'll remove any observations for which the observer reported that Wood Thrush was present, but didn't report a count of the number of individuals (coded as a count of "X" in the eBird database, but converted to `NA` in our dataset).
 
@@ -195,7 +194,7 @@ pred_count <- pred_count$predictions
 # relative abundance is the product of encounter rate and count
 pred_abundance <- pred_calibrated * pred_count
 
-# combine all estimates together
+# combine observations and estimates
 obs_pred_test <- data.frame(
   id = seq_along(pred_abundance),
   # actual detection/non-detection
@@ -233,7 +232,7 @@ log_abundance_pearson <- cor(log(detections_test$pred_abundance + 1),
                              method = "pearson")
 
 # combine metrics together
-ppms <- tibble(
+ppms <- data.frame(
   count_spearman = count_spearman,
   log_count_pearson = log_count_pearson,
   abundance_spearman = abundance_spearman,
@@ -266,10 +265,10 @@ Now we can estimate calibrated encounter rate and count for each point on the pr
 
 ```{r}
 #| label: abundance-predict-predict
-# encounter rate estimate
+# estimate encounter rate
 pred_er <- predict(er_model, data = pred_grid_eff, type = "response")
 pred_er <- pred_er$predictions[, 2]
-# binary prediction
+# define range-boundary
 pred_binary <- as.integer(pred_er > threshold)
 # apply calibration
 pred_er_cal <- predict(calibration_model, 
@@ -282,7 +281,7 @@ pred_er_cal[pred_er_cal > 1] <- 1
 
 # add predicted encounter rate required for count estimates
 pred_grid_eff$predicted_er <- pred_er
-# count estimate
+# estimate count
 pred_count <- predict(count_model, data = pred_grid_eff, type = "response")
 pred_count <- pred_count$predictions
 
@@ -299,20 +298,22 @@ Next, we add a column for the relative abundance estimate (the product of the en
 
 ```{r}
 #| label: abundance-predict-raster
+# add relative abundance estimate
+predictions$abundance <- predictions$encounter_rate * predictions$count
+
+# rasterize
+layers <- c("in_range", "encounter_rate", "count", "abundance")
 r_pred <- predictions %>% 
-  # estimate relative abundance
-  mutate(abundance = encounter_rate * count) %>% 
   # convert to spatial features
   st_as_sf(coords = c("x", "y"), crs = crs) %>% 
-  select(in_range, encounter_rate, count, abundance) %>% 
+  select(all_of(layers)) %>% 
   # rasterize
-  rasterize(r, field = c("in_range", "encounter_rate", "count", "abundance"),
-            fun = "mean") %>% 
-  setNames(c("in_range", "encounter_rate", "count", "abundance"))
+  rasterize(r, field = layers, fun = "mean") %>% 
+  setNames(layers)
 print(r_pred)
 ```
 
-Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 km, 1 hour traveling count starting at about 6:15AM on June 15, 2023. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
+Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 km, 1 hour traveling count starting at about 6:37AM on June 15, 2023. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
 
 Prior to mapping the relative abundance, we'll multiple by the `in_range` layer, which will produce a map showing zero relative abundance where the model predicts that Wood Thrush does not occur.
 

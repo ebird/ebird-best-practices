@@ -16,21 +16,17 @@ set.seed(1)
 # Load data ----
 
 # environmental variables: landcover and elevation
-env_vars <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
 
 # zero-filled ebird data
-checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv")
 
 # combine ebird and environmental data
 
-
 # prediction grid
-pred_grid <- read_csv("data/environmental-variables_prediction-grid_us-ga.csv")
+
 # raster template for the grid
-r <- rast("data/prediction-grid_us-ga.tif") %>%
-  # this second rast() call removes all the values from the raster template
-  rast()
-crs <- st_crs(r)
+
+# get the coordinate reference system of the prediction grid
+
 
 # load gis data for making maps
 study_region <- read_sf("data/gis-data.gpkg", "ne_states") %>%
@@ -118,7 +114,7 @@ ggplot(cal_pred) +
 
 # calibrate
 
-# combine predictions
+# combine observations and estimates
 
 # mean squared error (mse)
 mse <- mean((obs_pred_test$obs - obs_pred_test$pred_calibrated)^2, na.rm = TRUE)
@@ -144,7 +140,7 @@ pa_metrics <- obs_pred_test %>%
 mcc_f1 <- calculate_mcc_f1(obs_pred_test$obs, obs_pred_test$pred_binary)
 
 # combine metrics together
-ppms <- tibble(
+data.frame(
   mse = mse,
   spearman = spearman,
   sensitivity = pa_metrics$sensitivity,
@@ -156,7 +152,7 @@ ppms <- tibble(
 )
 
 
-# Habitat associations
+# Habitat associations ----
 
 # ├ Predictor importance ----
 
@@ -213,7 +209,7 @@ calculate_pd <- function(predictor, er_model, calibration_model,
 
   # calibrate
   pd$encounter_rate <- predict(calibration_model,
-                               newdata = tibble(pred = pd$encounter_rate),
+                               newdata = data.frame(pred = pd$encounter_rate),
                                type = "response")
   pd$encounter_rate <- as.numeric(pd$encounter_rate)
   # constrain to 0-1
@@ -261,7 +257,7 @@ ggplot(pd_time) +
 # identify time maximizing encounter rate
 
 
-# add effort covariates to prediction grid
+# add standardized effort variables to prediction grid
 
 
 # ├ Model estimates ----
@@ -281,11 +277,35 @@ ggplot(pd_time) +
 
 # Mapping ----
 
-# encounter rate
+# ├ Range ----
+
+par(mar = c(0.25, 0.25, 1.25, 0.25))
+# set up plot area
+plot(study_region,
+     main = "Wood Thrush Range (June 2023)",
+     col = NA, border = NA)
+plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
+
+# convert binary prediction to categorical
+r_range <- as.factor(r_pred[["in_range"]])
+plot(r_range, col = c("#e6e6e6", "forestgreen"),
+     maxpixels = ncell(r_range),
+     legend = FALSE, axes = FALSE, bty = "n",
+     add = TRUE)
+
+# borders
+plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
+plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
+plot(study_region, border = "#000000", col = NA, lwd = 1, add = TRUE)
+box()
+
+
+# ├ Encounter rate ----
+
 par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
 plot(study_region, col = NA, border = NA)
-plot(ne_land, col = "#dddddd", border = "#888888", lwd = 0.5, add = TRUE)
+plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 
 # define quantile breaks
 brks <- global(r_pred[["encounter_rate"]], fun = quantile,
@@ -323,18 +343,31 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
                               side = 3, col = "black",
                               cex = 1, line = 0))
 
-# range boundary
-par(mar = c(0.25, 0.25, 1.25, 0.25))
+
+# ├ Encounter rate within range ----
+
+# within range encounter rate
+
+
+# map
+par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
-plot(study_region,
-     main = "Wood Thrush Range (June 2023)",
-     col = NA, border = NA)
+plot(study_region, col = NA, border = NA)
 plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 
-# convert binary prediction to categorical
-r_range <- as.factor(r_pred[["in_range"]])
-plot(r_range, col = c("#e6e6e6", "forestgreen"),
-     maxpixels = ncell(r_range),
+# define quantile breaks, excluding zeros
+brks <- ifel(er_range > 0, er_range, NA) %>%
+  global(fun = quantile,
+         probs = seq(0, 1, 0.1), na.rm = TRUE) %>%
+  as.numeric() %>%
+  unique()
+# label the bottom, middle, and top value
+lbls <- round(c(min(brks), median(brks), max(brks)), 2)
+# ebird status and trends color palette
+pal <- ebirdst_palettes(length(brks) - 1)
+plot(er_range,
+     col = c("#e6e6e6", pal), breaks = c(0, brks),
+     maxpixels = ncell(r_pred),
      legend = FALSE, axes = FALSE, bty = "n",
      add = TRUE)
 
@@ -343,3 +376,18 @@ plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
 plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
 plot(study_region, border = "#000000", col = NA, lwd = 1, add = TRUE)
 box()
+
+# legend
+par(new = TRUE, mar = c(0, 0, 0, 0))
+title <- "Wood Thrush Encounter Rate within Range (June 2023)"
+image.plot(zlim = c(0, 1), legend.only = TRUE,
+           col = pal, breaks = seq(0, 1, length.out = length(brks)),
+           smallplot = c(0.25, 0.75, 0.03, 0.06),
+           horizontal = TRUE,
+           axis.args = list(at = c(0, 0.5, 1), labels = lbls,
+                            fg = "black", col.axis = "black",
+                            cex.axis = 0.75, lwd.ticks = 0.5,
+                            padj = -1.5),
+           legend.args = list(text = title,
+                              side = 3, col = "black",
+                              cex = 1, line = 0))

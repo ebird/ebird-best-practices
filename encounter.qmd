@@ -44,9 +44,8 @@ checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>%
 # prediction grid
 pred_grid <- read_csv("data/environmental-variables_prediction-grid_us-ga.csv")
 # raster template for the grid
-r <- rast("data/prediction-grid_us-ga.tif") %>% 
-  # this second rast() call removes all the values from the raster template
-  rast()
+r <- rast("data/prediction-grid_us-ga.tif")
+# get the coordinate reference system of the prediction grid
 crs <- st_crs(r)
 
 # load gis data for making maps
@@ -242,7 +241,7 @@ er_pred <- er_model$predictions[, 2]
 # observed detection, converted back from factor
 det_obs <- as.integer(checklists_train$species_observed)
 # construct a data frame to train the scam model
-obs_pred <- tibble(obs = det_obs, pred = er_pred)
+obs_pred <- data.frame(obs = det_obs, pred = er_pred)
 
 # fit calibration model
 calibration_model <- scam(obs ~ s(pred, k = 6, bs = "mpi"), 
@@ -329,7 +328,7 @@ To ensure bias in the test data set doesn't impact the predictive performance me
 checklists_test <- filter(checklists_ss, type == "test") %>% 
   mutate(species_observed = as.integer(species_observed))
 
-# predict on test data using random forest model
+# predict to test data using random forest model
 pred_er <- predict(er_model, data = checklists_test, type = "response")
 # extract probability of detection
 pred_er <- pred_er$predictions[, 2]
@@ -343,7 +342,7 @@ pred_calibrated <- predict(calibration_model,
 # constrain probabilities to 0-1
 pred_calibrated[pred_calibrated < 0] <- 0
 pred_calibrated[pred_calibrated > 1] <- 1
-# combine predictions
+# combine observations and estimates
 obs_pred_test <- data.frame(id = seq_along(pred_calibrated),
                             # actual detection/non-detection
                             obs = as.integer(checklists_test$species_observed),
@@ -376,7 +375,7 @@ pa_metrics <- obs_pred_test %>%
 mcc_f1 <- calculate_mcc_f1(obs_pred_test$obs, obs_pred_test$pred_binary)
 
 # combine metrics together
-ppms <- tibble(
+ppms <- data.frame(
   mse = mse,
   spearman = spearman,
   sensitivity = pa_metrics$sensitivity,
@@ -468,7 +467,7 @@ calculate_pd <- function(predictor, er_model, calibration_model,
   
   # calibrate
   pd$encounter_rate <- predict(calibration_model, 
-                               newdata = tibble(pred = pd$encounter_rate), 
+                               newdata = data.frame(pred = pd$encounter_rate), 
                                type = "response")
   pd$encounter_rate <- as.numeric(pd$encounter_rate)
   # constrain to 0-1
@@ -555,7 +554,7 @@ ggplot(pd_woody_savanna) +
 
 ## Prediction {#sec-encounter-predict}
 
-Now for the fun part: let's use the calibrated random forest model to make a map of Wood Thrush encounter rate in Georgia! In @sec-envvar-pred, we created a prediction grid consisting of the habitat variables summarized on a regular grid of points across the study region. In this section, we'll make predictions of encounter rate at these points.
+In @sec-envvar-pred, we created a prediction grid consisting of the habitat variables summarized on a regular grid of points across the study region. In this section, we'll make predictions of encounter rate at these points.
 
 ### Standardized effort variables {#sec-encounter-predict-effort}
 
@@ -640,7 +639,7 @@ Using these standardized effort variables we can now make estimates across the p
 
 ```{r}
 #| label: encounter-predict-estimates-estimate
-# predict encounter rate
+# estimate encounter rate
 pred_er <- predict(er_model, data = pred_grid_eff, type = "response")
 pred_er <- pred_er$predictions[, 2]
 # define range-boundary
@@ -676,9 +675,35 @@ r_pred <- predictions %>%
 print(r_pred)
 ```
 
-### Mapping {#sec-encounter-predict-map}
+## Mapping {#sec-encounter-map}
 
-Finally, we can make a map of these encounter rate predictions!
+Now for the fun part: let's make a maps of the distribution of Wood Thrush in Georgia! We'll start by making a simple range map using the `in_range` layer of the raster of predictions we created. Although the encounter rate predictions provide more detailed information, for some applications a range map will be more desirable.
+
+```{r}
+#| label: encounter-predict-map-range
+#| fig.asp: 1.15
+par(mar = c(0.25, 0.25, 1.25, 0.25))
+# set up plot area
+plot(study_region, 
+     main = "Wood Thrush Range (June 2023)",
+     col = NA, border = NA)
+plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
+
+# convert binary prediction to categorical
+r_range <- as.factor(r_pred[["in_range"]])
+plot(r_range, col = c("#e6e6e6", "forestgreen"),
+     maxpixels = ncell(r_range),
+     legend = FALSE, axes = FALSE, bty = "n",
+     add = TRUE)
+
+# borders
+plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
+plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
+plot(study_region, border = "#000000", col = NA, lwd = 1, add = TRUE)
+box()
+```
+
+Next we'll make a map of the encounter rate predictions.
 
 ```{r}
 #| label: encounter-predict-map-er
@@ -686,7 +711,7 @@ Finally, we can make a map of these encounter rate predictions!
 par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
 plot(study_region, col = NA, border = NA)
-plot(ne_land, col = "#dddddd", border = "#888888", lwd = 0.5, add = TRUE)
+plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 
 # define quantile breaks
 brks <- global(r_pred[["encounter_rate"]], fun = quantile, 
@@ -725,22 +750,36 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
                               cex = 1, line = 0))
 ```
 
-Although this encounter rate map provides more detailed information on the distribution of Wood Thrush, for many applications a simple range map may be more desirable. For this, we can map the `in_range` layer of the raster of predictions we created.
+Finally, if we multiply the encounter rate and range boundary layers together it will effectively set the encounter rate to zero for areas outside of the predicted range.
 
 ```{r}
-#| label: encounter-predict-map-range
+#| label: encounter-predict-map-mask
+er_range <- r_pred[["encounter_rate"]] * r_pred[["in_range"]]
+```
+
+We can make one final map of this witin-range encounter rate prediction.
+
+```{r}
+#| label: encounter-predict-map-ermasked
 #| fig.asp: 1.15
-par(mar = c(0.25, 0.25, 1.25, 0.25))
+par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
-plot(study_region, 
-     main = "Wood Thrush Range (June 2023)",
-     col = NA, border = NA)
+plot(study_region, col = NA, border = NA)
 plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 
-# convert binary prediction to categorical
-r_range <- as.factor(r_pred[["in_range"]])
-plot(r_range, col = c("#e6e6e6", "forestgreen"),
-     maxpixels = ncell(r_range),
+# define quantile breaks, excluding zeros
+brks <- ifel(er_range > 0, er_range, NA) %>% 
+  global(fun = quantile, 
+         probs = seq(0, 1, 0.1), na.rm = TRUE) %>% 
+  as.numeric() %>% 
+  unique()
+# label the bottom, middle, and top value
+lbls <- round(c(min(brks), median(brks), max(brks)), 2)
+# ebird status and trends color palette
+pal <- ebirdst_palettes(length(brks) - 1)
+plot(er_range, 
+     col = c("#e6e6e6", pal), breaks = c(0, brks), 
+     maxpixels = ncell(r_pred),
      legend = FALSE, axes = FALSE, bty = "n",
      add = TRUE)
 
@@ -749,4 +788,19 @@ plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
 plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
 plot(study_region, border = "#000000", col = NA, lwd = 1, add = TRUE)
 box()
+
+# legend
+par(new = TRUE, mar = c(0, 0, 0, 0))
+title <- "Wood Thrush Encounter Rate within Range (June 2023)"
+image.plot(zlim = c(0, 1), legend.only = TRUE, 
+           col = pal, breaks = seq(0, 1, length.out = length(brks)),
+           smallplot = c(0.25, 0.75, 0.03, 0.06),
+           horizontal = TRUE,
+           axis.args = list(at = c(0, 0.5, 1), labels = lbls,
+                            fg = "black", col.axis = "black",
+                            cex.axis = 0.75, lwd.ticks = 0.5,
+                            padj = -1.5),
+           legend.args = list(text = title,
+                              side = 3, col = "black",
+                              cex = 1, line = 0))
 ```
