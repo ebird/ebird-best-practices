@@ -103,7 +103,7 @@ We'll start by finding the full set of unique checklists locations for each year
 #| cache: true
 #| cahce-path: "cache"
 # ebird checklist locations
-checklists <- read_csv("data/checklists-zf_woothr_june_us-ga.csv") %>% 
+checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
   # landcover data not availble for the full period, so we use the closest year
   mutate(year_lc = as.character(pmin(year, 2021)))
 
@@ -198,7 +198,7 @@ env_variables <- checklists %>%
 
 # save to csv, dropping any rows with missing variables
 write_csv(drop_na(env_variables), 
-          "data/environmental-variables_checklists.csv", 
+          "data/environmental-variables_checklists_jun_us-ga.csv", 
           na = "")
 ```
 
@@ -224,7 +224,7 @@ r <- rasterize(study_region, r, values = 1) %>%
   setNames("study_region")
 
 # save for later use
-r <- writeRaster(r, "data/prediction-grid.tif",
+r <- writeRaster(r, "data/prediction-grid_us-ga.tif",
                  overwrite = TRUE,
                  gdal = "COMPRESS=DEFLATE")
 ```
@@ -308,7 +308,7 @@ env_variables_ps <- buffers_ps %>%
 
 # save as csv, dropping any rows with missing variables
 write_csv(drop_na(env_variables_ps),
-          "data/environmental-variables_prediction-grid.csv", 
+          "data/environmental-variables_prediction-grid_us-ga.csv", 
           na = "")
 ```
 

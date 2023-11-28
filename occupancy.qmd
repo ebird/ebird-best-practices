@@ -32,17 +32,17 @@ library(tidyverse)
 set.seed(1)
 
 # habitat variables: landcover and elevation
-habitat <- read_csv("data/environmental-variables_checklists.csv")
+habitat <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
 
 # zero-filled ebird data combined with habitat data
-checklists <- read_csv("data/checklists-zf_woothr_june_us-ga.csv") %>% 
+checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
   inner_join(habitat, by = "checklist_id") %>% 
   # for occupancy modeling the response should be binary 0/1
   mutate(species_observed = as.integer(species_observed))
 
 # prediction grid
-pred_grid <- read_csv("data/environmental-variables_prediction-grid.csv")
-r <- rast("data/prediction-grid.tif") %>% 
+pred_grid <- read_csv("data/environmental-variables_prediction-grid_us-ga.csv")
+r <- rast("data/prediction-grid_us-ga.tif") %>% 
   # this second rast() call removes all the values from the raster template
   rast()
 crs <- st_crs(r)

@@ -49,7 +49,7 @@ In the interest of making examples concrete, throughout this guide, we'll focus 
 
 ![](images/ebird-data_download.png)
 
-Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a two text files: one for the EBD (e.g. `ebd_US-GA_woothr_smp_relJun-2023.txt`) containing all the Wood Thrush observations from Georgia and one for the SED (e.g. `ebd_US-GA_woothr_smp_relJun-2023_sampling.txt`) containing all checklists from Georgia. The `relJune-2023` component of the file name describes which version of the EBD this dataset came from; in this case it's the June 2023 release.
+Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a two text files: one for the EBD (e.g. `ebd_US-GA_woothr_smp_relOct-2023.txt`) containing all the Wood Thrush observations from Georgia and one for the SED (e.g. `ebd_US-GA_woothr_smp_relJun-2023_sampling.txt`) containing all checklists from Georgia. The `relJune-2023` component of the file name describes which version of the EBD this dataset came from; in this case it's the June 2023 release.
 
 ## Importing eBird data into R {#sec-ebird-import}
 
@@ -67,7 +67,7 @@ library(lubridate)
 library(readr)
 library(sf)
 
-f_sed <- "data-raw/ebd_US-GA_woothr_smp_relJun-2023_sampling.txt"
+f_sed <- "data-raw/ebd_US-GA_woothr_smp_relOct-2023_sampling.txt"
 checklists <- read_sampling(f_sed)
 glimpse(checklists)
 ```
@@ -109,7 +109,7 @@ Now let's import the observation data.
 
 ```{r}
 #| label: ebird-import-ebd
-f_ebd <- "data-raw/ebd_US-GA_woothr_smp_relJun-2023.txt"
+f_ebd <- "data-raw/ebd_US-GA_woothr_smp_relOct-2023.txt"
 observations <- read_ebd(f_ebd)
 glimpse(observations)
 ```
@@ -488,7 +488,7 @@ checklists <- zf_split %>%
          hours_of_day, 
          effort_hours, effort_distance_km, effort_speed_kmph,
          number_observers)
-write_csv(checklists, "data/checklists-zf_woothr_june_us-ga.csv", na = "")
+write_csv(checklists, "data/checklists-zf_woothr_jun_us-ga.csv", na = "")
 ```
 
 If you'd like to ensure you're using exactly the same data as was used to generate this guide, download the [data package](https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip) mentioned in the [setup instructions](intro.qmd#sec-intro-setup-data). Unzip this data package and place the contents in your RStudio project folder.

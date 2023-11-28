@@ -10,7 +10,7 @@ library(sf)
 # Import eBird data ----
 
 # checklist data
-f_sed <- "data-raw/ebd_US-GA_woothr_smp_relJun-2023_sampling.txt"
+f_sed <- "data-raw/ebd_US-GA_woothr_smp_relOct-2023_sampling.txt"
 
 
 # EXERCISE: Make a histogram of the distribution of distance traveling for
@@ -18,7 +18,7 @@ f_sed <- "data-raw/ebd_US-GA_woothr_smp_relJun-2023_sampling.txt"
 
 
 # observation data
-f_ebd <- "data-raw/ebd_US-GA_woothr_smp_relJun-2023.txt"
+f_ebd <- "data-raw/ebd_US-GA_woothr_smp_relOct-2023.txt"
 
 
 # ├ Shared checklists ----

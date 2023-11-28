@@ -32,15 +32,15 @@ library(tidyverse)
 set.seed(1)
 
 # habitat variables: landcover and elevation
-habitat <- read_csv("data/environmental-variables_checklists.csv")
+habitat <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
 
 # zero-filled ebird data combined with habitat data
-checklists <- read_csv("data/checklists-zf_woothr_june_us-ga.csv") %>% 
+checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
   inner_join(habitat, by = "checklist_id")
 
 # prediction grid
-pred_grid <- read_csv("data/environmental-variables_prediction-grid.csv")
-r <- rast("data/prediction-grid.tif") %>% 
+pred_grid <- read_csv("data/environmental-variables_prediction-grid_us-ga.csv")
+r <- rast("data/prediction-grid_us-ga.tif") %>% 
   # this second rast() call removes all the values from the raster template
   rast()
 crs <- st_crs(r)
@@ -253,10 +253,10 @@ pred_grid_eff <- pred_grid %>%
          year = year(observation_date),
          day_of_year = yday(observation_date),
          # determined as optimal time for detection in previous chapter
-         hours_of_day = 6.2,
-         effort_hours = 2,
-         effort_distance_km = 1,
-         effort_speed_kmph = 0.5,
+         hours_of_day = 6.25,
+         effort_distance_km = 2,
+         effort_hours = 1,
+         effort_speed_kmph = 2,
          number_observers = 1)
 ```
 
@@ -307,7 +307,7 @@ r_pred <- predictions %>%
 print(r_pred)
 ```
 
-Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 hour, 1 km checklist for which counting started at about 6:15AM on June 15, 2023. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
+Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 km, 1 hour traveling count starting at about 6:15AM on June 15, 2023. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
 
 Prior to mapping the relative abundance, we'll multiple by the `in_range` layer, which will produce a map showing zero relative abundance where the model predicts that Wood Thrush does not occur.
 

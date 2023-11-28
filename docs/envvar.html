@@ -420,9 +420,9 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </div>
 </div>
 <p>We’ll start by finding the full set of unique checklists locations for each year in the eBird data and buffer the points by 1.5km to generate 3 km diameter circular neighborhoods centered on each checklist location. Note that the MODIS landcover data are not available for 2022 and 2023, so we use the 2021 layer for 2022-2023 checklists.</p>
-<div class="cell" data-layout-align="center" data-cahce-path="cache" data-hash="cache/envvar-landcover-buffer_8db81c6a881304c8528e37213b25854a">
+<div class="cell" data-layout-align="center" data-cahce-path="cache" data-hash="cache/envvar-landcover-buffer_9372201e81d15ad5945c04ca545c2a8d">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ebird checklist locations</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>checklists <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/checklists-zf_woothr_june_us-ga.csv"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>checklists <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/checklists-zf_woothr_jun_us-ga.csv"</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># landcover data not availble for the full period, so we use the closest year</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year_lc =</span> <span class="fu">as.character</span>(<span class="fu">pmin</span>(year, <span class="dv">2021</span>)))</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
@@ -435,7 +435,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_buffer</span>(<span class="at">dist =</span> <span class="fu">set_units</span>(<span class="fl">1.5</span>, <span class="st">"km"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, for each location, we crop and mask the landcover layer corresponding to the checklist year to the circular neighborhood around that checklist. Then we use <code>calculate_lsm()</code> from <code>landscapemetrics</code> to calculate <code>pland</code> and <code>ed</code> metrics within each neighborhood. <strong>This step may take 30 minute or longer to run.</strong></p>
-<div class="cell" data-layout-align="center" data-hash="cache/envvar-landcover-lsm_f27554fc80e6a0fbcb3e7d91ed3c12dd">
+<div class="cell" data-layout-align="center" data-hash="cache/envvar-landcover-lsm_c6f0cc7802a61a4712b2d2c55e8143ea">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>lsm <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(buffers))) {</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  buffer_i <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(buffers[i, ], <span class="at">crs =</span> <span class="fu">crs</span>(landcover))</span>
@@ -503,7 +503,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># save to csv, dropping any rows with missing variables</span></span>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(<span class="fu">drop_na</span>(env_variables), </span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>          <span class="st">"data/environmental-variables_checklists.csv"</span>, </span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>          <span class="st">"data/environmental-variables_checklists_jun_us-ga.csv"</span>, </span>
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>          <span class="at">na =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -527,12 +527,12 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setNames</span>(<span class="st">"study_region"</span>)</span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co"># save for later use</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">writeRaster</span>(r, <span class="st">"data/prediction-grid.tif"</span>,</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">writeRaster</span>(r, <span class="st">"data/prediction-grid_us-ga.tif"</span>,</span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">overwrite =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">gdal =</span> <span class="st">"COMPRESS=DEFLATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, we extract the coordinates of the cell centers from the raster we just created, convert these to <code>sf</code> point features, and buffer these to generate 3 km circular neighborhoods.</p>
-<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-buffer_159b7a4af361de490aee6d42c970d320">
+<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-buffer_e843bd6fd6d991a653657e733c9b6e72">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># generate neighborhoods for the prediction grid cell centers</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>buffers_ps <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(r, <span class="at">cells =</span> <span class="cn">TRUE</span>, <span class="at">xy =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">cell_id =</span> cell, x, y) <span class="sc">%&gt;%</span> </span>
@@ -541,7 +541,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_buffer</span>(<span class="fu">set_units</span>(<span class="dv">3</span>, <span class="st">"km"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now we can calculate the landcover and elevation variables exactly as we did for the eBird checklists in the previous two sections. First, the landscape metrics <code>pland</code> and <code>ed</code> from the landcover data. Note that we use the most recent year of landcover data (i.e.&nbsp;2021) in this case.</p>
-<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-lsm_a26b5a9dac71676a7de6c1adf8d87302">
+<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-lsm_83c99767d37d02494f87c8553c0524f5">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># estimate landscape metrics for each cell in the prediction grid</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>lsm_ps <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(buffers_ps))) {</span>
@@ -597,7 +597,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># save as csv, dropping any rows with missing variables</span></span>
 <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(<span class="fu">drop_na</span>(env_variables_ps),</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>          <span class="st">"data/environmental-variables_prediction-grid.csv"</span>, </span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>          <span class="st">"data/environmental-variables_prediction-grid_us-ga.csv"</span>, </span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>          <span class="at">na =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Keeping these data in a data frame is a compact way to store them and will be required once we make model predictions in later chapters. However, we can always use the raster template to convert these environmental variables into a spatial format, for example, if we want to map them. Let’s look at how this works for percent cover of deciduous broadleaf forest (class 4).</p>

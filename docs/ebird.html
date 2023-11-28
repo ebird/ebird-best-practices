@@ -308,7 +308,7 @@ Tip
 </div>
 <p>In the interest of making examples concrete, throughout this guide, we’ll focus on moedeling the distribution of <a href="https://ebird.org/species/woothr">Wood Thrush</a> in Georgia (the US state, not the country) in June. Wood Thrush breed in deciduous forests of the eastern United States. We’ll start by downloading the corresponding eBird observation (EBD) and checklist (SED) data by visiting the <a href="https://ebird.org/data/download/ebd">eBird Basic Dataset</a> download page and filling out the Custom Download form to request Wood Thrush observations from Georgia. <strong>Make sure you check the box “Include sampling event data”</strong>, which will include the SED in the data download in addition to the EBD.</p>
 <p><img src="images/ebird-data_download.png" class="img-fluid"></p>
-<p>Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a two text files: one for the EBD (e.g.&nbsp;<code>ebd_US-GA_woothr_smp_relJun-2023.txt</code>) containing all the Wood Thrush observations from Georgia and one for the SED (e.g.&nbsp;<code>ebd_US-GA_woothr_smp_relJun-2023_sampling.txt</code>) containing all checklists from Georgia. The <code>relJune-2023</code> component of the file name describes which version of the EBD this dataset came from; in this case it’s the June 2023 release.</p>
+<p>Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a two text files: one for the EBD (e.g.&nbsp;<code>ebd_US-GA_woothr_smp_relOct-2023.txt</code>) containing all the Wood Thrush observations from Georgia and one for the SED (e.g.&nbsp;<code>ebd_US-GA_woothr_smp_relJun-2023_sampling.txt</code>) containing all checklists from Georgia. The <code>relJune-2023</code> component of the file name describes which version of the EBD this dataset came from; in this case it’s the June 2023 release.</p>
 </section>
 <section id="sec-ebird-import" class="level2" data-number="2.4">
 <h2 data-number="2.4" class="anchored" data-anchor-id="sec-ebird-import"><span class="header-section-number">2.4</span> Importing eBird data into R</h2>
@@ -323,42 +323,42 @@ Tip
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>f_sed <span class="ot">&lt;-</span> <span class="st">"data-raw/ebd_US-GA_woothr_smp_relJun-2023_sampling.txt"</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>f_sed <span class="ot">&lt;-</span> <span class="st">"data-raw/ebd_US-GA_woothr_smp_relOct-2023_sampling.txt"</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>checklists <span class="ot">&lt;-</span> <span class="fu">read_sampling</span>(f_sed)</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(checklists)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Rows: 1,080,271</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Rows: 1,120,132</span></span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Columns: 31</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ checklist_id              &lt;chr&gt; "S60702684", "S60702754", "S60740954", "S699…</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ last_edited_date          &lt;chr&gt; "2019-10-17 18:14:28", "2019-10-17 18:17:16"…</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ checklist_id              &lt;chr&gt; "S78945522", "S100039674", "S7892023", "S789…</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ last_edited_date          &lt;chr&gt; "2021-04-13 15:28:08.442812", "2022-01-03 14…</span></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ country                   &lt;chr&gt; "United States", "United States", "United St…</span></span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ country_code              &lt;chr&gt; "US", "US", "US", "US", "US", "US", "US", "U…</span></span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ state                     &lt;chr&gt; "Georgia", "Georgia", "Georgia", "Georgia", …</span></span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ state_code                &lt;chr&gt; "US-GA", "US-GA", "US-GA", "US-GA", "US-GA",…</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ county                    &lt;chr&gt; "Dade", "Dade", "Glynn", "Charlton", "Dooly"…</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ county_code               &lt;chr&gt; "US-GA-083", "US-GA-083", "US-GA-127", "US-G…</span></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ iba_code                  &lt;chr&gt; NA, NA, "US-GA_3181", "US-GA_3096", NA, NA, …</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ bcr_code                  &lt;int&gt; 28, 28, NA, 27, 27, 27, 27, 27, 27, 27, 27, …</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ usfws_code                &lt;chr&gt; NA, NA, NA, "USFWS_714", NA, NA, NA, NA, NA,…</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ county                    &lt;chr&gt; "Monroe", "Monroe", "Chatham", "Chatham", "C…</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ county_code               &lt;chr&gt; "US-GA-207", "US-GA-207", "US-GA-051", "US-G…</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ iba_code                  &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ bcr_code                  &lt;int&gt; 29, 29, NA, NA, NA, NA, NA, NA, NA, NA, NA, …</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ usfws_code                &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …</span></span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ atlas_block               &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …</span></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ locality                  &lt;chr&gt; "Wildwood", "Trenton", "Jekyll Island beach"…</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ locality_id               &lt;chr&gt; "L10043303", "L10043306", "L10049758", "L100…</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ locality_type             &lt;chr&gt; "P", "P", "P", "P", "P", "P", "P", "P", "P",…</span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ latitude                  &lt;dbl&gt; 35.0, 34.9, 31.0, 30.8, 32.2, 32.2, 31.8, 31…</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ longitude                 &lt;dbl&gt; -85.4, -85.5, -81.4, -82.4, -83.8, -83.8, -8…</span></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ observation_date          &lt;date&gt; 1937-01-17, 1937-01-17, 1998-11-16, 1999-05…</span></span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ time_observations_started &lt;chr&gt; NA, NA, "15:00:00", "12:00:00", NA, NA, NA, …</span></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ observer_id               &lt;chr&gt; "obs1426731", "obs1426731", "obs292785", "ob…</span></span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ sampling_event_identifier &lt;chr&gt; "S60702684", "S60702754", "S60740954", "S699…</span></span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ protocol_type             &lt;chr&gt; "Historical", "Historical", "Stationary", "A…</span></span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ protocol_code             &lt;chr&gt; "P62", "P62", "P21", "P23", "P20", "P20", "P…</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ locality                  &lt;chr&gt; "Rum Creek M.A.R.S.H. Project", "Rum Creek M…</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ locality_id               &lt;chr&gt; "L876993", "L876993", "L877616", "L877614", …</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ locality_type             &lt;chr&gt; "H", "H", "H", "H", "H", "H", "H", "H", "H",…</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ latitude                  &lt;dbl&gt; 33.1, 33.1, 31.4, 31.7, 31.7, 31.7, 31.7, 31…</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ longitude                 &lt;dbl&gt; -83.9, -83.9, -80.2, -80.4, -80.4, -80.4, -8…</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ observation_date          &lt;date&gt; 1997-12-31, 1997-02-23, 1983-09-13, 1984-02…</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ time_observations_started &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "07:20:00", "15:…</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ observer_id               &lt;chr&gt; "obs1675368", "obs198993", "obs243631", "obs…</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ sampling_event_identifier &lt;chr&gt; "S78945522", "S100039674", "S7892023", "S789…</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ protocol_type             &lt;chr&gt; "Historical", "Historical", "Incidental", "I…</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ protocol_code             &lt;chr&gt; "P62", "P62", "P20", "P20", "P20", "P20", "P…</span></span>
 <span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ project_code              &lt;chr&gt; "EBIRD", "EBIRD", "EBIRD", "EBIRD", "EBIRD",…</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ duration_minutes          &lt;int&gt; NA, NA, 15, 1440, NA, NA, NA, NA, NA, NA, NA…</span></span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ effort_distance_km        &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …</span></span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ effort_area_ha            &lt;dbl&gt; NA, NA, NA, 4.05, NA, NA, NA, NA, NA, NA, NA…</span></span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ number_observers          &lt;int&gt; NA, NA, 2, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, …</span></span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ all_species_reported      &lt;lgl&gt; FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, TRUE…</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ duration_minutes          &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, 400, 120, NA, NA…</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ effort_distance_km        &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 64.4, 40.2, NA, …</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ effort_area_ha            &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ number_observers          &lt;int&gt; 1, NA, NA, NA, NA, NA, NA, 5, 15, NA, NA, NA…</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ all_species_reported      &lt;lgl&gt; TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALS…</span></span>
 <span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ group_identifier          &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …</span></span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ trip_comments             &lt;chr&gt; "Approximate location. Maurice and Irma stop…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ trip_comments             &lt;chr&gt; NA, NA, "Joel McNeal entering accepted recor…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -423,15 +423,15 @@ Solution
 </div>
 <p>Now let’s import the observation data.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>f_ebd <span class="ot">&lt;-</span> <span class="st">"data-raw/ebd_US-GA_woothr_smp_relJun-2023.txt"</span></span>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>f_ebd <span class="ot">&lt;-</span> <span class="st">"data-raw/ebd_US-GA_woothr_smp_relOct-2023.txt"</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>observations <span class="ot">&lt;-</span> <span class="fu">read_ebd</span>(f_ebd)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(observations)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Rows: 40,003</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Rows: 41,432</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Columns: 48</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ checklist_id              &lt;chr&gt; "G10000432", "G10001259", "G10002209", "G100…</span></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ global_unique_identifier  &lt;chr&gt; "URN:CornellLabOfOrnithology:EBIRD:OBS168581…</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ last_edited_date          &lt;chr&gt; "2023-04-16 08:18:20.744008", "2023-05-08 08…</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ taxonomic_order           &lt;dbl&gt; 27753, 27753, 27753, 27753, 27753, 27753, 27…</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ taxonomic_order           &lt;dbl&gt; 27880, 27880, 27880, 27880, 27880, 27880, 27…</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ category                  &lt;chr&gt; "species", "species", "species", "species", …</span></span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ taxon_concept_id          &lt;chr&gt; "avibase-8E1D9327", "avibase-8E1D9327", "avi…</span></span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ common_name               &lt;chr&gt; "Wood Thrush", "Wood Thrush", "Wood Thrush",…</span></span>
@@ -506,16 +506,16 @@ Checkpoint
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(group_identifier)) <span class="sc">%&gt;%</span> </span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(group_identifier) <span class="sc">%&gt;%</span> </span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(sampling_event_identifier, group_identifier)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 216,121 × 2</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 223,846 × 2</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   sampling_event_identifier group_identifier</span></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                     &lt;chr&gt;           </span></span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 S19814680                 G1000012        </span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 S132144928                G10000310       </span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 S133802656                G10000310       </span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 S133803635                G10000330       </span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 S132144792                G10000330       </span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 S133864820                G10000432       </span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ 216,115 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 S133802656                G10000310       </span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 S132144928                G10000310       </span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 S132144792                G10000330       </span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 S133803635                G10000330       </span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 S133859929                G10000432       </span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ 223,840 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -534,16 +534,17 @@ Tip
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>checklists_unique <span class="ot">&lt;-</span> <span class="fu">auk_unique</span>(checklists_shared, <span class="at">checklists_only =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(checklists)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 1080271</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 1120132</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(checklists_unique)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 1080271</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 1120132</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Notice that a new variable, <code>checklist_id</code>, was created that is set to <code>group_identifier</code> for shared checklists and <code>sampling_event_identifier</code> for non-shared checklists.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(checklists_unique<span class="sc">$</span>checklist_id)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] "S60702684" "S60702754" "S60740954" "S6990750"  "S60956175" "S61571093"</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(checklists_unique<span class="sc">$</span>checklist_id)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] "G7637089" "G7637100" "G7637324" "G7637248" "G7637403" "G7640468"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] "S78945522"  "S100039674" "S7892023"   "S7892189"   "S7891643"  </span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [6] "S7891963"</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(checklists_unique<span class="sc">$</span>checklist_id)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] "G7637089" "G7637100" "G7637324" "G7637248" "G7637403" "G7640468"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -849,7 +850,7 @@ Solution
 <span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>         hours_of_day, </span>
 <span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>         effort_hours, effort_distance_km, effort_speed_kmph,</span>
 <span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>         number_observers)</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(checklists, <span class="st">"data/checklists-zf_woothr_june_us-ga.csv"</span>, <span class="at">na =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(checklists, <span class="st">"data/checklists-zf_woothr_jun_us-ga.csv"</span>, <span class="at">na =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you’d like to ensure you’re using exactly the same data as was used to generate this guide, download the <a href="https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip">data package</a> mentioned in the <a href="./intro.html#sec-intro-setup-data">setup instructions</a>. Unzip this data package and place the contents in your RStudio project folder.</p>
 </section>
