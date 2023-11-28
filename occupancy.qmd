@@ -31,12 +31,12 @@ library(tidyverse)
 # set random number seed to insure fully repeatable results
 set.seed(1)
 
-# habitat variables: landcover and elevation
-habitat <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
+# environmental variables: landcover and elevation
+env_vars <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
 
-# zero-filled ebird data combined with habitat data
+# zero-filled ebird data combined with environmental data
 checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
-  inner_join(habitat, by = "checklist_id") %>% 
+  inner_join(env_vars, by = "checklist_id") %>% 
   # for occupancy modeling the response should be binary 0/1
   mutate(species_observed = as.integer(species_observed))
 

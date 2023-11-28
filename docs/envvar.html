@@ -532,34 +532,34 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">gdal =</span> <span class="st">"COMPRESS=DEFLATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, we extract the coordinates of the cell centers from the raster we just created, convert these to <code>sf</code> point features, and buffer these to generate 3 km circular neighborhoods.</p>
-<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-buffer_e843bd6fd6d991a653657e733c9b6e72">
+<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-buffer_c371b801f61ae17d10437aa3afe3609e">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># generate neighborhoods for the prediction grid cell centers</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>buffers_ps <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(r, <span class="at">cells =</span> <span class="cn">TRUE</span>, <span class="at">xy =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>buffers_pg <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(r, <span class="at">cells =</span> <span class="cn">TRUE</span>, <span class="at">xy =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">cell_id =</span> cell, x, y) <span class="sc">%&gt;%</span> </span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> laea_crs, <span class="at">remove =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">4326</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_buffer</span>(<span class="fu">set_units</span>(<span class="dv">3</span>, <span class="st">"km"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now we can calculate the landcover and elevation variables exactly as we did for the eBird checklists in the previous two sections. First, the landscape metrics <code>pland</code> and <code>ed</code> from the landcover data. Note that we use the most recent year of landcover data (i.e.&nbsp;2021) in this case.</p>
-<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-lsm_83c99767d37d02494f87c8553c0524f5">
+<div class="cell" data-layout-align="center" data-hash="cache/envvar-pred-lsm_2419031a91839fb1a177b98e6ed1d184">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># estimate landscape metrics for each cell in the prediction grid</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>lsm_ps <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(buffers_ps))) {</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  buffer_i <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(buffers_ps[i, ], <span class="at">crs =</span> <span class="fu">crs</span>(landcover))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>lsm_pg <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(buffers_pg))) {</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  buffer_i <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(buffers_pg[i, ], <span class="at">crs =</span> <span class="fu">crs</span>(landcover))</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># crop and mask landcover raster so all values outside buffer are missing</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  lsm_ps[[i]] <span class="ot">&lt;-</span> <span class="fu">crop</span>(landcover[[<span class="st">"2021"</span>]], buffer_i) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  lsm_pg[[i]] <span class="ot">&lt;-</span> <span class="fu">crop</span>(landcover[[<span class="st">"2021"</span>]], buffer_i) <span class="sc">%&gt;%</span> </span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mask</span>(buffer_i) <span class="sc">%&gt;%</span> </span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calcualte landscape metrics</span></span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">calculate_lsm</span>(<span class="at">level =</span> <span class="st">"class"</span>, <span class="at">metric =</span> <span class="fu">c</span>(<span class="st">"pland"</span>, <span class="st">"ed"</span>)) <span class="sc">%&gt;%</span> </span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add variable to uniquely identify each point</span></span>
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cell_id =</span> buffer_i<span class="sc">$</span>cell_id)</span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>lsm_ps <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(lsm_ps) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>lsm_pg <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(lsm_pg) <span class="sc">%&gt;%</span> </span>
 <span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cell_id, class, metric, value)</span>
 <span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="co"># transform to wide format</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>lsm_wide_ps <span class="ot">&lt;-</span> lsm_ps <span class="sc">%&gt;%</span> </span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>lsm_wide_pg <span class="ot">&lt;-</span> lsm_pg <span class="sc">%&gt;%</span> </span>
 <span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># fill missing classes with zeros</span></span>
 <span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">complete</span>(cell_id,</span>
 <span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>           <span class="at">class =</span> lc_classes<span class="sc">$</span>class,</span>
@@ -577,32 +577,32 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </div>
 <p>And now the mean and standard deviation of elevation.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>elev_buffer_ps <span class="ot">&lt;-</span> <span class="fu">exact_extract</span>(elevation, buffers_ps, </span>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>elev_buffer_pg <span class="ot">&lt;-</span> <span class="fu">exact_extract</span>(elevation, buffers_pg, </span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                                <span class="at">fun =</span> <span class="fu">c</span>(<span class="st">"mean"</span>, <span class="st">"stdev"</span>),</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                                <span class="at">progress =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add variables to uniquely identify each point</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">cell_id =</span> buffers_ps<span class="sc">$</span>cell_id) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">cell_id =</span> buffers_pg<span class="sc">$</span>cell_id) <span class="sc">%&gt;%</span> </span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cell_id, <span class="at">elevation_mean =</span> mean, <span class="at">elevation_sd =</span> stdev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Finally, we combine the landcover and elevation variables together and save to CSV.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># combine landcover and elevation</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>env_variables_ps <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(elev_buffer_ps, lsm_wide_ps, <span class="at">by =</span> <span class="st">"cell_id"</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>env_variables_pg <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(elev_buffer_pg, lsm_wide_pg, <span class="at">by =</span> <span class="st">"cell_id"</span>)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># attach the xy coordinates of the cell centers</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>env_variables_ps <span class="ot">&lt;-</span> buffers_ps <span class="sc">%&gt;%</span> </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>env_variables_pg <span class="ot">&lt;-</span> buffers_pg <span class="sc">%&gt;%</span> </span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span> </span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(cell_id, x, y) <span class="sc">%&gt;%</span> </span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(env_variables_ps, <span class="at">by =</span> <span class="st">"cell_id"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(env_variables_pg, <span class="at">by =</span> <span class="st">"cell_id"</span>)</span>
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># save as csv, dropping any rows with missing variables</span></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(<span class="fu">drop_na</span>(env_variables_ps),</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(<span class="fu">drop_na</span>(env_variables_pg),</span>
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>          <span class="st">"data/environmental-variables_prediction-grid_us-ga.csv"</span>, </span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>          <span class="at">na =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Keeping these data in a data frame is a compact way to store them and will be required once we make model predictions in later chapters. However, we can always use the raster template to convert these environmental variables into a spatial format, for example, if we want to map them. Let’s look at how this works for percent cover of deciduous broadleaf forest (class 4).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>forest_cover <span class="ot">&lt;-</span> env_variables_ps <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>forest_cover <span class="ot">&lt;-</span> env_variables_pg <span class="sc">%&gt;%</span> </span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert to spatial features</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> laea_crs) <span class="sc">%&gt;%</span> </span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># rasterize points</span></span>

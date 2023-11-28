@@ -31,15 +31,16 @@ library(tidyverse)
 # set random number seed to insure fully repeatable results
 set.seed(1)
 
-# habitat variables: landcover and elevation
-habitat <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
+# environmental variables: landcover and elevation
+env_vars <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
 
-# zero-filled ebird data combined with habitat data
+# zero-filled ebird data combined with environmental data
 checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
-  inner_join(habitat, by = "checklist_id")
+  inner_join(env_vars, by = "checklist_id")
 
 # prediction grid
 pred_grid <- read_csv("data/environmental-variables_prediction-grid_us-ga.csv")
+# raster template for the grid
 r <- rast("data/prediction-grid_us-ga.tif") %>% 
   # this second rast() call removes all the values from the raster template
   rast()
@@ -182,7 +183,8 @@ pred_calibrated <- predict(calibration_model,
                            type = "response") %>% 
   as.numeric()
 # constrain probabilities to 0-1
-pred_calibrated <- pmin(pmax(pred_calibrated, 0), 1)
+pred_calibrated[pred_calibrated < 0] <- 0
+pred_calibrated[pred_calibrated > 1] <- 1
 
 # add predicted encounter rate required for count estimates
 checklists_test$predicted_er <- pred_er
@@ -244,7 +246,7 @@ The Spearman's correlations tell us about the ability of the model to estimate t
 
 ## Prediction {#sec-abundance-predict}
 
-Just as we did in the @sec-encounter-predict for encounter rate, we can estimate relative abundance over our prediction grid. First we estimate encounter rate and count, then we multiply these together to get an estimate of relative abundance. Let's start by adding the effort variables to the prediction grid for a standard eBird checklist at the optimal time of day for detecting Wood Thrush. Recall from the @sec-encounter-predict-effort that we determined the optimal time of day for detecting Wood Thrush was around 6:15AM.
+Just as we did in the @sec-encounter-predict for encounter rate, we can estimate relative abundance over our prediction grid. First we estimate encounter rate and count, then we multiply these together to get an estimate of relative abundance. Let's start by adding the effort variables to the prediction grid for a standard eBird checklist at the optimal time of day for detecting Wood Thrush. Recall from the @sec-encounter-predict-effort that we determined the optimal time of day for detecting Wood Thrush was around 6:37AM.
 
 ```{r}
 #| label: abundance-predict-grid
@@ -253,7 +255,7 @@ pred_grid_eff <- pred_grid %>%
          year = year(observation_date),
          day_of_year = yday(observation_date),
          # determined as optimal time for detection in previous chapter
-         hours_of_day = 6.25,
+         hours_of_day = 6.6,
          effort_distance_km = 2,
          effort_hours = 1,
          effort_speed_kmph = 2,
@@ -274,6 +276,9 @@ pred_er_cal <- predict(calibration_model,
                        data.frame(pred = pred_er), 
                        type = "response") %>% 
   as.numeric()
+# constrain to 0-1
+pred_er_cal[pred_er_cal < 0] <- 0
+pred_er_cal[pred_er_cal > 1] <- 1
 
 # add predicted encounter rate required for count estimates
 pred_grid_eff$predicted_er <- pred_er
@@ -281,13 +286,13 @@ pred_grid_eff$predicted_er <- pred_er
 pred_count <- predict(count_model, data = pred_grid_eff, type = "response")
 pred_count <- pred_count$predictions
 
-# add estimates to prediction grid
-predictions <- bind_cols(pred_grid_eff,
-                         in_range = pred_binary,
-                         encounter_rate = pred_er_cal,
-                         count = pred_count) %>% 
-  select(cell_id, x, y, in_range, encounter_rate, count) %>% 
-  mutate(encounter_rate = pmin(pmax(encounter_rate, 0), 1))
+# combine predictions with coordinates from prediction grid
+predictions <- data.frame(cell_id = pred_grid_eff$cell_id,
+                          x = pred_grid_eff$x,
+                          y = pred_grid_eff$y,
+                          in_range = pred_binary, 
+                          encounter_rate = pred_er_cal,
+                          count = pred_count)
 ```
 
 Next, we add a column for the relative abundance estimate (the product of the encounter rate and count estimates), and convert these estimates to raster format.

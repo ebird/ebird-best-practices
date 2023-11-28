@@ -52,8 +52,8 @@ plot(as.factor(landcover[["2021"]]),
 # load cached objects for faster interactive processing
 buffers <- knitr::load_cache("envvar-landcover-buffer", object = "buffers")
 lsm <- knitr::load_cache("envvar-landcover-lsm", object = "lsm")
-buffers_ps <- knitr::load_cache("envvar-pred-buffer", object = "buffers_ps")
-lsm_ps <- knitr::load_cache("envvar-pred-lsm", object = "lsm_ps")
+buffers_pg <- knitr::load_cache("envvar-pred-buffer", object = "buffers_pg")
+lsm_pg <- knitr::load_cache("envvar-pred-lsm", object = "lsm_pg")
 ```
 
 We've also included a lookup table in the data package (`data-raw/mcd12q1_fao_classes.csv`) that provides descriptions of each of these classes.
@@ -235,7 +235,7 @@ Next, we extract the coordinates of the cell centers from the raster we just cre
 #| label: envvar-pred-buffer
 #| cache: true
 # generate neighborhoods for the prediction grid cell centers
-buffers_ps <- as.data.frame(r, cells = TRUE, xy = TRUE) %>% 
+buffers_pg <- as.data.frame(r, cells = TRUE, xy = TRUE) %>% 
   select(cell_id = cell, x, y) %>% 
   st_as_sf(coords = c("x", "y"), crs = laea_crs, remove = FALSE) %>% 
   st_transform(crs = 4326) %>% 
@@ -248,23 +248,23 @@ Now we can calculate the landcover and elevation variables exactly as we did for
 #| label: envvar-pred-lsm
 #| cache: true
 # estimate landscape metrics for each cell in the prediction grid
-lsm_ps <- NULL
-for (i in seq_len(nrow(buffers_ps))) {
-  buffer_i <- st_transform(buffers_ps[i, ], crs = crs(landcover))
+lsm_pg <- NULL
+for (i in seq_len(nrow(buffers_pg))) {
+  buffer_i <- st_transform(buffers_pg[i, ], crs = crs(landcover))
   
   # crop and mask landcover raster so all values outside buffer are missing
-  lsm_ps[[i]] <- crop(landcover[["2021"]], buffer_i) %>% 
+  lsm_pg[[i]] <- crop(landcover[["2021"]], buffer_i) %>% 
     mask(buffer_i) %>% 
     # calcualte landscape metrics
     calculate_lsm(level = "class", metric = c("pland", "ed")) %>% 
     # add variable to uniquely identify each point
     mutate(cell_id = buffer_i$cell_id)
 }
-lsm_ps <- bind_rows(lsm_ps) %>% 
+lsm_pg <- bind_rows(lsm_pg) %>% 
   select(cell_id, class, metric, value)
 
 # transform to wide format
-lsm_wide_ps <- lsm_ps %>% 
+lsm_wide_pg <- lsm_pg %>% 
   # fill missing classes with zeros
   complete(cell_id,
            class = lc_classes$class,
@@ -285,11 +285,11 @@ And now the mean and standard deviation of elevation.
 
 ```{r}
 #| label: envvar-pred-elevation
-elev_buffer_ps <- exact_extract(elevation, buffers_ps, 
+elev_buffer_pg <- exact_extract(elevation, buffers_pg, 
                                 fun = c("mean", "stdev"),
                                 progress = FALSE) %>% 
   # add variables to uniquely identify each point
-  mutate(cell_id = buffers_ps$cell_id) %>% 
+  mutate(cell_id = buffers_pg$cell_id) %>% 
   select(cell_id, elevation_mean = mean, elevation_sd = stdev)
 ```
 
@@ -298,16 +298,16 @@ Finally, we combine the landcover and elevation variables together and save to C
 ```{r}
 #| label: envvar-pred-combine
 # combine landcover and elevation
-env_variables_ps <- inner_join(elev_buffer_ps, lsm_wide_ps, by = "cell_id")
+env_variables_pg <- inner_join(elev_buffer_pg, lsm_wide_pg, by = "cell_id")
 
 # attach the xy coordinates of the cell centers
-env_variables_ps <- buffers_ps %>% 
+env_variables_pg <- buffers_pg %>% 
   st_drop_geometry() %>% 
   select(cell_id, x, y) %>% 
-  inner_join(env_variables_ps, by = "cell_id")
+  inner_join(env_variables_pg, by = "cell_id")
 
 # save as csv, dropping any rows with missing variables
-write_csv(drop_na(env_variables_ps),
+write_csv(drop_na(env_variables_pg),
           "data/environmental-variables_prediction-grid_us-ga.csv", 
           na = "")
 ```
@@ -316,7 +316,7 @@ Keeping these data in a data frame is a compact way to store them and will be re
 
 ```{r}
 #| label: envvar-pred-map
-forest_cover <- env_variables_ps %>% 
+forest_cover <- env_variables_pg %>% 
   # convert to spatial features
   st_as_sf(coords = c("x", "y"), crs = laea_crs) %>% 
   # rasterize points

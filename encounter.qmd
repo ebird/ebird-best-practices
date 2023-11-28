@@ -6,7 +6,7 @@ editor_options:
 
 # Encounter Rate {#sec-encounter}
 
-## Introduction {#sec-encouter-intro}
+## Introduction {#sec-encounter-intro}
 
 In this chapter we'll estimate the encounter rate of Wood Thrush on eBird checklists in June in the state of Georgia. We define encounter rate as measuring the probability of an eBirder encountering a species on a standard eBird checklist.
 
@@ -19,7 +19,7 @@ The ecological metric we're ultimately interested in is the probability that a s
 Let's get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to [download the data package](https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip), and unzip it to your project directory, to ensure you're working with exactly the same data as was used in the creation of this guide.
 
 ```{r}
-#| label: encouter-intro-data
+#| label: encounter-intro-data
 library(ebirdst)
 library(fields)
 library(gridExtra)
@@ -34,15 +34,16 @@ library(tidyverse)
 # set random number seed to insure fully repeatable results
 set.seed(1)
 
-# habitat variables: landcover and elevation
-habitat <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
+# environmental variables: landcover and elevation
+env_vars <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
 
-# zero-filled ebird data combined with habitat data
+# zero-filled ebird data combined with environmental data
 checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
-  inner_join(habitat, by = "checklist_id")
+  inner_join(env_vars, by = "checklist_id")
 
 # prediction grid
 pred_grid <- read_csv("data/environmental-variables_prediction-grid_us-ga.csv")
+# raster template for the grid
 r <- rast("data/prediction-grid_us-ga.tif") %>% 
   # this second rast() call removes all the values from the raster template
   rast()
@@ -100,20 +101,6 @@ checklists_ss <- grid_sample_stratified(checklists,
                                         sample_by = "type")
 ```
 
-How did this impact the prevalence of detections compared to non-detections?
-
-```{r}
-#| label: encounter-sss-counts
-# original data
-nrow(checklists)
-count(checklists, species_observed) %>% 
-  mutate(percent = n / sum(n))
-
-# after sampling
-nrow(checklists_ss)
-count(checklists_ss, species_observed) %>% 
-  mutate(percent = n / sum(n))
-```
 
 ```{r}
 #| label: encounter-sss-pct
@@ -124,7 +111,32 @@ pct_after <- mean(checklists_ss$species_observed) %>%
   scales::percent(accuracy = 0.1)
 ```
 
-So, the subsampling *decreased* the overall number of checklists by a factor of about `r round(nrow(checklists) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`. This increase in detections will help the random forests model distinguish where birds are being observed; however, this does affect the prevalence rate of the detections in the data. As a result, the estimated encounter rate based on these subsampled data will be larger than the true encounter rate. When examining the outputs from the models it will be important to recall that we altered the prevalence rate at this stage. Now let's look at how the subsampling affects the spatial distribution of the training observations.
+::: {.callout-caution icon="false"}
+## Exercise
+
+Compare the full set of eBird checklists to the set of checklists remaining after subsampling. What was the change in sampled size and how did the subsampling impact the prevalence of detections compared to non-detections?
+:::
+
+::: {.callout-note icon="false" collapse="true"}
+## Solution
+
+The subsampling *decreased* the overall number of checklists by a factor of about `r round(nrow(checklists) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`. 
+
+```{r}
+#| label: encounter-sss-sol
+# original data
+nrow(checklists)
+count(checklists, species_observed) %>% 
+  mutate(percent = n / sum(n))
+
+# after sampling
+nrow(checklists_ss)
+count(checklists_ss, species_observed) %>% 
+  mutate(percent = n / sum(n))
+```
+:::
+
+This increase in the prevalence of detections will help the random forests model distinguish where birds are being observed; however, as s a result of this increase, the estimated encounter rate based on these subsampled data will be larger than the true encounter rate. When examining the outputs from the models it will be important to recall that we altered the prevalence rate at this stage. Now let's look at how the subsampling affects the spatial distribution of the training observations.
 
 ```{r}
 #| label: encounter-sss-map
@@ -299,6 +311,12 @@ mcc_f1_summary <- summary(mcc_f1)
 threshold <- mcc_f1_summary$best_threshold[1]
 ```
 
+::: callout-tip
+## Tip
+
+This threshold essentially defines the range boundary of the species: areas where encounter rate is below the threshold are predicted to be outside the range of Wood Thrush and areas where the encounter rate is above the threshold are predicted to be within range.
+:::
+
 ### Assessment {#sec-encounter-rf-assess}
 
 To assess the quality of the calibrated random forest model, we'll validate the model's ability to predict the observed patterns of detection using independent validation data (i.e. the 20% test data set). We'll use a range of predictive performance metrics (PPMs) to compare the predictions to the actual observations. A majority of the metrics measure the ability of the model to correctly predict binary detection/non-detection, including: [sensitivity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity), [specificity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity), [Precision-Recall AUC](https://machinelearningmastery.com/roc-curves-and-precision-recall-curves-for-imbalanced-classification/), [Kappa](https://en.wikipedia.org/wiki/Cohen%27s_kappa), [F1 score](https://en.wikipedia.org/wiki/F-score), and [MCC](https://en.wikipedia.org/wiki/Phi_coefficient). [Mean squared error (MSE)](https://en.wikipedia.org/wiki/Mean_squared_error) and [Spearman's rank correlation coefficient](https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient) apply to the calibrated encounter rate estimates.
@@ -315,22 +333,24 @@ checklists_test <- filter(checklists_ss, type == "test") %>%
 pred_er <- predict(er_model, data = checklists_test, type = "response")
 # extract probability of detection
 pred_er <- pred_er$predictions[, 2]
-# convert to binary using the threshold
+# convert predictions to binary (presence/absence) using the threshold
 pred_binary <- as.integer(pred_er > threshold)
 # calibrate
 pred_calibrated <- predict(calibration_model, 
                            newdata = data.frame(pred = pred_er), 
                            type = "response") %>% 
   as.numeric()
+# constrain probabilities to 0-1
+pred_calibrated[pred_calibrated < 0] <- 0
+pred_calibrated[pred_calibrated > 1] <- 1
+# combine predictions
 obs_pred_test <- data.frame(id = seq_along(pred_calibrated),
                             # actual detection/non-detection
                             obs = as.integer(checklists_test$species_observed),
                             # binary detection/on-detection prediction
                             pred_binary = pred_binary,
                             # calibrated encounter rate
-                            pred_calibrated = pred_calibrated) %>%
-  # constrain probabilities to 0-1
-  mutate(pred_calibrated = pmin(pmax(pred_calibrated, 0), 1))
+                            pred_calibrated = pred_calibrated)
 
 # mean squared error (mse)
 mse <- mean((obs_pred_test$obs - obs_pred_test$pred_calibrated)^2, na.rm = TRUE)
@@ -381,11 +401,11 @@ During the process of training a random forests model, some variables are remove
 
 ```{r}
 #| label:  encounter-habitat-pi
+# extract partial dependence from the random forest model object
 pi <- enframe(er_model$variable.importance, "predictor", "importance") %>% 
-  # only show the top 20
-  slice_max(order_by = importance, n = 20)
-# plot
-ggplot(pi) + 
+  arrange(desc(importance))
+# plot importance of top 20 predictors
+ggplot(head(pi, 20)) + 
   aes(x = fct_reorder(predictor, importance), y = importance) +
   geom_col() +
   geom_hline(yintercept = 0, linewidth = 2, colour = "#555555") +
@@ -400,32 +420,22 @@ ggplot(pi) +
 
 The most important predictors of detection/non-detection are often effort variables. Indeed, that's the case here: checklist duration, distance traveled, and start time (`hours_of_day`) all appear in the top 5 predictors. This is not surprising: going out at the right time of day and expending more effort searching will lead to a higher probability of detecting Wood Thrush. Focusing on the habitat variables, both elevation variables have high importance, and the top habitat variables are from deciduous broadleaf forest and woody savanna. Note however, that high importance doesn't tell us the direction of the relationship with detection, for that we'll have to look at partial dependence plots.
 
-Let's grab the top 15 most important predictors, which we'll need in the next section.
-
-```{r}
-#| label: encounter-habitat-pi-top
-# top predictors other than date
-top_pred <- pi %>% 
-  filter(!predictor %in% c("year", "day_of_year")) %>% 
-  slice_max(order_by = importance, n = 15) %>% 
-  arrange(desc(importance))
-```
-
 ### Partial dependence {#sec-encounter-habitat-pd}
 
 **Partial dependence** plots show the marginal effect of a given predictor on encounter rate averaged across the other predictors. These plots are generated by predicting encounter rate at a regular sequence of points across the full range of values of a given predictor. At each predictor value, predictions of encounter rate are made for a random subsample of the training dataset with the focal predictor fixed, but all other predictors left as is. The encounter rate predictions are then averaged across all the checklists in the training dataset giving an estimate of the average encounter rate at a specific value of the focal predictor. This is a cumbersome process, but we provide a function below that does all the hard work for you! This function takes the following arguments:
 
--   `predictor`: the name of the predictor to calculate partial dependence for
--   `model`: the encounter rate model object
--   `data`: the original data used to train the model
--   `x_res`: the resolution of the grid over which to calculate the partial dependence, i.e. the number of points between the minimum and maximum values of the predictor to evaluate partial dependence at
--   `n`: number of points to subsample from the training data
+- `predictor`: the name of the predictor to calculate partial dependence for
+- `er_model`: the encounter rate model object
+- `calibartion_model`: the calibration model object
+- `data`: the original data used to train the model
+- `x_res`: the resolution of the grid over which to calculate the partial dependence, i.e. the number of points between the minimum and maximum values of the predictor to evaluate partial dependence at
+- `n`: number of points to subsample from the training data
 
 ```{r}
 #| label:  encounter-habitat-pd-function
 # function to calculate partial dependence for a single predictor
-calculate_pd <- function(predictor, model, data, 
-                         x_res = 25, n = 1000) {
+calculate_pd <- function(predictor, er_model, calibration_model,
+                         data, x_res = 25, n = 1000) {
   # create prediction grid using quantiles
   x_grid <- quantile(data[[predictor]],
                      probs = seq(from = 0, to = 1, length = x_res),
@@ -444,47 +454,54 @@ calculate_pd <- function(predictor, model, data,
   data <- data[names(data) != predictor]
   grid <- merge(grid, data, all = TRUE)
   
-  # predict
-  p <- predict(model, data = grid)
+  # predict encounter rate
+  p <- predict(er_model, data = grid)
   
   # summarize
   pd <- grid[, c("predictor", predictor)]
   names(pd) <- c("predictor", "x")
   pd$encounter_rate <- p$predictions[, 2]
-  pd <- dplyr::group_by(pd, predictor, x) %>% 
-    dplyr::summarise(encounter_rate = mean(encounter_rate, na.rm = TRUE),
-                     .groups = "drop")
+  pd <- dplyr::group_by(pd, predictor, x)
+  pd <- dplyr::summarise(pd,
+                         encounter_rate = mean(encounter_rate, na.rm = TRUE),
+                         .groups = "drop")
   
+  # calibrate
+  pd$encounter_rate <- predict(calibration_model, 
+                               newdata = tibble(pred = pd$encounter_rate), 
+                               type = "response")
+  pd$encounter_rate <- as.numeric(pd$encounter_rate)
+  # constrain to 0-1
+  pd$encounter_rate[pd$encounter_rate < 0] <- 0
+  pd$encounter_rate[pd$encounter_rate > 1] <- 1
+
   return(pd)
 }
 ```
 
-Now we'll use this function to calculate partial dependence for the top 15 predictors.
+Now we'll use this function to calculate partial dependence for the top 6 predictors.
 
 ```{r}
 #| label:  encounter-habitat-pd-calculate
 #| out-width: 100%
 #| out-height: 600px
-# calculate partial dependence for each predictor
-# map is used to iteratively apply calculate_pd to each predictor
+# calculate partial dependence for each of the top 6 predictors
 pd <- NULL
-for (predictor in top_pred$predictor) {
-  pd <- calculate_pd(predictor, model = er_model, data = checklists_train) %>% 
+for (predictor in head(pi$predictor)) {
+  pd <- calculate_pd(predictor, 
+                     er_model = er_model, 
+                     calibration_model = calibration_model,
+                     data = checklists_train) %>% 
     bind_rows(pd, .)
 }
+head(pd)
 
-# calibrate predictions
-pd$encounter_rate <- predict(calibration_model, 
-                             newdata = tibble(pred = pd$encounter_rate), 
-                             type = "response") %>% 
-  as.numeric()
-
-# plot
+# plot partial dependence
 ggplot(pd) +
   aes(x = x, y = encounter_rate) +
   geom_line() +
   geom_point() +
-  facet_wrap(~ as_factor(predictor), ncol = 3, scales = "free") +
+  facet_wrap(~ as_factor(predictor), ncol = 2, scales = "free") +
   labs(x = NULL, y = "Encounter Rate") +
   theme_minimal() +
   theme_minimal() +
@@ -493,9 +510,48 @@ ggplot(pd) +
         axis.ticks  = element_line(color = "grey60"))
 ```
 
+::: callout-important
+## Checkpoint
+
+Consider the relationships shown in the partial dependence plots in light of your knowledge of the species. Do these relationships make sense?
+:::
+
 There are a range of interesting responses here. As seen in @sec-ebird-explore, the encounter rate for Wood Thrush peaks early in the morning when they're most likely to be singing, then quickly drops off in the middle of the day, before slightly increasing in the evening. Some other predictors show a more smoothly increasing relationship with encounter rate, for example, as the landscape contains more deciduous forest, the encounter rate increases.
 
 The random forest model has a number of interactions, which are not displayed in these partial dependence plots. When interpreting these, bear in mind that there are likely some more complex interaction effects beneath these individual plots.
+
+::: {.callout-caution icon="false"}
+## Exercise
+
+Examine the predictor importance data to identify an the next most important percent landcover variables after `pland_c04_deciduous_broadleaf`. Make a partial dependence plot for this variable.
+:::
+
+::: {.callout-note icon="false" collapse="true"}
+## Solution
+
+Looking at the predictor importance data frame, we can identify that `pland_c08_woody_savanna` is the next most important percent landcover variable.
+
+```{r}
+#| label:  encounter-habitat-pd-sol
+# calculate partial dependence
+pd_woody_savanna <- calculate_pd("pland_c08_woody_savanna", 
+                                 er_model = er_model, 
+                                 calibration_model = calibration_model,
+                                 data = checklists_train)
+
+# plot partial dependence
+ggplot(pd_woody_savanna) +
+  aes(x = x, y = encounter_rate) +
+  geom_line() +
+  geom_point() +
+  labs(x = NULL, y = "Encounter Rate") +
+  theme_minimal() +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        axis.line = element_line(color = "grey60"),
+        axis.ticks  = element_line(color = "grey60"))
+```
+:::
 
 ## Prediction {#sec-encounter-predict}
 
@@ -511,11 +567,9 @@ To find the time of day with the highest detection probability, we can look for 
 #| label:  encounter-predict-effort-plot
 # find peak time of day from partial dependence
 pd_time <- calculate_pd("hours_of_day",
-                        model = er_model, 
-                        data = checklists_train,
-                        # make estimates at 30 minute intervals
-                        # using a subset of the training dataset
-                        x_res = 2 * 24, n = 1000) %>% 
+                        er_model = er_model, 
+                        calibration_model = calibration_model,
+                        data = checklists_train) %>% 
   select(hours_of_day = x, encounter_rate)
 
 # histogram
@@ -542,23 +596,17 @@ g_pd <- ggplot(pd_time) +
 grid.arrange(g_hist, g_pd)
 ```
 
-The peak probability of reporting is very close to the time of day during which the abundance of reports starts to increase, but from these graphs it is not entirely clear that the early morning peak in reports is well substantiated by abundant data. Let's instead look for the peak time within hours of the day that contain at least 1% of the training data.
+The peak probability of reporting occurs early in the morning, as expected for a songbird like Wood Thrush. However, there is some odd behavior at the minimum and maximum values of `hours_of_day` where extrapolation is occurring due to a shortage of data. In general, trimming the first and last values, then selecting the value of `hours_of_day` that maximizes encounter rate is a reliable method of avoiding extrapolation.
 
 ```{r}
 #| label:  encounter-predict-effort-time
-# hours with at least 1% of checklists
-search_times <- checklists_train %>% 
-  mutate(hours_of_day = floor(hours_of_day)) %>%
-  count(hours_of_day) %>% 
-  mutate(pct = n / sum(n)) %>% 
-  filter(pct >= 0.01)
+# trim ends of partial dependence
+pd_time_trimmed <- pd_time[c(-1, -nrow(pd_time)), ]
 
-# constrained peak time
-t_peak <- pd_time %>% 
-  filter(floor(hours_of_day) %in% search_times$hours_of_day) %>% 
-  slice_max(order_by = encounter_rate) %>% 
-  pull(hours_of_day)
-t_peak
+# identify time maximizing encounter rate
+pd_time_trimmed <- arrange(pd_time_trimmed, desc(encounter_rate))
+t_peak <- pd_time_trimmed$hours_of_day[1]
+print(t_peak)
 ```
 
 ```{r}
@@ -570,11 +618,11 @@ human_time <- str_glue("{h}:{m} {ap}",
                        ap = ifelse(t_peak > 12, "PM", "AM"))
 ```
 
-Based on this analysis, the best time for detecting Wood Thrush is at `r human_time`. We'll use this time to make predictions. This is equivalent to many eBirders all conducting a checklist within different grid cells on June 15 at `r human_time`. We also add the other effort variables to the prediction dataset at this time.
+Based on this analysis, the best time for detecting Wood Thrush is at `r human_time`. We'll use this time to make predictions. This is equivalent to many eBirders all conducting a checklist within different grid cells on June 15 at `r human_time`. We also add the other effort variables to the prediction grid dataset at this time.
 
 ```{r}
 #| label:  encounter-predict-effort
-# add effort covariates to prediction 
+# add effort covariates to prediction grid
 pred_grid_eff <- pred_grid %>% 
   mutate(observation_date = ymd("2023-06-15"),
          year = year(observation_date),
@@ -592,22 +640,25 @@ Using these standardized effort variables we can now make estimates across the p
 
 ```{r}
 #| label: encounter-predict-estimates-estimate
-# predict
+# predict encounter rate
 pred_er <- predict(er_model, data = pred_grid_eff, type = "response")
 pred_er <- pred_er$predictions[, 2]
-# binary prediction
+# define range-boundary
 pred_binary <- as.integer(pred_er > threshold)
 # apply calibration
 pred_er_cal <- predict(calibration_model, 
                        data.frame(pred = pred_er), 
                        type = "response") %>% 
   as.numeric()
-# add encounter rate estimate to prediction grid
-predictions <- bind_cols(pred_grid_eff,
-                         in_range = pred_binary, 
-                         encounter_rate = pred_er_cal) %>% 
-  select(cell_id, x, y, in_range, encounter_rate) %>% 
-  mutate(encounter_rate = pmin(pmax(encounter_rate, 0), 1))
+# constrain to 0-1
+pred_er_cal[pred_er_cal < 0] <- 0
+pred_er_cal[pred_er_cal > 1] <- 1
+# combine predictions with coordinates from prediction grid
+predictions <- data.frame(cell_id = pred_grid_eff$cell_id,
+                          x = pred_grid_eff$x,
+                          y = pred_grid_eff$y,
+                          in_range = pred_binary, 
+                          encounter_rate = pred_er_cal)
 ```
 
 Next, we'll convert this data frame to spatial features using `sf`, then rasterize the points using the prediction grid raster template.
