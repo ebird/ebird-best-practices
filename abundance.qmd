@@ -208,14 +208,14 @@ obs_pred_test <- data.frame(
 )
 ```
 
-The count and abundance predictive performance metrics are measures of *within range* performance, meaning we compare observed count vs. estimated count and abundance *only for those checklists where the model predicts the species to occur*.
+The count metrics are measures of *within range* performance, meaning we compare observed count vs. estimated count *only for those checklists where the model predicts the species to occur*. Relative abundance accounts for both encounter rate and count, so the abundance predictive performance are based on all checklists.
 
 ```{r}
 #| label: abundance-assess-count
-# subset to only those checklists where detection is predicted
-detections_test <- filter(obs_pred_test, pred_binary > 0)
+# subset to only those checklists where detect occurred
+detections_test <- filter(obs_pred_test, obs_detected > 0)
 
-# count metrics
+# count metrics, based only on checklists where detect occurred
 count_spearman <- cor(detections_test$pred_count, 
                       detections_test$obs_count,
                       method = "spearman")
@@ -241,7 +241,7 @@ ppms <- data.frame(
 knitr::kable(pivot_longer(ppms, everything()), digits = 3)
 ```
 
-The Spearman's correlations tell us about the ability of the model to estimate the rank order of counts and relative abundance, something that these models often perform better with. The Pearson's correlations give us information about the ability of the model to estimate absolute counts on the log scale, a task that is often more difficult to do with eBird data, especially for congregatory species that often have high counts. Again, as with the binary performance metrics, these are useful in comparing model quality across species, region, and season.
+The Spearman's correlations tell us about the ability of the model to estimate the rank order of counts and relative abundance, something that these models often perform better with. The Pearson's correlations give us information about the ability of the model to estimate absolute counts on the log scale, a task that is often more difficult to do with eBird data, especially for congregatory species that often have high counts. Again, as with the encounter rate performance metrics, these are useful in comparing model quality across species, region, and season.
 
 ## Prediction {#sec-abundance-predict}
 

@@ -100,7 +100,6 @@ checklists_ss <- grid_sample_stratified(checklists,
                                         sample_by = "type")
 ```
 
-
 ```{r}
 #| label: encounter-sss-pct
 #| include: false
@@ -119,7 +118,7 @@ Compare the full set of eBird checklists to the set of checklists remaining afte
 ::: {.callout-note icon="false" collapse="true"}
 ## Solution
 
-The subsampling *decreased* the overall number of checklists by a factor of about `r round(nrow(checklists) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`. 
+The subsampling *decreased* the overall number of checklists by a factor of about `r round(nrow(checklists) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`.
 
 ```{r}
 #| label: encounter-sss-sol
@@ -199,7 +198,7 @@ Now we'll use a random forests model to relate detection/non-detection of Wood T
 checklists_train <- checklists_ss %>% 
   filter(type == "train") %>% 
   # select only the columns to be used in the model
-  select(species_observed,
+  select(species_observed, observation_count,
          year, day_of_year, hours_of_day,
          effort_hours, effort_distance_km, effort_speed_kmph,
          number_observers, 
@@ -243,7 +242,7 @@ det_obs <- as.integer(checklists_train$species_observed)
 # construct a data frame to train the scam model
 obs_pred <- data.frame(obs = det_obs, pred = er_pred)
 
-# fit calibration model
+# train calibration model
 calibration_model <- scam(obs ~ s(pred, k = 6, bs = "mpi"), 
                           gamma = 2,
                           data = obs_pred)
@@ -318,7 +317,7 @@ This threshold essentially defines the range boundary of the species: areas wher
 
 ### Assessment {#sec-encounter-rf-assess}
 
-To assess the quality of the calibrated random forest model, we'll validate the model's ability to predict the observed patterns of detection using independent validation data (i.e. the 20% test data set). We'll use a range of predictive performance metrics (PPMs) to compare the predictions to the actual observations. A majority of the metrics measure the ability of the model to correctly predict binary detection/non-detection, including: [sensitivity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity), [specificity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity), [Precision-Recall AUC](https://machinelearningmastery.com/roc-curves-and-precision-recall-curves-for-imbalanced-classification/), [Kappa](https://en.wikipedia.org/wiki/Cohen%27s_kappa), [F1 score](https://en.wikipedia.org/wiki/F-score), and [MCC](https://en.wikipedia.org/wiki/Phi_coefficient). [Mean squared error (MSE)](https://en.wikipedia.org/wiki/Mean_squared_error) and [Spearman's rank correlation coefficient](https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient) apply to the calibrated encounter rate estimates.
+To assess the quality of the calibrated random forest model, we'll validate the model's ability to predict the observed patterns of detection using independent validation data (i.e. the 20% test data set). We'll use a range of predictive performance metrics (PPMs) to compare the predictions to the actual observations. A majority of the metrics measure the ability of the model to correctly predict binary detection/non-detection, including: [sensitivity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity), [specificity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity), [Precision-Recall AUC](https://machinelearningmastery.com/roc-curves-and-precision-recall-curves-for-imbalanced-classification/), [F1 score](https://en.wikipedia.org/wiki/F-score), and [MCC](https://en.wikipedia.org/wiki/Phi_coefficient). [Mean squared error (MSE)](https://en.wikipedia.org/wiki/Mean_squared_error) applies to the calibrated encounter rate estimates.
 
 To ensure bias in the test data set doesn't impact the predictive performance metrics, it's important that we apply spatiotemporal grid sampling to the test data just as we did to the training data. We already performed this [grid sampling above](ebird.qmd#sec-encounter-sss) when we created the `checklist_ss` data frame, so we use that data frame here to calculate the PPMs.
 
@@ -354,11 +353,6 @@ obs_pred_test <- data.frame(id = seq_along(pred_calibrated),
 # mean squared error (mse)
 mse <- mean((obs_pred_test$obs - obs_pred_test$pred_calibrated)^2, na.rm = TRUE)
 
-# spearman correlation, based on in range observations only
-spearman <- cor(obs_pred_test$pred_calibrated[obs_pred_test$pred_binary > 0], 
-                obs_pred_test$obs[obs_pred_test$pred_binary > 0], 
-                method = "spearman")
-
 # precision-recall auc
 em <- precrec::evalmod(scores = obs_pred_test$pred_binary, 
                        labels = obs_pred_test$obs)
@@ -366,7 +360,7 @@ pr_auc <- precrec::auc(em) %>%
   filter(curvetypes == "PRC") %>% 
   pull(aucs)
 
-# calculate metrics for binary prediction: kappa, sensitivity, specificity
+# calculate metrics for binary prediction: sensitivity, specificity
 pa_metrics <- obs_pred_test %>% 
   select(id, obs, pred_binary) %>% 
   PresenceAbsence::presence.absence.accuracy(na.rm = TRUE, st.dev = FALSE)
@@ -377,10 +371,8 @@ mcc_f1 <- calculate_mcc_f1(obs_pred_test$obs, obs_pred_test$pred_binary)
 # combine metrics together
 ppms <- data.frame(
   mse = mse,
-  spearman = spearman,
   sensitivity = pa_metrics$sensitivity,
   specificity = pa_metrics$specificity,
-  kappa = pa_metrics$Kappa,
   pr_auc = pr_auc,
   mcc = mcc_f1$mcc,
   f1 = mcc_f1$f1
@@ -400,7 +392,7 @@ During the process of training a random forests model, some variables are remove
 
 ```{r}
 #| label:  encounter-habitat-pi
-# extract partial dependence from the random forest model object
+# extract predictor importance from the random forest model object
 pi <- enframe(er_model$variable.importance, "predictor", "importance") %>% 
   arrange(desc(importance))
 # plot importance of top 20 predictors
@@ -423,12 +415,12 @@ The most important predictors of detection/non-detection are often effort variab
 
 **Partial dependence** plots show the marginal effect of a given predictor on encounter rate averaged across the other predictors. These plots are generated by predicting encounter rate at a regular sequence of points across the full range of values of a given predictor. At each predictor value, predictions of encounter rate are made for a random subsample of the training dataset with the focal predictor fixed, but all other predictors left as is. The encounter rate predictions are then averaged across all the checklists in the training dataset giving an estimate of the average encounter rate at a specific value of the focal predictor. This is a cumbersome process, but we provide a function below that does all the hard work for you! This function takes the following arguments:
 
-- `predictor`: the name of the predictor to calculate partial dependence for
-- `er_model`: the encounter rate model object
-- `calibartion_model`: the calibration model object
-- `data`: the original data used to train the model
-- `x_res`: the resolution of the grid over which to calculate the partial dependence, i.e. the number of points between the minimum and maximum values of the predictor to evaluate partial dependence at
-- `n`: number of points to subsample from the training data
+-   `predictor`: the name of the predictor to calculate partial dependence for
+-   `er_model`: the encounter rate model object
+-   `calibartion_model`: the calibration model object
+-   `data`: the original data used to train the model
+-   `x_res`: the resolution of the grid over which to calculate the partial dependence, i.e. the number of points between the minimum and maximum values of the predictor to evaluate partial dependence at
+-   `n`: number of points to subsample from the training data
 
 ```{r}
 #| label:  encounter-habitat-pd-function
