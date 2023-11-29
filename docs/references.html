@@ -8,7 +8,7 @@
 
 <meta name="author" content="Matthew Strimas-Mackey, Wesley M. Hochachka, Viviana Ruiz-Gutierrez, Orin J. Robinson, Eliot T. Miller, Tom Auer, Steve Kelling, Daniel Fink, Alison Johnston">
 
-<title>Best Practices for Using eBird Data</title>
+<title>Best Practices for Using eBird Data - References</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -50,7 +50,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./intro.html" rel="next">
+<link href="./abundance.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -102,7 +102,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Welcome</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./references.html">References</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -132,7 +132,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Welcome</span></a>
   </div>
 </li>
@@ -168,7 +168,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./references.html" class="sidebar-item-text sidebar-link">
+  <a href="./references.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">References</span></a>
   </div>
 </li>
@@ -178,20 +178,14 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
-   
-  <ul>
-  <li><a href="#welcome" id="toc-welcome" class="nav-link active" data-scroll-target="#welcome">Welcome</a></li>
-  </ul>
-<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/ebird/ebird-best-practices/edit/main/index.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/ebird/ebird-best-practices/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Best Practices for Using eBird Data</h1>
+<h1 class="title">References</h1>
 </div>
 
 
@@ -206,25 +200,172 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 
 </header>
 
-<p><em>Matthew Strimas-Mackey, Wesley M. Hochachka, Viviana Ruiz-Gutierrez, Orin J. Robinson, Eliot T. Miller, Tom Auer, Steve Kelling, Daniel Fink, Alison Johnston</em></p>
-<p><em>Version 2.0</em></p>
-<section id="welcome" class="level1 unnumbered">
-<h1 class="unnumbered">Welcome</h1>
-<p><strong>Best Practices for Using eBird Data</strong> is a supplement to <em>Analytical guidelines to increase the value of community science data: An example using eBird data to estimate species distributions</em> <span class="citation" data-cites="johnstonAnalyticalGuidelinesIncrease2021">(<a href="references.html#ref-johnstonAnalyticalGuidelinesIncrease2021" role="doc-biblioref">Johnston et al. 2021</a>)</span>. This paper describes the challenges associated with making inferences from biological citizen science data and proposes a set of best practices for making reliable estimates of species distributions from these data. Throughout, the paper uses <a href="https://ebird.org/">eBird</a>, the world’s largest biological citizen science project, as a case study to illustrate the best practices. This guide acts as a supplement to the paper, showing readers how to implement these best practices within <a href="https://www.r-project.org/">R</a> using real data from eBird. After completing this guide, readers should be able to process eBird data to prepare them for robust analyses, train models to estimate encounter rate and relative abundance, and assess the performance of these models. Readers should be comfortable with the R programming language, and read the <a href="./intro.html#intro-pre">Background Knowledge</a> and <a href="./intro.html#intro-setup">Setup</a> sections of the introduction, before diving into this guide.</p>
-<p>To submit fixes or suggest additions and improvements to this guide, please file an <a href="https://github.com/ebird/ebird-best-practices/issues">issue on GitHub</a>.</p>
-<p>The code for Version 1.0 of this guide is <a href="https://github.com/cornelllabofornithology/ebird-best-practices/">available on GitHub</a>.</p>
-<p>Please cite this guide as:</p>
-<blockquote class="blockquote">
-<p>Strimas-Mackey, M., W.M. Hochachka, V. Ruiz-Gutierrez, O.J. Robinson, E.T. Miller, T. Auer, S. Kelling, D. Fink, A. Johnston. 2023. Best Practices for Using eBird Data. Version 2.0. https://ebird.github.io/ebird-best-practices/. Cornell Lab of Ornithology, Ithaca, New York. https://doi.org/10.5281/zenodo.3620739</p>
-</blockquote>
-
-
-<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-amatulliSuiteGlobalCrossscale2018" class="csl-entry" role="listitem">
+Amatulli, Giuseppe, Sami Domisch, Mao-Ning Tuanmu, Benoit Parmentier,
+Ajay Ranipeta, Jeremy Malczyk, and Walter Jetz. 2018. <span>“A Suite of
+Global, Cross-Scale Topographic Variables for Environmental and
+Biodiversity Modeling.”</span> <em>Scientific Data</em> 5 (March):
+180040. <a href="https://doi.org/10.1038/sdata.2018.40">https://doi.org/10.1038/sdata.2018.40</a>.
+</div>
+<div id="ref-caoMCCF1CurvePerformance2020" class="csl-entry" role="listitem">
+Cao, Chang, Davide Chicco, and Michael M. Hoffman. 2020. <span>“The
+<span>MCC-F1</span> Curve: A Performance Evaluation Technique for Binary
+Classification.”</span> <a href="https://doi.org/10.48550/ARXIV.2006.11278">https://doi.org/10.48550/ARXIV.2006.11278</a>.
+</div>
+<div id="ref-chen2004using" class="csl-entry" role="listitem">
+Chen, Chao, Andy Liaw, and Leo Breiman. 2004. <span>“Using Random Forest
+to Learn Imbalanced Data.”</span> <em>University of California,
+Berkeley</em> 110 (1-12): 24.
+</div>
+<div id="ref-courterWeekendBiasCitizen2013" class="csl-entry" role="listitem">
+Courter, Jason R., Ron J. Johnson, Claire M. Stuyck, Brian A. Lang, and
+Evan W. Kaiser. 2013. <span>“Weekend Bias in <span>Citizen
+Science</span> Data Reporting: Implications for Phenology
+Studies.”</span> <em>International Journal of Biometeorology</em> 57
+(5): 715–20. <a href="https://doi.org/10.1007/s00484-012-0598-7">https://doi.org/10.1007/s00484-012-0598-7</a>.
+</div>
+<div id="ref-ellisEffectsWeatherTime2018" class="csl-entry" role="listitem">
+Ellis, Murray V., and Jennifer E. Taylor. 2018. <span>“Effects of
+Weather, Time of Day, and Survey Effort on Estimates of Species Richness
+in Temperate Woodlands.”</span> <em>Emu-Austral Ornithology</em> 118
+(2): 183–92.
+</div>
+<div id="ref-friedlMCD12Q1MODISTerra2015" class="csl-entry" role="listitem">
+Friedl, Mark, and Damien Sulla-Menashe. 2015. <span>“<span>MCD12Q1
+MODIS</span>/<span>Terra</span>+<span>Aqua Land Cover Type Yearly L3
+Global</span> 500m <span>SIN Grid V006</span>.”</span> <span>NASA EOSDIS
+Land Processes DAAC</span>. <a href="https://doi.org/10.5067/MODIS/MCD12Q1.006">https://doi.org/10.5067/MODIS/MCD12Q1.006</a>.
+</div>
+<div id="ref-greenwoodCitizensScienceBird2007" class="csl-entry" role="listitem">
+Greenwood, Jeremy J. D. 2007. <span>“Citizens, Science and Bird
+Conservation.”</span> <em>Journal of Ornithology</em> 148 (1): 77–124.
+<a href="https://doi.org/10.1007/s10336-007-0239-9">https://doi.org/10.1007/s10336-007-0239-9</a>.
+</div>
+<div id="ref-guillera-arroitaMySpeciesDistribution2015" class="csl-entry" role="listitem">
+Guillera-Arroita, Gurutzeta, José J. Lahoz-Monfort, Jane Elith, Ascelin
+Gordon, Heini Kujala, Pia E. Lentini, Michael A. McCarthy, Reid Tingley,
+and Brendan A. Wintle. 2015. <span>“Is My Species Distribution Model Fit
+for Purpose? <span>Matching</span> Data and Models to
+Applications.”</span> <em>Global Ecology and Biogeography</em> 24 (3):
+276–92.
+</div>
+<div id="ref-johnstonEstimatesObserverExpertise2018" class="csl-entry" role="listitem">
+Johnston, Alison, Daniel Fink, Wesley M. Hochachka, and Steve Kelling.
+2018. <span>“Estimates of Observer Expertise Improve Species
+Distributions from Citizen Science Data.”</span> <em>Methods in Ecology
+and Evolution</em> 9 (1): 88–97.
+</div>
 <div id="ref-johnstonAnalyticalGuidelinesIncrease2021" class="csl-entry" role="listitem">
-Johnston, Alison, Wesley M. Hochachka, Matthew E. Strimas-Mackey, Viviana Ruiz Gutierrez, Orin J. Robinson, Eliot T. Miller, Tom Auer, Steve T. Kelling, and Daniel Fink. 2021. <span>“Analytical Guidelines to Increase the Value of Community Science Data: <span>An</span> Example Using <span class="nocase">eBird</span> Data to Estimate Species Distributions.”</span> Edited by Yoan Fourcade. <em>Diversity and Distributions</em> 27 (7): 1265–77. <a href="https://doi.org/10.1111/ddi.13271">https://doi.org/10.1111/ddi.13271</a>.
+Johnston, Alison, Wesley M. Hochachka, Matthew E. Strimas-Mackey,
+Viviana Ruiz Gutierrez, Orin J. Robinson, Eliot T. Miller, Tom Auer,
+Steve T. Kelling, and Daniel Fink. 2021. <span>“Analytical Guidelines to
+Increase the Value of Community Science Data: <span>An</span> Example
+Using <span class="nocase">eBird</span> Data to Estimate Species
+Distributions.”</span> Edited by Yoan Fourcade. <em>Diversity and
+Distributions</em> 27 (7): 1265–77. <a href="https://doi.org/10.1111/ddi.13271">https://doi.org/10.1111/ddi.13271</a>.
+</div>
+<div id="ref-johnstonSpeciesTraitsExplain2014" class="csl-entry" role="listitem">
+Johnston, Alison, Stuart E. Newson, Kate Risely, Andy J. Musgrove, Dario
+Massimino, Stephen R. Baillie, and James W. Pearce-Higgins. 2014.
+<span>“Species Traits Explain Variation in Detectability of
+<span>UK</span> Birds.”</span> <em>Bird Study</em> 61 (3): 340–50.
+</div>
+<div id="ref-kadmonEffectRoadsideBias2004" class="csl-entry" role="listitem">
+Kadmon, Ronen, Oren Farber, and Avinoam Danin. 2004. <span>“Effect of
+Roadside Bias on the Accuracy of Predictive Maps Produced by Bioclimatic
+Models.”</span> <em>Ecological Applications</em> 14 (2): 401–13.
+</div>
+<div id="ref-kellingFindingSignalNoise2018" class="csl-entry" role="listitem">
+Kelling, Steve, Alison Johnston, Daniel Fink, Viviana Ruiz-Gutierrez,
+Rick Bonney, Aletta Bonn, Miguel Fernandez, et al. 2018. <span>“Finding
+the Signal in the Noise of <span>Citizen Science
+Observations</span>.”</span> <em>bioRxiv</em>, May, 326314. <a href="https://doi.org/10.1101/326314">https://doi.org/10.1101/326314</a>.
+</div>
+<div id="ref-keyserSnowCoverDynamics2023" class="csl-entry" role="listitem">
+Keyser, Spencer R., Daniel Fink, David Gudex-Cross, Volker C. Radeloff,
+Jonathan N. Pauli, and Benjamin Zuckerberg. 2023. <span>“Snow Cover
+Dynamics: An Overlooked yet Important Feature of Winter Bird Occurrence
+and Abundance Across the <span>United States</span>.”</span>
+<em>Ecography</em> 2023 (1). <a href="https://doi.org/10.1111/ecog.06378">https://doi.org/10.1111/ecog.06378</a>.
+</div>
+<div id="ref-lasorteOpportunitiesChallengesBig2018" class="csl-entry" role="listitem">
+La Sorte, Frank A., Christopher A. Lepczyk, Jessica L. Burnett, Allen H.
+Hurlbert, Morgan W. Tingley, and Benjamin Zuckerberg. 2018.
+<span>“Opportunities and Challenges for Big Data Ornithology.”</span>
+<em>The Condor</em> 120 (2): 414–26.
+</div>
+<div id="ref-luckAlleviatingSpatialConflict2004" class="csl-entry" role="listitem">
+Luck, Gary W., Taylor H. Ricketts, Gretchen C. Daily, and Marc Imhoff.
+2004. <span>“Alleviating Spatial Conflict Between People and
+Biodiversity.”</span> <em>Proceedings of the National Academy of
+Sciences</em> 101 (1): 182–86. <a href="https://doi.org/10.1073/pnas.2237148100">https://doi.org/10.1073/pnas.2237148100</a>.
+</div>
+<div id="ref-murphyNewVectorPartition1973" class="csl-entry" role="listitem">
+Murphy, Allan H. 1973. <span>“A <span>New Vector Partition</span> of the
+<span>Probability Score</span>.”</span> <em>Journal of Applied
+Meteorology</em> 12 (4): 595–600. <a href="https://doi.org/10.1175/1520-0450(1973)012<0595:ANVPOT>2.0.CO;2">https://doi.org/10.1175/1520-0450(1973)012&lt;0595:ANVPOT&gt;2.0.CO;2</a>.
+</div>
+<div id="ref-niculescu-mizilPredictingGoodProbabilities2005" class="csl-entry" role="listitem">
+Niculescu-Mizil, Alexandru, and Rich Caruana. 2005. <span>“Predicting
+Good Probabilities with Supervised Learning.”</span> In <em>Proceedings
+of the 22nd International Conference on <span>Machine</span>
+Learning</em>, 625–32. <span>ACM</span>.
+</div>
+<div id="ref-oliveiraObservationDiurnalSoaring2018" class="csl-entry" role="listitem">
+Oliveira, Camilo Viana, Fabio Olmos, Manoel dos Santos-Filho, and
+Christine Steiner São Bernardo. 2018. <span>“Observation of
+<span>Diurnal Soaring Raptors In Northeastern Brazil Depends On Weather
+Conditions</span> and <span>Time</span> of <span>Day</span>.”</span>
+<em>Journal of Raptor Research</em> 52 (1): 56–65.
+</div>
+<div id="ref-plattProbabilisticOutputsSupport1999" class="csl-entry" role="listitem">
+Platt, John. 1999. <span>“Probabilistic Outputs for Support Vector
+Machines and Comparisons to Regularized Likelihood Methods.”</span>
+<em>Advances in Large Margin Classifiers</em> 10 (3): 61–74.
+</div>
+<div id="ref-prendergastCorrectingVariationRecording1993" class="csl-entry" role="listitem">
+Prendergast, J. R., S. N. Wood, J. H. Lawton, and B. C. Eversham. 1993.
+<span>“Correcting for Variation in Recording Effort in Analyses of
+Diversity Hotspots.”</span> <em>Biodiversity Letters</em>, 39–53.
+</div>
+<div id="ref-rcoreteamLanguageEnvironmentStatistical2023" class="csl-entry" role="listitem">
+R Core Team. 2023. <em>R: <span>A</span> Language and Environment for
+Statistical Computing</em>. Manual. <span>Vienna, Austria</span>:
+<span>R Foundation for Statistical Computing</span>.
+</div>
+<div id="ref-robinsonCorrectingBiasDistribution2018" class="csl-entry" role="listitem">
+Robinson, Orin J., Viviana Ruiz-Gutierrez, and Daniel Fink. 2018.
+<span>“Correcting for Bias in Distribution Modelling for Rare Species
+Using Citizen Science Data.”</span> <em>Diversity and Distributions</em>
+24 (4): 460–72. <a href="https://doi.org/10.1111/ddi.12698">https://doi.org/10.1111/ddi.12698</a>.
+</div>
+<div id="ref-robinsonUsingCitizenScience2018" class="csl-entry" role="listitem">
+Robinson, Orin J., Viviana Ruiz-Gutierrez, Daniel Fink, Robert J. Meese,
+Marcel Holyoak, and Evan G. Cooch. 2018. <span>“Using Citizen Science
+Data in Integrated Population Models to Inform Conservation
+Decision-Making.”</span> <em>bioRxiv</em>, 293464.
+</div>
+<div id="ref-sullivanEBirdEnterpriseIntegrated2014" class="csl-entry" role="listitem">
+Sullivan, Brian L., Jocelyn L. Aycrigg, Jessie H. Barry, Rick E. Bonney,
+Nicholas Bruns, Caren B. Cooper, Theo Damoulas, et al. 2014. <span>“The
+<span class="nocase">eBird</span> Enterprise: <span>An</span> Integrated
+Approach to Development and Application of Citizen Science.”</span>
+<em>Biological Conservation</em> 169 (January): 31–40. <a href="https://doi.org/10.1016/j.biocon.2013.11.003">https://doi.org/10.1016/j.biocon.2013.11.003</a>.
+</div>
+<div id="ref-tullochBehaviouralEcologyApproach2012" class="csl-entry" role="listitem">
+Tulloch, Ayesha IT, and Judit K. Szabo. 2012. <span>“A Behavioural
+Ecology Approach to Understand Volunteer Surveying for Citizen Science
+Datasets.”</span> <em>Emu-Austral Ornithology</em> 112 (4): 313–25.
+</div>
+<div id="ref-vaughanContinuingChallengesTesting2005" class="csl-entry" role="listitem">
+Vaughan, I. P., and S. J. Ormerod. 2005. <span>“The Continuing
+Challenges of Testing Species Distribution Models.”</span> <em>Journal
+of Applied Ecology</em> 42 (4): 720–30. <a href="https://doi.org/10.1111/j.1365-2664.2005.01052.x">https://doi.org/10.1111/j.1365-2664.2005.01052.x</a>.
 </div>
 </div>
-</section>
+
+
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -462,11 +603,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./abundance.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Relative Abundance</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./intro.html" class="pagination-link">
-        <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction and Setup</span></span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->
@@ -475,7 +616,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">Best Practices for Using eBird Data (v2.0)</div>   
     <div class="nav-footer-center">
       &nbsp;
-    </div>
+    <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/ebird/ebird-best-practices/edit/main/references.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/ebird/ebird-best-practices/issues/new" class="toc-action">Report an issue</a></p></div></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>

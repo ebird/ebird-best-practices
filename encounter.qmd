@@ -198,7 +198,7 @@ Now we'll use a random forests model to relate detection/non-detection of Wood T
 checklists_train <- checklists_ss %>% 
   filter(type == "train") %>% 
   # select only the columns to be used in the model
-  select(species_observed, observation_count,
+  select(species_observed,
          year, day_of_year, hours_of_day,
          effort_hours, effort_distance_km, effort_speed_kmph,
          number_observers, 

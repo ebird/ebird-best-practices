@@ -198,7 +198,7 @@ pred_abundance <- pred_calibrated * pred_count
 obs_pred_test <- data.frame(
   id = seq_along(pred_abundance),
   # actual detection/non-detection
-  obs_detection = as.integer(checklists_test$species_observed),
+  obs_detected = as.integer(checklists_test$species_observed),
   obs_count = checklists_test$observation_count,
   # model estimates
   pred_binary = pred_binary,
