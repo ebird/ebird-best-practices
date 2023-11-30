@@ -358,7 +358,7 @@ Solution
 <h2 data-number="1.3" class="anchored" data-anchor-id="sec-intro-setup"><span class="header-section-number">1.3</span> Setup</h2>
 <section id="sec-intro-data" class="level3" data-number="1.3.1">
 <h3 data-number="1.3.1" class="anchored" data-anchor-id="sec-intro-data"><span class="header-section-number">1.3.1</span> Data package</h3>
-<p>The next two chapters of this guide focus on obtaining and preparing eBird data and environmental variables for the modeling that will occur in the remaining chapters. These steps can be time consuming and laborious. If you’d like to skip straight to the analysis, <a href="https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip">download this package of prepared data</a>. Unzipping this file should produce two directories: <code>data/</code> and <code>data-raw/</code>. Move both these directories so they are subdirectory of your RStudio project folder. This will allow you to jump right in to the modeling and ensure that you’re using exactly the same data as was used when creating this guide. This is a good option if you don’t have a fast enough internet connection to download the eBird data.</p>
+<p>The next two chapters of this guide focus on obtaining and preparing eBird data and environmental variables for the modeling that will occur in the remaining chapters. These steps can be time consuming and laborious. If you’d like to skip straight to the analysis, <a href="https://github.com/ebird/ebird-best-practices/raw/main/data-raw/ebird-best-practices-data.zip">download this package of prepared data</a>. Unzipping this file should produce two directories: <code>data/</code> and <code>data-raw/</code>. Move both these directories so they are subdirectory of your RStudio project folder. This will allow you to jump right in to the modeling and ensure that you’re using exactly the same data as was used when creating this guide. This is a good option if you don’t have a fast enough internet connection to download the eBird data.</p>
 </section>
 <section id="sec-intro-setup-software" class="level3" data-number="1.3.2">
 <h3 data-number="1.3.2" class="anchored" data-anchor-id="sec-intro-setup-software"><span class="header-section-number">1.3.2</span> Software</h3>
@@ -400,38 +400,44 @@ Solution
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>ne_land <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"admin_0_countries_lakes"</span>,</span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                       <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(CONTINENT <span class="sc">==</span> <span class="st">"North America"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(CONTINENT <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"North America"</span>, <span class="st">"South America"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_precision</span>(<span class="fl">1e6</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_union</span>()</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># state boundaries for united states</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>ne_states <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"admin_1_states_provinces"</span>,</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>                       <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iso_a2 <span class="sc">==</span> <span class="st">"US"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">state =</span> name, <span class="at">state_code =</span> iso_3166_2)</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co"># country lines</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co"># downloaded globally then filtered to north america with st_intersect()</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>ne_country_lines <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>                                <span class="at">type =</span> <span class="st">"admin_0_boundary_lines_land"</span>,</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>                                <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_geometry</span>()</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>ne_country_lines <span class="ot">&lt;-</span> <span class="fu">st_intersects</span>(ne_country_lines, ne_land, <span class="at">sparse =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.logical</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  {ne_country_lines[.]}</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co"># states, north america</span></span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>ne_state_lines <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type =</span> <span class="st">"admin_1_states_provinces_lines"</span>,</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>                              <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ADM0_A3 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"USA"</span>, <span class="st">"CAN"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iso_a2 =</span> <span class="fu">recode</span>(ADM0_A3, <span class="at">USA =</span> <span class="st">"US"</span>, <span class="at">CAN =</span> <span class="st">"CAN"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">country =</span> ADM0_NAME, <span class="at">country_code =</span> iso_a2)</span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="co"># save all layers to a geopackage</span></span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="fu">unlink</span>(gpkg_file)</span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_land, gpkg_file, <span class="st">"ne_land"</span>)</span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_states, gpkg_file, <span class="st">"ne_states"</span>)</span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_country_lines, gpkg_file, <span class="st">"ne_country_lines"</span>)</span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_state_lines, gpkg_file, <span class="st">"ne_state_lines"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># country boundaries</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>ne_countries <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"admin_0_countries_lakes"</span>,</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>                       <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">country =</span> ADMIN, <span class="at">country_code =</span> ISO_A2)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co"># state boundaries for united states</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>ne_states <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"admin_1_states_provinces"</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>                       <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iso_a2 <span class="sc">==</span> <span class="st">"US"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">state =</span> name, <span class="at">state_code =</span> iso_3166_2)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co"># country lines</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="co"># downloaded globally then filtered to north america with st_intersect()</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>ne_country_lines <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>                                <span class="at">type =</span> <span class="st">"admin_0_boundary_lines_land"</span>,</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>                                <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_geometry</span>()</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>ne_country_lines <span class="ot">&lt;-</span> <span class="fu">st_intersects</span>(ne_country_lines, ne_land, <span class="at">sparse =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.logical</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>  {ne_country_lines[.]}</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co"># states, north america</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>ne_state_lines <span class="ot">&lt;-</span> <span class="fu">ne_download</span>(<span class="at">scale =</span> <span class="dv">50</span>, <span class="at">category =</span> <span class="st">"cultural"</span>,</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type =</span> <span class="st">"admin_1_states_provinces_lines"</span>,</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>                              <span class="at">returnclass =</span> <span class="st">"sf"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ADM0_A3 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"USA"</span>, <span class="st">"CAN"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iso_a2 =</span> <span class="fu">recode</span>(ADM0_A3, <span class="at">USA =</span> <span class="st">"US"</span>, <span class="at">CAN =</span> <span class="st">"CAN"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">country =</span> ADM0_NAME, <span class="at">country_code =</span> iso_a2)</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="co"># save all layers to a geopackage</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="fu">unlink</span>(gpkg_file)</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_land, gpkg_file, <span class="st">"ne_land"</span>)</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_countries, gpkg_file, <span class="st">"ne_countries"</span>)</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_states, gpkg_file, <span class="st">"ne_states"</span>)</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_country_lines, gpkg_file, <span class="st">"ne_country_lines"</span>)</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(ne_state_lines, gpkg_file, <span class="st">"ne_state_lines"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

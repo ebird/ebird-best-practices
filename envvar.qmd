@@ -18,9 +18,9 @@ To gain access to the example raster datasets, download the data package for thi
 
 ## Landcover {#sec-envvar-landcover}
 
-For the examples in this guide, we'll use land cover variables derived from the [MODIS MCD12Q1 v006](https://lpdaac.usgs.gov/products/mcd12q1v006/) land cover product [@friedlMCD12Q1MODISTerra2015]. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2021. These data are available for several different classification schemes. We'll use the University of Maryland classification system, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 15 different land cover classes. The `terra` package includes a [nice tutorial](https://rspatial.org/modis/1-introduction.html) for how to download and pre-processing MODIS data like this using the [`luna` R package](https://github.com/rspatial/luna).
+For the examples in this guide, we'll use land cover variables derived from the [MODIS MCD12Q1 v006](https://lpdaac.usgs.gov/products/mcd12q1v006/) land cover product [@friedlMCD12Q1MODISTerra2015]. This product has global coverage at 500m spatial resolution and annual temporal resolution from 2001-2022. These data are available for several different classification schemes. We'll use the University of Maryland classification system, which provides a globally accurate classification of land cover in our experience. This system classifies pixels into one of 15 different land cover classes. The `terra` package includes a [nice tutorial](https://rspatial.org/modis/1-introduction.html) for how to download and pre-processing MODIS data like this using the [`luna` R package](https://github.com/rspatial/luna).
 
-A subset of the 2013-2021 data for our study region (i.e., Georgia) is in the [data package](intro.qmd#sec-intro-setup-data). The file `landcover_mcd12q1_umd_us-ga_2013-2021.tif` should be in the `data-raw/` subdirectory of your RStudio project. This is a multi-band [GeoTIFF](https://en.wikipedia.org/wiki/GeoTIFF) in which each band corresponds to a year of landcover data. In R, we'll use the [`terra` package](https://rspatial.github.io/terra/) to work with [raster data](https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/).
+A subset of the 2014-2022 data for our study region (i.e., Georgia) is in the [data package](intro.qmd#sec-intro-setup-data). The file `landcover_mcd12q1_umd_us-ga_2014-2022.tif` should be in the `data-raw/` subdirectory of your RStudio project. This is a multi-band [GeoTIFF](https://en.wikipedia.org/wiki/GeoTIFF) in which each band corresponds to a year of landcover data. In R, we'll use the [`terra` package](https://rspatial.github.io/terra/) to work with [raster data](https://www.gislounge.com/geodatabases-explored-vector-and-raster-data/).
 
 ```{r}
 #| label: envvar-landcover-map
@@ -36,12 +36,12 @@ library(units)
 library(viridis)
 
 # load and inspect the landcover data
-landcover <- rast("data-raw/landcover_mcd12q1_umd_us-ga_2013-2021.tif")
+landcover <- rast("data-raw/landcover_mcd12q1_umd_us-ga_2014-2022.tif")
 print(landcover)
 
-# map the data for 2021
-plot(as.factor(landcover[["2021"]]), 
-     main = "MODIS Landcover 2021",
+# map the data for 2022
+plot(as.factor(landcover[["2022"]]), 
+     main = "MODIS Landcover 2022",
      axes = FALSE)
 ```
 
@@ -96,7 +96,7 @@ plot(pt, pch = 19, add = TRUE, cex = 2)
 text(0.005, 0.015, "1.5km")
 ```
 
-We'll start by finding the full set of unique checklists locations for each year in the eBird data and buffer the points by 1.5km to generate 3 km diameter circular neighborhoods centered on each checklist location. Note that the MODIS landcover data are not available for 2022 and 2023, so we use the 2021 layer for 2022-2023 checklists.
+We'll start by finding the full set of unique checklists locations for each year in the eBird data and buffer the points by 1.5km to generate 3 km diameter circular neighborhoods centered on each checklist location. Note that the MODIS landcover data are not available for 2023, so we use the 2022 layer for 2023 checklists.
 
 ```{r}
 #| label: envvar-landcover-buffer
@@ -105,9 +105,9 @@ We'll start by finding the full set of unique checklists locations for each year
 # ebird checklist locations
 checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
   # landcover data not availble for the full period, so we use the closest year
-  mutate(year_lc = as.character(pmin(year, 2021)))
+  mutate(year_lc = as.character(pmin(year, 2022)))
 
-# generate circular neighborhoods for all checkists
+# generate circular neighborhoods for all checklists
 buffers <- checklists %>% 
   # identify unique location/year combinations
   distinct(locality_id, year_lc, latitude, longitude) %>% 
@@ -242,7 +242,7 @@ buffers_pg <- as.data.frame(r, cells = TRUE, xy = TRUE) %>%
   st_buffer(set_units(3, "km"))
 ```
 
-Now we can calculate the landcover and elevation variables exactly as we did for the eBird checklists in the previous two sections. First, the landscape metrics `pland` and `ed` from the landcover data. Note that we use the most recent year of landcover data (i.e. 2021) in this case.
+Now we can calculate the landcover and elevation variables exactly as we did for the eBird checklists in the previous two sections. First, the landscape metrics `pland` and `ed` from the landcover data. Note that we use the most recent year of landcover data (i.e. 2022) in this case.
 
 ```{r}
 #| label: envvar-pred-lsm
@@ -253,7 +253,7 @@ for (i in seq_len(nrow(buffers_pg))) {
   buffer_i <- st_transform(buffers_pg[i, ], crs = crs(landcover))
   
   # crop and mask landcover raster so all values outside buffer are missing
-  lsm_pg[[i]] <- crop(landcover[["2021"]], buffer_i) %>% 
+  lsm_pg[[i]] <- crop(landcover[["2022"]], buffer_i) %>% 
     mask(buffer_i) %>% 
     # calcualte landscape metrics
     calculate_lsm(level = "class", metric = c("pland", "ed")) %>% 

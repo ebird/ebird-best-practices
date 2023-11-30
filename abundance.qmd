@@ -14,19 +14,23 @@ The relative abundance model presented here is similar to and a natural extensio
 
 ## Data preparation {#sec-encounter-data}
 
-Let's get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to [download the data package](https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip), and unzip it to your project directory, to ensure you're working with exactly the same data as was used in the creation of this guide.
+Let's get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to [download the data package](https://github.com/ebird/ebird-best-practices/raw/main/data-raw/ebird-best-practices-data.zip), and unzip it to your project directory, to ensure you're working with exactly the same data as was used in the creation of this guide.
 
 ```{r}
 #| label: encounter-data-load
+library(dplyr)
 library(ebirdst)
 library(fields)
+library(ggplot2)
 library(gridExtra)
+library(lubridate)
 library(mccf1)
 library(ranger)
+library(readr)
 library(scam)
 library(sf)
 library(terra)
-library(tidyverse)
+library(tidyr)
 
 # set random number seed to insure fully repeatable results
 set.seed(1)

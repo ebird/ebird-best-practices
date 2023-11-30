@@ -57,7 +57,6 @@ Imports:
     tidyverse,
     units,
     unmarked,
-    verification,
     viridis
 Encoding: UTF-8
 RoxygenNote: 7.2.3

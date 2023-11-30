@@ -49,7 +49,13 @@ In the interest of making examples concrete, throughout this guide, we'll focus 
 
 ![](images/ebird-data_download.png)
 
-Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a two text files: one for the EBD (e.g. `ebd_US-GA_woothr_smp_relOct-2023.txt`) containing all the Wood Thrush observations from Georgia and one for the SED (e.g. `ebd_US-GA_woothr_smp_relJun-2023_sampling.txt`) containing all checklists from Georgia. The `relJune-2023` component of the file name describes which version of the EBD this dataset came from; in this case it's the June 2023 release.
+Once the data are ready, you will receive an email with a download link. The downloaded data will be in a compressed .zip format, and should be unarchived. The resulting directory will contain a two text files: one for the EBD (e.g. `ebd_US-GA_woothr_smp_relOct-2023.txt`) containing all the Wood Thrush observations from Georgia and one for the SED (e.g. `ebd_US-GA_woothr_smp_relOct-2023_sampling.txt`) containing all checklists from Georgia. The `relOct-2023` component of the file name describes which version of the EBD this dataset came from; in this case it's the October 2023 release.
+
+::: callout-tip
+## Tip
+
+Since the EBD is updated monthly, you will likely recieve a different version of the data than the October 2023 version used throughout the rest of this lesson. Provided you update the filenames of the downloaded files accordingly, the difference in versions will not be an issue. However, if you want to download and use exactly the same files used in this lesson, you can [download the corresponding EBD zip file](https://cornell.box.com/shared/static/lwd1rm163r2pfe389fi0n084hmyr0jbv.zip).
+:::
 
 ## Importing eBird data into R {#sec-ebird-import}
 
@@ -96,7 +102,7 @@ More than 95% of checklists are less than 10 km in length; however, some checkli
 checklists_traveling <- filter(checklists, protocol_type == "Traveling")
 ggplot(checklists_traveling) +
   aes(x = effort_distance_km) +
-  geom_histogram(binwidth = 5, 
+  geom_histogram(binwidth = 1, 
                  aes(y = after_stat(count / sum(count)))) +
   scale_y_continuous(limits = c(0, NA), labels = scales::label_percent()) +
   labs(x = "Distance traveled [km]",
@@ -135,6 +141,7 @@ eBird allows users to [share checklists](https://support.ebird.org/en/support/so
 ```{r}
 #| label: ebird-import-shared-example
 checklists_shared <- read_sampling(f_sed, unique = FALSE)
+# identify shared checklists
 checklists_shared %>% 
   filter(!is.na(group_identifier)) %>% 
   arrange(group_identifier) %>% 
@@ -152,7 +159,7 @@ Checklists with the same `group_identifier` provide duplicate information on the
 ```{r}
 #| label: ebird-import-shared-unique
 checklists_unique <- auk_unique(checklists_shared, checklists_only = TRUE)
-nrow(checklists)
+nrow(checklists_shared)
 nrow(checklists_unique)
 ```
 
@@ -201,11 +208,11 @@ obs_ex <- system.file("extdata/ebd-rollup-ex.txt", package = "auk") %>%
 # rollup taxonomy
 obs_ex_rollup <- auk_rollup(obs_ex)
 
-# all taxa not identifiable to species are dropped
+# identify the taxonomic categories present in each dataset
 unique(obs_ex$category)
 unique(obs_ex_rollup$category)
 
-# without rollup, there are three observations
+# without rollup, there are four observations
 obs_ex %>%
   filter(common_name == "Yellow-rumped Warbler") %>% 
   select(checklist_id, category, common_name, subspecies_common_name, 
@@ -216,13 +223,12 @@ obs_ex_rollup %>%
   select(checklist_id, category, common_name, observation_count)
 ```
 
-
 ## Filtering to study region and season {#sec-ebird-filter}
 
 The Custom Download form allowed us to apply some basic filters to the eBird data we downloaded: we requested only Wood Thrush observations and only those on checklists from Georgia. However, in most cases you'll want to apply additional spatial and/or temporal filters to the data that are specific to your study. For the examples used throughout this guide we'll only want observations from June for the last 10 years (2014-2023). In addition, we'll only use complete checklists (i.e., those for which all birds seen or heard were reported), which will allow us to produce detection/non-detection data. We can apply these filters using the `filter()` function from `dplyr`.
 
 ```{r}
-#| label: ebird-ebird-filter
+#| label: ebird-filter-time
 # filter the checklist data
 checklists <- checklists %>% 
   filter(all_species_reported,
@@ -236,11 +242,42 @@ observations <- observations %>%
          month(observation_date) == 6)
 ```
 
+The data we requested for Georgia using the Custom Download form will include checklists falling in the ocean off the coast of Georgia. Although these oceanic checklists are typically rare, it's usually best to remove them when modeling a terrestrial species like Wood Thrush. We'll using a boundary polygon for Georgia in the `data/gis-data.gpkg` file, buffered by 1 km, to filter our checklist data. A similar approach can be used if you're interested in a custom region, for example, a national park for which you may have a shapefile defining the boundary.
+
+```{r}
+#| label: ebird-filter-region
+# convert checklist locations to points geometries
+checklists_sf <- checklists %>% 
+  select(checklist_id, latitude, longitude) %>% 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+# boundary of study region, buffered by 1 km
+study_region <- read_sf("data/gis-data.gpkg", layer = "ne_states") %>%
+  filter(state_code == "US-GA") %>%
+  st_transform(crs = st_crs(checklists_sf)) %>%
+  st_buffer(dist = 1000)
+
+# spatially subset the checklists to those in the study region
+in_region <- checklists_sf[study_region, ]
+
+# join to checklists and observations to remove checklists outside region
+checklists <- semi_join(checklists, in_region, by = "checklist_id")
+observations <- semi_join(observations, in_region, by = "checklist_id")
+```
+
 ::: callout-tip
 ## Tip
 
 **It's absolutely critical that we filter the observation and checklist data in exactly the same way** to produce exactly the same population of checklists. Otherwise, the zero-filling we do in the next section will fail.
 :::
+
+Finally, there are rare situations in which some observers in a group of shared checklists quite drastically change there checklists, for example, changing the location or switching their checklist from complete to incomplete. In these cases, it's possible to end up with a mismatch between the checklists in the observation dataset and the checklist dataset. We can resolve this very rare issue by removing any checklists from the observation dataset not appearing in the checklist dataset.
+
+```{r}
+#| label: ebird-filter-bug
+# remove observations without matching matching checklists
+observations <- semi_join(observations, checklists, by = "checklist_id")
+```
 
 ## Zero-filling {#sec-ebird-zf}
 
@@ -495,7 +532,7 @@ If you'd like to ensure you're using exactly the same data as was used to genera
 
 ## Exploratory analysis and visualization {#sec-ebird-explore}
 
-Before proceeding to training species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/master/data/ebird-best-practices-data.zip). Unzip this data package and place the contents in your RStudio project folder.
+Before proceeding to training species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/master/data-raw/ebird-best-practices-data.zip). Unzip this data package and place the contents in your RStudio project folder.
 
 ```{r}
 #| label: ebird-explore-map
@@ -511,7 +548,7 @@ ne_country_lines <- read_sf("data/gis-data.gpkg", "ne_country_lines") %>%
 ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") %>% 
   st_transform(crs = map_proj) %>% 
   st_geometry()
-ga_boundary <- read_sf("data/gis-data.gpkg", "ne_states") %>% 
+study_region <- read_sf("data/gis-data.gpkg", "ne_states") %>% 
   filter(state_code == "US-GA") %>% 
   st_transform(crs = map_proj) %>% 
   st_geometry()
@@ -531,7 +568,7 @@ plot(st_geometry(checklists_sf),
      col = NA, border = NA)
 # contextual gis data
 plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
-plot(ga_boundary, col = "#e6e6e6", border = NA, add = TRUE)
+plot(study_region, col = "#e6e6e6", border = NA, add = TRUE)
 plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
 plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
 # ebird observations

@@ -16,20 +16,23 @@ The ecological metric we're ultimately interested in is the probability that a s
 
 ## Data preparation {#sec-encounter-data}
 
-Let's get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to [download the data package](https://github.com/ebird/ebird-best-practices/raw/main/data/ebird-best-practices-data.zip), and unzip it to your project directory, to ensure you're working with exactly the same data as was used in the creation of this guide.
+Let's get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to [download the data package](https://github.com/ebird/ebird-best-practices/raw/main/data-raw/ebird-best-practices-data.zip), and unzip it to your project directory, to ensure you're working with exactly the same data as was used in the creation of this guide.
 
 ```{r}
 #| label: encounter-intro-data
+library(dplyr)
 library(ebirdst)
 library(fields)
+library(ggplot2)
 library(gridExtra)
+library(lubridate)
 library(mccf1)
 library(ranger)
+library(readr)
 library(scam)
 library(sf)
 library(terra)
-library(verification)
-library(tidyverse)
+library(tidyr)
 
 # set random number seed to insure fully repeatable results
 set.seed(1)
@@ -38,7 +41,7 @@ set.seed(1)
 env_vars <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
 
 # zero-filled ebird data combined with environmental data
-checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
+checklists_env <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
   inner_join(env_vars, by = "checklist_id")
 
 # prediction grid
@@ -95,7 +98,7 @@ In the above plot, the full set of points is shown in black and the subsampled p
 #| label: encounter-sss-real
 # sample one checklist per 3km x 3km x 1 week grid for each year
 # sample detection/non-detection independently 
-checklists_ss <- grid_sample_stratified(checklists,
+checklists_ss <- grid_sample_stratified(checklists_env,
                                         obs_column = "species_observed",
                                         sample_by = "type")
 ```
@@ -103,7 +106,7 @@ checklists_ss <- grid_sample_stratified(checklists,
 ```{r}
 #| label: encounter-sss-pct
 #| include: false
-pct_before <- mean(checklists$species_observed) %>% 
+pct_before <- mean(checklists_env$species_observed) %>% 
   scales::percent(accuracy = 0.1)
 pct_after <- mean(checklists_ss$species_observed) %>% 
   scales::percent(accuracy = 0.1)
@@ -118,13 +121,13 @@ Compare the full set of eBird checklists to the set of checklists remaining afte
 ::: {.callout-note icon="false" collapse="true"}
 ## Solution
 
-The subsampling *decreased* the overall number of checklists by a factor of about `r round(nrow(checklists) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`.
+The subsampling *decreased* the overall number of checklists by a factor of about `r round(nrow(checklists_env) / nrow(checklists_ss), 1)`, but *increased* the prevalence of detections from `r pct_before` to `r pct_after`.
 
 ```{r}
 #| label: encounter-sss-sol
 # original data
-nrow(checklists)
-count(checklists, species_observed) %>% 
+nrow(checklists_env)
+count(checklists_env, species_observed) %>% 
   mutate(percent = n / sum(n))
 
 # after sampling
@@ -139,7 +142,7 @@ This increase in the prevalence of detections will help the random forests model
 ```{r}
 #| label: encounter-sss-map
 # convert checklists to spatial features
-all_pts <- checklists %>%  
+all_pts <- checklists_env %>%  
   filter(type == "train") %>% 
   st_as_sf(coords = c("longitude","latitude"), crs = 4326) %>%
   st_transform(crs = crs) %>% 
@@ -393,11 +396,12 @@ During the process of training a random forests model, some variables are remove
 ```{r}
 #| label:  encounter-habitat-pi
 # extract predictor importance from the random forest model object
-pi <- enframe(er_model$variable.importance, "predictor", "importance") %>% 
+pi <- er_model$variable.importance
+pi <- data.frame(predictor = names(pi), importance = pi) %>% 
   arrange(desc(importance))
 # plot importance of top 20 predictors
 ggplot(head(pi, 20)) + 
-  aes(x = fct_reorder(predictor, importance), y = importance) +
+  aes(x = reorder(predictor, importance), y = importance) +
   geom_col() +
   geom_hline(yintercept = 0, linewidth = 2, colour = "#555555") +
   scale_y_continuous(expand = c(0, 0)) +
@@ -492,7 +496,8 @@ ggplot(pd) +
   aes(x = x, y = encounter_rate) +
   geom_line() +
   geom_point() +
-  facet_wrap(~ as_factor(predictor), ncol = 2, scales = "free") +
+  facet_wrap(~ factor(predictor, levels = unique(predictor)), 
+             ncol = 2, scales = "free") +
   labs(x = NULL, y = "Encounter Rate") +
   theme_minimal() +
   theme_minimal() +
@@ -603,10 +608,11 @@ print(t_peak)
 ```{r}
 #| label:  encounter-predict-effort-human
 #| echo: false
-human_time <- str_glue("{h}:{m} {ap}", 
-                       h = floor(t_peak),
-                       m = str_pad(round((t_peak %% 1) * 60), 2, pad = "0"),
-                       ap = ifelse(t_peak > 12, "PM", "AM"))
+human_time <- glue::glue("{h}:{m} {ap}", 
+                         h = floor(t_peak),
+                         m = stringr::str_pad(round((t_peak %% 1) * 60), 2, 
+                                              pad = "0"),
+                         ap = ifelse(t_peak > 12, "PM", "AM"))
 ```
 
 Based on this analysis, the best time for detecting Wood Thrush is at `r human_time`. We'll use this time to make predictions. This is equivalent to many eBirders all conducting a checklist within different grid cells on June 15 at `r human_time`. We also add the other effort variables to the prediction grid dataset at this time.
