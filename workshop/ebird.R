@@ -55,7 +55,7 @@ obs_ex <- system.file("extdata/ebd-rollup-ex.txt", package = "auk") |>
 
 # filter the observation data
 
-# remove observations without matching matching checklists
+# remove observations without matching checklists
 
 
 # Zero-fill eBird data ----

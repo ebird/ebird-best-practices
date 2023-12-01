@@ -691,7 +691,7 @@ Tip
 </div>
 <p>Finally, there are rare situations in which some observers in a group of shared checklists quite drastically change there checklists, for example, changing the location or switching their checklist from complete to incomplete. In these cases, it’s possible to end up with a mismatch between the checklists in the observation dataset and the checklist dataset. We can resolve this very rare issue by removing any checklists from the observation dataset not appearing in the checklist dataset.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># remove observations without matching matching checklists</span></span>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># remove observations without matching checklists</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>observations <span class="ot">&lt;-</span> <span class="fu">semi_join</span>(observations, checklists, <span class="at">by =</span> <span class="st">"checklist_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>

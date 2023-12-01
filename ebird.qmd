@@ -275,7 +275,7 @@ Finally, there are rare situations in which some observers in a group of shared 
 
 ```{r}
 #| label: ebird-filter-bug
-# remove observations without matching matching checklists
+# remove observations without matching checklists
 observations <- semi_join(observations, checklists, by = "checklist_id")
 ```
 

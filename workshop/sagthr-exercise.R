@@ -33,6 +33,8 @@ set.seed(1)
 
 # complete checklists in june-july from the last 10 years
 
+# remove observations without matching checklists
+
 
 
 # Zero-fill eBird data ----

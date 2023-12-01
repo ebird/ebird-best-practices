@@ -74,6 +74,9 @@ observations <- observations |>
          between(year(observation_date), 2014, 2023),
          month(observation_date) == 6)
 
+# remove observations without matching checklists
+observations <- semi_join(observations, checklists, by = "checklist_id")
+
 
 # Zero-fill eBird data ----
 

@@ -27,21 +27,23 @@ file_copy(path("data-raw", files), path(proj_dir, "data-raw"))
 # main content data
 file_copy(dir_ls("data"), path(proj_dir, "data"))
 # ebird downloads
-files <- c("ebd_US-WY_larbun_smp_relOct-2023.zip",
-           "ebd_US-WY_sagthr_smp_relOct-2023.zip")
 file_copy("data-figures-prep/ebd_US-GA_woothr_smp_relOct-2023.zip",
           path(proj_dir, "ebird-downloads"))
 
 # exercise data
 files <- c("environmental-variables_checklists_jun-jul_us-wy.csv",
            "environmental-variables_prediction-grid_us-wy.csv",
-           "prediction-grid_us-wy.tif")
-file_copy(path("workshop/data", files),
+           "prediction-grid_us-wy.tif",
+           "environmental-variables_checklists_jan-dec_pa.csv",
+           "environmental-variables_prediction-grid_pa.csv",
+           "prediction-grid_pa.tif")
+file_copy(path("workshop", "data", files),
           path(proj_dir, "data"))
 # ebird downloads
 files <- c("ebd_US-WY_larbun_smp_relOct-2023.zip",
-           "ebd_US-WY_sagthr_smp_relOct-2023.zip")
-file_copy(path("workshop/ebird-downloads", files),
+           "ebd_US-WY_sagthr_smp_relOct-2023.zip",
+           "ebd_PA_blfant1_smp_relOct-2023.zip")
+file_copy(path("workshop", "ebird-downloads", files),
           path(proj_dir, "ebird-downloads"))
 
 # zip files
