@@ -1,0 +1,21 @@
+class,name,label,description
+1,Barren,barren,"At least of area 60% is non-vegetated barren
+(sand, rock, soil) or permanent snow/ice with less
+than 10% vegetation."
+2,Permanent Snow and Ice,snow_ice,
+3,Water Bodies,water,
+11,Evergreen Needleleaf Forests,evergreen_needleleaf,
+12,Evergreen Broadleaf Forests,evergreen_broadleaf,
+13,Deciduous Needleleaf Forests ,deciduous_needleleaf,
+14,Deciduous Broadleaf Forests ,deciduous_broadleaf,
+15,Mixed Broadleaf/Needleleaf Forests ,mixed_broadleaf_needleleaf,
+16,"Mixed Broadleaf Evergreen/Deciduous
+Forests",mixed_broadleaf_forest,
+21,Open Forests,open_forest,
+22,Sparse Forests ,sparse_forest,
+31,Dense Herbaceous,dense_herbaceous,
+32,Sparse Herbaceous,sparse_herbaceous,
+41,Dense Shrublands,dense_shrubland,
+42,Shrubland/Grassland Mosaics,mixed_shrubland_grassland,
+43,Sparse Shrublands,sparse_shrubland,
+255,Unclassified,unclassified,Has not received a map label because of missing inputs.

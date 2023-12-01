@@ -78,7 +78,7 @@ set.seed(1)
 pt <- st_sfc(st_point(x = c(0, 0)), crs = 4326)
 buffer <- st_buffer(pt, 3000, nQuadSegs = 100)
 bb <- st_bbox(buffer)
-radius <- st_linestring(x = matrix(c(0, 0, 0, bb["ymax"]), 2, 2)) %>%
+radius <- st_linestring(x = matrix(c(0, 0, 0, bb["ymax"]), 2, 2)) |>
   st_sfc()
 landscape <- rast(st_buffer(st_as_sf(buffer), 500))
 values(landscape) <- 1
@@ -103,17 +103,17 @@ We'll start by finding the full set of unique checklists locations for each year
 #| cache: true
 #| cahce-path: "cache"
 # ebird checklist locations
-checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
+checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") |> 
   # landcover data not availble for the full period, so we use the closest year
   mutate(year_lc = as.character(pmin(year, 2022)))
 
 # generate circular neighborhoods for all checklists
-buffers <- checklists %>% 
+checklists_sf <- checklists |> 
   # identify unique location/year combinations
-  distinct(locality_id, year_lc, latitude, longitude) %>% 
+  distinct(locality_id, year_lc, latitude, longitude) |> 
   # generate a 3 km neighborhoods
-  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% 
-  st_buffer(dist = set_units(1.5, "km"))
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+buffers <- st_buffer(checklists_sf, dist = set_units(1.5, "km"))
 ```
 
 Next, for each location, we crop and mask the landcover layer corresponding to the checklist year to the circular neighborhood around that checklist. Then we use `calculate_lsm()` from `landscapemetrics` to calculate `pland` and `ed` metrics within each neighborhood. **This step may take 30 minute or longer to run.**
@@ -127,35 +127,35 @@ for (i in seq_len(nrow(buffers))) {
   year <- as.character(buffer_i$year_lc)
   
   # crop and mask landcover raster so all values outside buffer are missing
-  lsm[[i]] <- crop(landcover[[year]], buffer_i) %>% 
-    mask(buffer_i) %>% 
+  lsm[[i]] <- crop(landcover[[year]], buffer_i) |> 
+    mask(buffer_i) |> 
     # calcualte landscape metrics
-    calculate_lsm(level = "class", metric = c("pland", "ed")) %>% 
+    calculate_lsm(level = "class", metric = c("pland", "ed")) |> 
     # add variables to uniquely identify each point
     mutate(locality_id = buffer_i$locality_id, 
-           year_lc = buffer_i$year_lc)
+           year_lc = buffer_i$year_lc) |> 
+    select(locality_id, year_lc, class, metric, value)
 }
-lsm <- bind_rows(lsm) %>% 
-  select(locality_id, year_lc, class, metric, value)
+lsm <- bind_rows(lsm)
 ```
 
 Finally, we'll transform the data frame so there's one row per location and all the environmental variables appear as columns. For each location, any landcover classes that don't appear within the buffer will not have associated `pland` and `ed` metrics; at this stage, we replace these implicit missing values with zeros using the complete list of classes in `lc_classes`. We also replace the opaque class numbers with more meaningful names from the class description file `data-raw/mcd12q1_umd_classes.csv`.
 
 ```{r}
 #| label: envvar-landcover-wide
-lsm_wide <- lsm %>% 
+lsm_wide <- lsm |> 
   # fill missing classes with zeros
   complete(nesting(locality_id, year_lc),
            class = lc_classes$class,
            metric = c("ed", "pland"),
-           fill = list(value = 0)) %>% 
+           fill = list(value = 0)) |> 
   # bring in more descriptive names
-  inner_join(select(lc_classes, class, label), by = "class") %>% 
+  inner_join(select(lc_classes, class, label), by = "class") |> 
   # transform from long to wide format
   pivot_wider(values_from = value,
               names_from = c(class, label, metric),
               names_glue = "{metric}_c{str_pad(class, 2, pad = '0')}_{label}",
-              names_sort = TRUE) %>% 
+              names_sort = TRUE) |> 
   arrange(locality_id, year_lc)
 ```
 
@@ -174,9 +174,9 @@ elevation <- rast("data-raw/elevation_gmted_1km_us-ga.tif")
 
 # mean and standard deviation within each circular neighborhood
 elev_buffer <- exact_extract(elevation, buffers, fun = c("mean", "stdev"),
-                             progress = FALSE) %>% 
+                             progress = FALSE) |> 
   # add variables to uniquely identify each point
-  mutate(locality_id = buffers$locality_id, year_lc = buffers$year_lc) %>% 
+  mutate(locality_id = buffers$locality_id, year_lc = buffers$year_lc) |> 
   select(locality_id, year_lc, 
          elevation_mean = mean,
          elevation_sd = stdev)
@@ -191,9 +191,9 @@ env_variables <- inner_join(elev_buffer, lsm_wide,
                             by = c("locality_id", "year_lc"))
 
 # attach and expand to checklists
-env_variables <- checklists %>% 
-  select(checklist_id, locality_id, year_lc) %>% 
-  inner_join(env_variables, by = c("locality_id", "year_lc")) %>% 
+env_variables <- checklists |> 
+  select(checklist_id, locality_id, year_lc) |> 
+  inner_join(env_variables, by = c("locality_id", "year_lc")) |> 
   select(-locality_id, -year_lc)
 
 # save to csv, dropping any rows with missing variables
@@ -206,21 +206,36 @@ write_csv(drop_na(env_variables),
 
 After training a species distribution model, the goal is typically to make predictions throughout the study area. To do this, we'll need a **prediction grid**: a regular grid of habitat variables over which to make predictions. In this section, we'll create such a prediction grid for our study region (Georgia) using the MODIS landcover data from the most recent year for which they're available in addition to elevation data. To start, we'll create a template raster with cells equal in dimension to the diameter of the circular neighborhoods we used above. It's important to use an equal area coordinate reference system for the prediction grid; we'll use a [Lambert's azimuthal equal area projection](https://en.wikipedia.org/wiki/Lambert_azimuthal_equal-area_projection) centered on our study region.
 
+::: callout-tip
+## Tip
+
+Lambert's azimuthal equal area projection is a good coordinate reference system to use for regional analysis and mapping. It can be tailored to a region of interest by setting the reference latitude and longitude in the projection string to the center of your study region. You can find the coordinates of a region using a mapping tool like Google Maps. Alternatively, you can calculate the centroid of your data using the `sf` packagage function `st_centroid()`.
+
+```{r}
+#| label: envvar-pred-centroid
+checklists_sf |> 
+  st_union() |> 
+  st_centroid() |> 
+  st_coordinates() |> 
+  round(1)
+```
+:::
+
 ```{r}
 #| label: envvar-pred-template
 # lambert's azimuthal equal area projection for georgia
-laea_crs <- st_crs("+proj=laea +lat_0=32.5 +lon_0=-83.5")
+laea_crs <- st_crs("+proj=laea +lat_0=33.2 +lon_0=-83.7")
 
 # study region: georgia
-study_region <- read_sf("data/gis-data.gpkg", layer = "ne_states") %>% 
-  filter(state_code == "US-GA") %>% 
+study_region <- read_sf("data/gis-data.gpkg", layer = "ne_states") |> 
+  filter(state_code == "US-GA") |> 
   st_transform(crs = laea_crs)
 
 # create a raster template covering the region with 3 km resolution
 r <- rast(study_region, res = c(3000, 3000))
 
 # fill the raster with 1s inside the study region
-r <- rasterize(study_region, r, values = 1) %>% 
+r <- rasterize(study_region, r, values = 1) |> 
   setNames("study_region")
 
 # save for later use
@@ -235,10 +250,10 @@ Next, we extract the coordinates of the cell centers from the raster we just cre
 #| label: envvar-pred-buffer
 #| cache: true
 # generate neighborhoods for the prediction grid cell centers
-buffers_pg <- as.data.frame(r, cells = TRUE, xy = TRUE) %>% 
-  select(cell_id = cell, x, y) %>% 
-  st_as_sf(coords = c("x", "y"), crs = laea_crs, remove = FALSE) %>% 
-  st_transform(crs = 4326) %>% 
+buffers_pg <- as.data.frame(r, cells = TRUE, xy = TRUE) |> 
+  select(cell_id = cell, x, y) |> 
+  st_as_sf(coords = c("x", "y"), crs = laea_crs, remove = FALSE) |> 
+  st_transform(crs = 4326) |> 
   st_buffer(set_units(3, "km"))
 ```
 
@@ -253,31 +268,31 @@ for (i in seq_len(nrow(buffers_pg))) {
   buffer_i <- st_transform(buffers_pg[i, ], crs = crs(landcover))
   
   # crop and mask landcover raster so all values outside buffer are missing
-  lsm_pg[[i]] <- crop(landcover[["2022"]], buffer_i) %>% 
-    mask(buffer_i) %>% 
+  lsm_pg[[i]] <- crop(landcover[["2022"]], buffer_i) |> 
+    mask(buffer_i) |> 
     # calcualte landscape metrics
-    calculate_lsm(level = "class", metric = c("pland", "ed")) %>% 
+    calculate_lsm(level = "class", metric = c("pland", "ed")) |> 
     # add variable to uniquely identify each point
-    mutate(cell_id = buffer_i$cell_id)
+    mutate(cell_id = buffer_i$cell_id) |> 
+    select(cell_id, class, metric, value)
 }
-lsm_pg <- bind_rows(lsm_pg) %>% 
-  select(cell_id, class, metric, value)
+lsm_pg <- bind_rows(lsm_pg)
 
 # transform to wide format
-lsm_wide_pg <- lsm_pg %>% 
+lsm_wide_pg <- lsm_pg |> 
   # fill missing classes with zeros
   complete(cell_id,
            class = lc_classes$class,
            metric = c("ed", "pland"),
-           fill = list(value = 0)) %>% 
+           fill = list(value = 0)) |> 
   # bring in more descriptive names
-  inner_join(select(lc_classes, class, label), by = "class") %>% 
+  inner_join(select(lc_classes, class, label), by = "class") |> 
   # transform from long to wide format
   pivot_wider(values_from = value,
               names_from = c(class, label, metric),
               names_glue = "{metric}_c{str_pad(class, 2, pad = '0')}_{label}",
               names_sort = TRUE,
-              values_fill = 0) %>% 
+              values_fill = 0) |> 
   arrange(cell_id)
 ```
 
@@ -287,9 +302,9 @@ And now the mean and standard deviation of elevation.
 #| label: envvar-pred-elevation
 elev_buffer_pg <- exact_extract(elevation, buffers_pg, 
                                 fun = c("mean", "stdev"),
-                                progress = FALSE) %>% 
+                                progress = FALSE) |> 
   # add variables to uniquely identify each point
-  mutate(cell_id = buffers_pg$cell_id) %>% 
+  mutate(cell_id = buffers_pg$cell_id) |> 
   select(cell_id, elevation_mean = mean, elevation_sd = stdev)
 ```
 
@@ -301,9 +316,9 @@ Finally, we combine the landcover and elevation variables together and save to C
 env_variables_pg <- inner_join(elev_buffer_pg, lsm_wide_pg, by = "cell_id")
 
 # attach the xy coordinates of the cell centers
-env_variables_pg <- buffers_pg %>% 
-  st_drop_geometry() %>% 
-  select(cell_id, x, y) %>% 
+env_variables_pg <- buffers_pg |> 
+  st_drop_geometry() |> 
+  select(cell_id, x, y) |> 
   inner_join(env_variables_pg, by = "cell_id")
 
 # save as csv, dropping any rows with missing variables
@@ -316,9 +331,9 @@ Keeping these data in a data frame is a compact way to store them and will be re
 
 ```{r}
 #| label: envvar-pred-map
-forest_cover <- env_variables_pg %>% 
+forest_cover <- env_variables_pg |> 
   # convert to spatial features
-  st_as_sf(coords = c("x", "y"), crs = laea_crs) %>% 
+  st_as_sf(coords = c("x", "y"), crs = laea_crs) |> 
   # rasterize points
   rasterize(r, field = "pland_c04_deciduous_broadleaf")
 

@@ -12,7 +12,7 @@ library(sf)
 library(terra)
 library(tidyr)
 
-# set random number seed to insure fully repeatable results
+# set random number seed for reproducibility
 set.seed(1)
 
 
@@ -33,18 +33,18 @@ set.seed(1)
 
 
 # load gis data for making maps
-study_region <- read_sf("data/gis-data.gpkg", "ne_states") %>%
-  filter(state_code == "US-GA") %>%
-  st_transform(crs = crs) %>%
+study_region <- read_sf("data/gis-data.gpkg", "ne_states") |>
+  filter(state_code == "US-GA") |>
+  st_transform(crs = crs) |>
   st_geometry()
-ne_land <- read_sf("data/gis-data.gpkg", "ne_land") %>%
-  st_transform(crs = crs) %>%
+ne_land <- read_sf("data/gis-data.gpkg", "ne_land") |>
+  st_transform(crs = crs) |>
   st_geometry()
-ne_country_lines <- read_sf("data/gis-data.gpkg", "ne_country_lines") %>%
-  st_transform(crs = crs) %>%
+ne_country_lines <- read_sf("data/gis-data.gpkg", "ne_country_lines") |>
+  st_transform(crs = crs) |>
   st_geometry()
-ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") %>%
-  st_transform(crs = crs) %>%
+ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") |>
+  st_transform(crs = crs) |>
   st_geometry()
 
 
@@ -85,21 +85,23 @@ ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") %>%
 # train calibration model
 
 
-
+# calibration plot
 # group the predicted encounter rate into bins of width 0.02
 # then calculate the mean observed encounter rates in each bin
 er_breaks <- seq(0, 1, by = 0.02)
-mean_er <- obs_pred %>%
-  mutate(er_bin = cut(pred, breaks = er_breaks, include.lowest = TRUE)) %>%
-  group_by(er_bin) %>%
+mean_er <- obs_pred |>
+  mutate(er_bin = cut(pred, breaks = er_breaks, include.lowest = TRUE)) |>
+  group_by(er_bin) |>
   summarise(n_checklists = n(),
             pred = mean(pred),
             obs = mean(obs),
             .groups = "drop")
 # make predictions from the calibration model
-
+calibration_curve <- data.frame(pred = er_breaks)
+cal_pred <- predict(calibration_model, calibration_curve, type = "response")
+calibration_curve$calibrated <- cal_pred
 # compared binned mean encounter rates to calibration model
-ggplot(cal_pred) +
+ggplot(calibration_curve) +
   aes(x = pred, y = calibrated) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
   geom_line(color = "blue") +
@@ -176,8 +178,8 @@ plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 
 # define quantile breaks
 brks <- global(r_pred[["encounter_rate"]], fun = quantile,
-               probs = seq(0, 1, 0.1), na.rm = TRUE) %>%
-  as.numeric() %>%
+               probs = seq(0, 1, 0.1), na.rm = TRUE) |>
+  as.numeric() |>
   unique()
 # label the bottom, middle, and top value
 lbls <- round(c(0, median(brks), max(brks)), 2)
@@ -211,53 +213,6 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
                               cex = 1, line = 0))
 
 
-# in-range encounter rate
-
-
-# map
-par(mar = c(4, 0.25, 0.25, 0.25))
-# set up plot area
-plot(study_region, col = NA, border = NA)
-plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
-
-# define quantile breaks, excluding zeros
-brks <- ifel(er_range > 0, er_range, NA) %>%
-  global(fun = quantile,
-         probs = seq(0, 1, 0.1), na.rm = TRUE) %>%
-  as.numeric() %>%
-  unique()
-# label the bottom, middle, and top value
-lbls <- round(c(min(brks), median(brks), max(brks)), 2)
-# ebird status and trends color palette
-pal <- ebirdst_palettes(length(brks) - 1)
-plot(er_range,
-     col = c("#e6e6e6", pal), breaks = c(0, brks),
-     maxpixels = ncell(r_pred),
-     legend = FALSE, axes = FALSE, bty = "n",
-     add = TRUE)
-
-# borders
-plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
-plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
-plot(study_region, border = "#000000", col = NA, lwd = 1, add = TRUE)
-box()
-
-# legend
-par(new = TRUE, mar = c(0, 0, 0, 0))
-title <- "Wood Thrush Encounter Rate within Range (June 2023)"
-image.plot(zlim = c(0, 1), legend.only = TRUE,
-           col = pal, breaks = seq(0, 1, length.out = length(brks)),
-           smallplot = c(0.25, 0.75, 0.04, 0.07),
-           horizontal = TRUE,
-           axis.args = list(at = c(0, 0.5, 1), labels = lbls,
-                            fg = "black", col.axis = "black",
-                            cex.axis = 0.75, lwd.ticks = 0.5,
-                            padj = -1.5),
-           legend.args = list(text = title,
-                              side = 3, col = "black",
-                              cex = 1, line = 0))
-
-
 # Count model ----
 
 # subset to only observed or predicted detections
@@ -278,7 +233,6 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
 # combine with all other predictions
 
 # relative abundance = encounter_rate * count
-# add relative abundance estimate
 
 
 # rasterize
@@ -298,10 +252,10 @@ plot(study_region, col = NA, border = NA)
 plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 
 # define quantile breaks, excluding zeros
-brks <- ifel(r_abd_range > 0, r_abd_range, NA) %>%
+brks <- ifel(r_abd_range > 0, r_abd_range, NA) |>
   global(fun = quantile,
-         probs = seq(0, 1, 0.1), na.rm = TRUE) %>%
-  as.numeric() %>%
+         probs = seq(0, 1, 0.1), na.rm = TRUE) |>
+  as.numeric() |>
   unique()
 # label the bottom, middle, and top value
 lbls <- round(c(min(brks), median(brks), max(brks)), 2)
@@ -524,7 +478,7 @@ ggplot(pd) +
   aes(x = x, y = abundance) +
   geom_line() +
   geom_point() +
-  facet_wrap(factor(predictor, levels = unique(predictor)),
+  facet_wrap(factor(predictor, levels = rev(unique(predictor))),
              ncol = 2, scales = "free") +
   labs(x = NULL, y = "Relative Abundance") +
   theme_minimal() +

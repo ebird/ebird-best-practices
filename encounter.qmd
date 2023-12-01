@@ -34,14 +34,14 @@ library(sf)
 library(terra)
 library(tidyr)
 
-# set random number seed to insure fully repeatable results
+# set random number seed for reproducibility
 set.seed(1)
 
 # environmental variables: landcover and elevation
 env_vars <- read_csv("data/environmental-variables_checklists_jun_us-ga.csv")
 
 # zero-filled ebird data combined with environmental data
-checklists_env <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>% 
+checklists_env <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") |> 
   inner_join(env_vars, by = "checklist_id")
 
 # prediction grid
@@ -52,18 +52,18 @@ r <- rast("data/prediction-grid_us-ga.tif")
 crs <- st_crs(r)
 
 # load gis data for making maps
-study_region <- read_sf("data/gis-data.gpkg", "ne_states") %>% 
-  filter(state_code == "US-GA") %>% 
-  st_transform(crs = crs) %>% 
+study_region <- read_sf("data/gis-data.gpkg", "ne_states") |> 
+  filter(state_code == "US-GA") |> 
+  st_transform(crs = crs) |> 
   st_geometry()
-ne_land <- read_sf("data/gis-data.gpkg", "ne_land") %>% 
-  st_transform(crs = crs) %>% 
+ne_land <- read_sf("data/gis-data.gpkg", "ne_land") |> 
+  st_transform(crs = crs) |> 
   st_geometry()
-ne_country_lines <- read_sf("data/gis-data.gpkg", "ne_country_lines") %>% 
-  st_transform(crs = crs) %>% 
+ne_country_lines <- read_sf("data/gis-data.gpkg", "ne_country_lines") |> 
+  st_transform(crs = crs) |> 
   st_geometry()
-ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") %>% 
-  st_transform(crs = crs) %>% 
+ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") |> 
+  st_transform(crs = crs) |> 
   st_geometry()
 ```
 
@@ -106,9 +106,9 @@ checklists_ss <- grid_sample_stratified(checklists_env,
 ```{r}
 #| label: encounter-sss-pct
 #| include: false
-pct_before <- mean(checklists_env$species_observed) %>% 
+pct_before <- mean(checklists_env$species_observed) |> 
   scales::percent(accuracy = 0.1)
-pct_after <- mean(checklists_ss$species_observed) %>% 
+pct_after <- mean(checklists_ss$species_observed) |> 
   scales::percent(accuracy = 0.1)
 ```
 
@@ -127,12 +127,12 @@ The subsampling *decreased* the overall number of checklists by a factor of abou
 #| label: encounter-sss-sol
 # original data
 nrow(checklists_env)
-count(checklists_env, species_observed) %>% 
+count(checklists_env, species_observed) |> 
   mutate(percent = n / sum(n))
 
 # after sampling
 nrow(checklists_ss)
-count(checklists_ss, species_observed) %>% 
+count(checklists_ss, species_observed) |> 
   mutate(percent = n / sum(n))
 ```
 :::
@@ -142,15 +142,15 @@ This increase in the prevalence of detections will help the random forests model
 ```{r}
 #| label: encounter-sss-map
 # convert checklists to spatial features
-all_pts <- checklists_env %>%  
-  filter(type == "train") %>% 
-  st_as_sf(coords = c("longitude","latitude"), crs = 4326) %>%
-  st_transform(crs = crs) %>% 
+all_pts <- checklists_env |>  
+  filter(type == "train") |> 
+  st_as_sf(coords = c("longitude","latitude"), crs = 4326) |>
+  st_transform(crs = crs) |> 
   select(species_observed)
-ss_pts <- checklists_ss %>%  
-  filter(type == "train") %>% 
-  st_as_sf(coords = c("longitude","latitude"), crs = 4326) %>%
-  st_transform(crs = crs) %>% 
+ss_pts <- checklists_ss |>  
+  filter(type == "train") |> 
+  st_as_sf(coords = c("longitude","latitude"), crs = 4326) |>
+  st_transform(crs = crs) |> 
   select(species_observed)
 both_pts <- list(before_ss = all_pts, after_ss = ss_pts)
 
@@ -171,7 +171,7 @@ for (i in seq_along(both_pts)) {
        pch = 19, cex = 0.1, col = alpha("#555555", 0.25),
        add = TRUE)
   # observed
-  plot(filter(both_pts[[i]], species_observed) %>% st_geometry(),
+  plot(filter(both_pts[[i]], species_observed) |> st_geometry(),
        pch = 19, cex = 0.3, col = alpha("#4daf4a", 0.5),
        add = TRUE)
   # legend
@@ -198,8 +198,8 @@ Now we'll use a random forests model to relate detection/non-detection of Wood T
 
 ```{r}
 #| label: encounter-rf-split
-checklists_train <- checklists_ss %>% 
-  filter(type == "train") %>% 
+checklists_train <- checklists_ss |> 
+  filter(type == "train") |> 
   # select only the columns to be used in the model
   select(species_observed,
          year, day_of_year, hours_of_day,
@@ -258,21 +258,21 @@ To use the calibration model as a diagnostic tool, we'll group the predicted enc
 # group the predicted encounter rate into bins of width 0.02
 # then calculate the mean observed encounter rates in each bin
 er_breaks <- seq(0, 1, by = 0.02)
-mean_er <- obs_pred %>%
-  mutate(er_bin = cut(pred, breaks = er_breaks, include.lowest = TRUE)) %>%
-  group_by(er_bin) %>%
+mean_er <- obs_pred |>
+  mutate(er_bin = cut(pred, breaks = er_breaks, include.lowest = TRUE)) |>
+  group_by(er_bin) |>
   summarise(n_checklists = n(),
             pred = mean(pred), 
             obs = mean(obs),
             .groups = "drop")
 
 # make predictions from the calibration model
-cal_pred <- data.frame(pred = er_breaks)
-cal_pred <- predict(calibration_model, cal_pred, type = "response") %>% 
-  bind_cols(cal_pred, calibrated = .)
+calibration_curve <- data.frame(pred = er_breaks)
+cal_pred <- predict(calibration_model, calibration_curve, type = "response")
+calibration_curve$calibrated <- cal_pred
 
 # compared binned mean encounter rates to calibration model
-ggplot(cal_pred) +
+ggplot(calibration_curve) +
   aes(x = pred, y = calibrated) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
   geom_line(color = "blue") +
@@ -327,7 +327,7 @@ To ensure bias in the test data set doesn't impact the predictive performance me
 ```{r}
 #| label: encounter-rf-assess
 # get the test set held out from training
-checklists_test <- filter(checklists_ss, type == "test") %>% 
+checklists_test <- filter(checklists_ss, type == "test") |> 
   mutate(species_observed = as.integer(species_observed))
 
 # predict to test data using random forest model
@@ -339,7 +339,7 @@ pred_binary <- as.integer(pred_er > threshold)
 # calibrate
 pred_calibrated <- predict(calibration_model, 
                            newdata = data.frame(pred = pred_er), 
-                           type = "response") %>% 
+                           type = "response") |> 
   as.numeric()
 # constrain probabilities to 0-1
 pred_calibrated[pred_calibrated < 0] <- 0
@@ -359,13 +359,13 @@ mse <- mean((obs_pred_test$obs - obs_pred_test$pred_calibrated)^2, na.rm = TRUE)
 # precision-recall auc
 em <- precrec::evalmod(scores = obs_pred_test$pred_binary, 
                        labels = obs_pred_test$obs)
-pr_auc <- precrec::auc(em) %>% 
-  filter(curvetypes == "PRC") %>% 
+pr_auc <- precrec::auc(em) |> 
+  filter(curvetypes == "PRC") |> 
   pull(aucs)
 
 # calculate metrics for binary prediction: sensitivity, specificity
-pa_metrics <- obs_pred_test %>% 
-  select(id, obs, pred_binary) %>% 
+pa_metrics <- obs_pred_test |> 
+  select(id, obs, pred_binary) |> 
   PresenceAbsence::presence.absence.accuracy(na.rm = TRUE, st.dev = FALSE)
 
 # mcc and f1
@@ -397,7 +397,7 @@ During the process of training a random forests model, some variables are remove
 #| label:  encounter-habitat-pi
 # extract predictor importance from the random forest model object
 pi <- er_model$variable.importance
-pi <- data.frame(predictor = names(pi), importance = pi) %>% 
+pi <- data.frame(predictor = names(pi), importance = pi) |> 
   arrange(desc(importance))
 # plot importance of top 20 predictors
 ggplot(head(pi, 20)) + 
@@ -486,8 +486,8 @@ for (predictor in head(pi$predictor)) {
   pd <- calculate_pd(predictor, 
                      er_model = er_model, 
                      calibration_model = calibration_model,
-                     data = checklists_train) %>% 
-    bind_rows(pd, .)
+                     data = checklists_train) |> 
+    bind_rows(pd)
 }
 head(pd)
 
@@ -496,7 +496,7 @@ ggplot(pd) +
   aes(x = x, y = encounter_rate) +
   geom_line() +
   geom_point() +
-  facet_wrap(~ factor(predictor, levels = unique(predictor)), 
+  facet_wrap(~ factor(predictor, levels = rev(unique(predictor))), 
              ncol = 2, scales = "free") +
   labs(x = NULL, y = "Encounter Rate") +
   theme_minimal() +
@@ -565,7 +565,7 @@ To find the time of day with the highest detection probability, we can look for 
 pd_time <- calculate_pd("hours_of_day",
                         er_model = er_model, 
                         calibration_model = calibration_model,
-                        data = checklists_train) %>% 
+                        data = checklists_train) |> 
   select(hours_of_day = x, encounter_rate)
 
 # histogram
@@ -620,7 +620,7 @@ Based on this analysis, the best time for detecting Wood Thrush is at `r human_t
 ```{r}
 #| label:  encounter-predict-effort
 # add effort covariates to prediction grid
-pred_grid_eff <- pred_grid %>% 
+pred_grid_eff <- pred_grid |> 
   mutate(observation_date = ymd("2023-06-15"),
          year = year(observation_date),
          day_of_year = yday(observation_date),
@@ -645,7 +645,7 @@ pred_binary <- as.integer(pred_er > threshold)
 # apply calibration
 pred_er_cal <- predict(calibration_model, 
                        data.frame(pred = pred_er), 
-                       type = "response") %>% 
+                       type = "response") |> 
   as.numeric()
 # constrain to 0-1
 pred_er_cal[pred_er_cal < 0] <- 0
@@ -662,14 +662,12 @@ Next, we'll convert this data frame to spatial features using `sf`, then rasteri
 
 ```{r}
 #| label: encounter-predict-estimates-rasterize
-r_pred <- predictions %>% 
+r_pred <- predictions |> 
   # convert to spatial features
-  st_as_sf(coords = c("x", "y"), crs = crs) %>% 
-  select(in_range, encounter_rate) %>% 
+  st_as_sf(coords = c("x", "y"), crs = crs) |> 
+  select(in_range, encounter_rate) |> 
   # rasterize
-  rasterize(r, field = c("in_range", "encounter_rate"),
-            fun = "mean") %>% 
-  setNames(c("in_range", "encounter_rate"))
+  rasterize(r, field = c("in_range", "encounter_rate"))
 print(r_pred)
 ```
 
@@ -713,8 +711,8 @@ plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 
 # define quantile breaks
 brks <- global(r_pred[["encounter_rate"]], fun = quantile, 
-               probs = seq(0, 1, 0.1), na.rm = TRUE) %>% 
-  as.numeric() %>% 
+               probs = seq(0, 1, 0.1), na.rm = TRUE) |> 
+  as.numeric() |> 
   unique()
 # label the bottom, middle, and top value
 lbls <- round(c(0, median(brks), max(brks)), 2)
@@ -735,61 +733,6 @@ box()
 # legend
 par(new = TRUE, mar = c(0, 0, 0, 0))
 title <- "Wood Thrush Encounter Rate (June 2023)"
-image.plot(zlim = c(0, 1), legend.only = TRUE, 
-           col = pal, breaks = seq(0, 1, length.out = length(brks)),
-           smallplot = c(0.25, 0.75, 0.03, 0.06),
-           horizontal = TRUE,
-           axis.args = list(at = c(0, 0.5, 1), labels = lbls,
-                            fg = "black", col.axis = "black",
-                            cex.axis = 0.75, lwd.ticks = 0.5,
-                            padj = -1.5),
-           legend.args = list(text = title,
-                              side = 3, col = "black",
-                              cex = 1, line = 0))
-```
-
-Finally, if we multiply the encounter rate and range boundary layers together it will effectively set the encounter rate to zero for areas outside of the predicted range.
-
-```{r}
-#| label: encounter-predict-map-mask
-er_range <- r_pred[["encounter_rate"]] * r_pred[["in_range"]]
-```
-
-We can make one final map of this witin-range encounter rate prediction.
-
-```{r}
-#| label: encounter-predict-map-ermasked
-#| fig.asp: 1.15
-par(mar = c(4, 0.25, 0.25, 0.25))
-# set up plot area
-plot(study_region, col = NA, border = NA)
-plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
-
-# define quantile breaks, excluding zeros
-brks <- ifel(er_range > 0, er_range, NA) %>% 
-  global(fun = quantile, 
-         probs = seq(0, 1, 0.1), na.rm = TRUE) %>% 
-  as.numeric() %>% 
-  unique()
-# label the bottom, middle, and top value
-lbls <- round(c(min(brks), median(brks), max(brks)), 2)
-# ebird status and trends color palette
-pal <- ebirdst_palettes(length(brks) - 1)
-plot(er_range, 
-     col = c("#e6e6e6", pal), breaks = c(0, brks), 
-     maxpixels = ncell(r_pred),
-     legend = FALSE, axes = FALSE, bty = "n",
-     add = TRUE)
-
-# borders
-plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
-plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
-plot(study_region, border = "#000000", col = NA, lwd = 1, add = TRUE)
-box()
-
-# legend
-par(new = TRUE, mar = c(0, 0, 0, 0))
-title <- "Wood Thrush Encounter Rate within Range (June 2023)"
 image.plot(zlim = c(0, 1), legend.only = TRUE, 
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
            smallplot = c(0.25, 0.75, 0.03, 0.06),

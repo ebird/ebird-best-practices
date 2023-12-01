@@ -11,3 +11,6 @@
 *cache/
 data-figures-prep/
 data-raw/ebd_*
+workshop/data-raw/ebd_*
+workshop/ebird-downloads/
+workshop/*.zip

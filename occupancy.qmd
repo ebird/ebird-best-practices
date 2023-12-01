@@ -28,7 +28,7 @@ library(terra)
 library(unmarked)
 library(tidyverse)
 
-# set random number seed to insure fully repeatable results
+# set random number seed for reproducibility
 set.seed(1)
 
 # environmental variables: landcover and elevation
@@ -42,9 +42,7 @@ checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") %>%
 
 # prediction grid
 pred_grid <- read_csv("data/environmental-variables_prediction-grid_us-ga.csv")
-r <- rast("data/prediction-grid_us-ga.tif") %>% 
-  # this second rast() call removes all the values from the raster template
-  rast()
+r <- rast("data/prediction-grid_us-ga.tif")
 crs <- st_crs(r)
 
 # load gis data for making maps

@@ -18,14 +18,12 @@ glimpse(habitat)
 # load the prediction surface environmental variables
 pred_grid <- read_csv("data/environmental-variables_prediction-grid_us-ga.csv")
 # load the raster template for the grid
-r <- rast("data/prediction-grid_us-ga.tif") %>%
-  # this second rast() call removes all the values from the raster template
-  rast()
+r <- rast("data/prediction-grid_us-ga.tif")
 
 # insert deciduous broadleaf forest % landcover into the raster
-forest_cover <- pred_grid %>%
+forest_cover <- pred_grid |>
   # convert to spatial features
-  st_as_sf(coords = c("x", "y"), crs = crs(r)) %>%
+  st_as_sf(coords = c("x", "y"), crs = crs(r)) |>
   # rasterize points
   rasterize(r, field = "pland_c04_deciduous_broadleaf")
 
