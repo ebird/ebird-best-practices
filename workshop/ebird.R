@@ -55,6 +55,20 @@ obs_ex <- system.file("extdata/ebd-rollup-ex.txt", package = "auk") |>
 
 # filter the observation data
 
+# subset to region boundary polygon to remove offshore checklists
+# convert checklist locations to points geometries
+
+# boundary of study region, buffered by 1 km
+study_region_buffered <- read_sf("data/gis-data.gpkg", layer = "ne_states") |>
+  filter(state_code == "US-GA") |>
+  st_transform(crs = st_crs(checklists_sf)) |>
+  st_buffer(dist = 1000)
+# spatially subset the checklists to those in the study region
+
+# join to checklists and observations to remove checklists outside region
+
+
+
 # remove observations without matching checklists
 
 

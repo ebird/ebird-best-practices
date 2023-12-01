@@ -451,7 +451,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">log</span>(detections_test<span class="sc">$</span>obs_count <span class="sc">+</span> <span class="dv">1</span>),</span>
 <span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                             <span class="at">method =</span> <span class="st">"pearson"</span>)</span>
 <span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># combine metrics together</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># combine ppms together</span></span>
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>ppms <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">count_spearman =</span> count_spearman,</span>
 <span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_count_pearson =</span> log_count_pearson,</span>

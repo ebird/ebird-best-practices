@@ -74,6 +74,22 @@ observations <- observations |>
          between(year(observation_date), 2014, 2023),
          month(observation_date) == 6)
 
+# subset to region boundary polygon to remove offshore checklists
+# convert checklist locations to points geometries
+checklists_sf <- checklists |>
+  select(checklist_id, latitude, longitude) |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+# boundary of study region, buffered by 1 km
+study_region_buffered <- read_sf("data/gis-data.gpkg", layer = "ne_states") |>
+  filter(state_code == "US-GA") |>
+  st_transform(crs = st_crs(checklists_sf)) |>
+  st_buffer(dist = 1000)
+# spatially subset the checklists to those in the study region
+in_region <- checklists_sf[study_region_buffered, ]
+# join to checklists and observations to remove checklists outside region
+checklists <- semi_join(checklists, in_region, by = "checklist_id")
+observations <- semi_join(observations, in_region, by = "checklist_id")
+
 # remove observations without matching checklists
 observations <- semi_join(observations, checklists, by = "checklist_id")
 

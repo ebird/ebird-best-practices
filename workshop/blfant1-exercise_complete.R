@@ -17,8 +17,8 @@ library(tidyr)
 set.seed(1)
 
 # EXERCISE: Use the skills you learned in this workshop to train a relative
-# abundance hurdle model for Black-faced Antthrush in Panama from May-July using
-# eBird data from 2014-2023.
+# abundance hurdle model for Black-faced Antthrush in Panama using eBird data
+# from May-July of 2014-2023.
 
 
 # Import eBird data ----
@@ -44,6 +44,22 @@ observations <- observations |>
   filter(all_species_reported,
          between(year(observation_date), 2014, 2023),
          between(month(observation_date), 5, 7))
+
+# subset to region boundary polygon to remove offshore checklists
+# convert checklist locations to points geometries
+checklists_sf <- checklists |>
+  select(checklist_id, latitude, longitude) |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+# boundary of study region, buffered by 1 km
+study_region_buffered <- read_sf("data/gis-data.gpkg", layer = "ne_countries") |>
+  filter(country_code == "PA") |>
+  st_transform(crs = st_crs(checklists_sf)) |>
+  st_buffer(dist = 1000)
+# spatially subset the checklists to those in the study region
+in_region <- checklists_sf[study_region_buffered, ]
+# join to checklists and observations to remove checklists outside region
+checklists <- semi_join(checklists, in_region, by = "checklist_id")
+observations <- semi_join(observations, in_region, by = "checklist_id")
 
 # remove observations without matching checklists
 observations <- semi_join(observations, checklists, by = "checklist_id")
@@ -115,14 +131,13 @@ checklists <- zf_filtered |>
 # save processed ebird data
 write_csv(checklists, "data/checklists-zf_blfant1_may-jul_pa.csv", na = "")
 
+
 # Observation map ----
 
 # load gis data
 ne_land <- read_sf("data/gis-data.gpkg", "ne_land") |>
   st_geometry()
 ne_country_lines <- read_sf("data/gis-data.gpkg", "ne_country_lines") |>
-  st_geometry()
-ne_state_lines <- read_sf("data/gis-data.gpkg", "ne_state_lines") |>
   st_geometry()
 study_region <- read_sf("data/gis-data.gpkg", "ne_countries") |>
   filter(country_code == "PA") |>
@@ -141,7 +156,6 @@ plot(st_geometry(checklists_sf), col = NA, border = NA)
 # contextual gis data
 plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 plot(study_region, col = "#e6e6e6", border = NA, add = TRUE)
-plot(ne_state_lines, col = "#ffffff", lwd = 0.75, add = TRUE)
 plot(ne_country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
 # ebird observations
 # not observed
@@ -318,7 +332,6 @@ r_pred <- predictions |>
 study_region_proj<- st_transform(study_region, crs = crs)
 ne_land_proj <- st_transform(ne_land, crs = crs)
 ne_country_lines_proj <- st_transform(ne_country_lines, crs = crs)
-ne_state_lines_proj <- st_transform(ne_state_lines, crs = crs)
 
 # range boundary
 par(mar = c(0.25, 0.25, 0.25, 0.25))
@@ -334,7 +347,6 @@ plot(r_range, col = c("#e6e6e6", "forestgreen"),
      add = TRUE)
 
 # borders
-plot(ne_state_lines_proj, col = "#ffffff", lwd = 0.75, add = TRUE)
 plot(ne_country_lines_proj, col = "#ffffff", lwd = 1.5, add = TRUE)
 plot(study_region_proj, border = "#000000", col = NA, lwd = 1, add = TRUE)
 box()
@@ -362,7 +374,6 @@ plot(r_pred[["encounter_rate"]],
      add = TRUE)
 
 # borders
-plot(ne_state_lines_proj, col = "#ffffff", lwd = 0.75, add = TRUE)
 plot(ne_country_lines_proj, col = "#ffffff", lwd = 1.5, add = TRUE)
 plot(study_region_proj, border = "#000000", col = NA, lwd = 1, add = TRUE)
 box()
@@ -452,7 +463,6 @@ plot(r_pred[["abundance"]],
      add = TRUE)
 
 # borders
-plot(ne_state_lines_proj, col = "#ffffff", lwd = 0.75, add = TRUE)
 plot(ne_country_lines_proj, col = "#ffffff", lwd = 1.5, add = TRUE)
 plot(study_region_proj, border = "#000000", col = NA, lwd = 1, add = TRUE)
 box()
@@ -535,7 +545,7 @@ pa_metrics <- obs_pred_test |>
   select(id, obs_detected, pred_binary) |>
   PresenceAbsence::presence.absence.accuracy(na.rm = TRUE, st.dev = FALSE)
 
-# combine metrics together
+# combine ppms together
 er_ppms <- data.frame(
   mse = mse,
   sensitivity = pa_metrics$sensitivity,
@@ -565,7 +575,7 @@ log_abundance_pearson <- cor(log(obs_pred_test$pred_abundance + 1),
                              log(obs_pred_test$obs_count + 1),
                              method = "pearson")
 
-# combine metrics together
+# combine ppms together
 count_abd_ppms <- data.frame(
   count_spearman = count_spearman,
   log_count_pearson = log_count_pearson,

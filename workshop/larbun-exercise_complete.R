@@ -535,7 +535,7 @@ pa_metrics <- obs_pred_test |>
   select(id, obs_detected, pred_binary) |>
   PresenceAbsence::presence.absence.accuracy(na.rm = TRUE, st.dev = FALSE)
 
-# combine metrics together
+# combine ppms together
 er_ppms <- data.frame(
   mse = mse,
   sensitivity = pa_metrics$sensitivity,
@@ -565,7 +565,7 @@ log_abundance_pearson <- cor(log(obs_pred_test$pred_abundance + 1),
                              log(obs_pred_test$obs_count + 1),
                              method = "pearson")
 
-# combine metrics together
+# combine ppms together
 count_abd_ppms <- data.frame(
   count_spearman = count_spearman,
   log_count_pearson = log_count_pearson,

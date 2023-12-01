@@ -235,7 +235,7 @@ log_abundance_pearson <- cor(log(detections_test$pred_abundance + 1),
                              log(detections_test$obs_count + 1),
                              method = "pearson")
 
-# combine metrics together
+# combine ppms together
 ppms <- data.frame(
   count_spearman = count_spearman,
   log_count_pearson = log_count_pearson,

@@ -371,7 +371,7 @@ pa_metrics <- obs_pred_test |>
 # mcc and f1
 mcc_f1 <- calculate_mcc_f1(obs_pred_test$obs, obs_pred_test$pred_binary)
 
-# combine metrics together
+# combine ppms together
 ppms <- data.frame(
   mse = mse,
   sensitivity = pa_metrics$sensitivity,

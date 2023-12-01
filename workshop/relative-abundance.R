@@ -337,7 +337,7 @@ obs_pred_test <- data.frame(
 # calculate metrics for binary prediction: sensitivity, specificity
 
 
-# combine metrics together
+# combine ppms together
 er_ppms <- data.frame(
   mse = mse,
   sensitivity = pa_metrics$sensitivity,
@@ -356,7 +356,7 @@ er_ppms <- data.frame(
 # abundance metrics, based on all checklists
 
 
-# combine metrics together
+# combine ppms together
 count_abd_ppms <- data.frame(
   count_spearman = count_spearman,
   log_count_pearson = log_count_pearson,

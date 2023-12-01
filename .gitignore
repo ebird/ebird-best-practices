@@ -14,3 +14,4 @@ data-raw/ebd_*
 workshop/data-raw/ebd_*
 workshop/ebird-downloads/
 workshop/*.zip
+workshop/data/environmental-variables_checklists_jan-dec_pa.csv
