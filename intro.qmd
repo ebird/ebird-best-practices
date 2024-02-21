@@ -178,7 +178,7 @@ write_sf(ne_state_lines, gpkg_file, "ne_state_lines")
 
 ## Session info {#sec-intro-info}
 
-This guide was compiled using the latest version of R and all R packages at the time of compilation. If you encounter errors while running code in this guide it is likely that they are being caused by differences in package versions between your R session and the one used to compile this book. To help diagnose this issue, we print the output of `devtools::session_info()` below.
+This guide was compiled using the latest version of R and all R packages at the time of compilation. If you encounter errors while running code in this guide it is likely that they are being caused by differences in package versions between your R session and the one used to compile this book. To help diagnose this issue, we use `devtools::session_info()` to list the versions of all R packages used to compile this guide.
 
 ```{r}
 #| label: intro-info-load
