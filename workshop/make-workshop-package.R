@@ -19,6 +19,8 @@ file_copy(path("workshop", scripts), proj_dir)
 dir_create(path(proj_dir, "data-raw"))
 dir_create(path(proj_dir, "data"))
 dir_create(path(proj_dir, "ebird-downloads"))
+dir_create(path(proj_dir, "ebirdst-data"))
+
 # main content raw data
 files <- c("elevation_gmted_1km_us-ga.tif",
            "landcover_mcd12q1_umd_us-ga_2014-2022.tif",
@@ -40,6 +42,12 @@ file_copy(path("workshop", "data", files),
 file_copy(path("workshop", "ebird-downloads",
                "ebd_PA_blfant1_smp_relOct-2023.zip"),
           path(proj_dir, "ebird-downloads"))
+
+# ebirdst data
+for (species in c("brespa", "sagspa1", "sagthr")) {
+  path <- get_species_path(species)
+  dir_copy(path, path(proj_dir, "ebirdst-data"))
+}
 
 # zip files
 oldwd <- setwd(dirname(proj_dir))

@@ -435,8 +435,8 @@ detections_test <- filter(obs_pred_test, obs_detected > 0)
 count_spearman <- cor(detections_test$pred_count,
                       detections_test$obs_count,
                       method = "spearman")
-log_count_pearson <- cor(log(detections_test$pred_count + 1),
-                         log(detections_test$obs_count + 1),
+log_count_pearson <- cor(log(detections_test$pred_count),
+                         log(detections_test$obs_count),
                          method = "pearson")
 
 # abundance metrics, based on all checklists

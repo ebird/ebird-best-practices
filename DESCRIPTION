@@ -25,20 +25,18 @@ URL: https://github.com/ebird/ebird-best-practices
 Depends: 
     R (>= 4.0.0)
 Imports:
-    AICcmodavg,
     arrow,
     auk (>= 0.6.0),
     dplyr (>= 1.0.0),
-    ebirdst (>= 2.2021.2),
+    ebirdst (>= 3.2022.2),
     exactextractr,
     fields,
-    ggplot2,
+    ggplot2 (>= 3.4.0),
     gridExtra,
     knitr,
     landscapemetrics,
     lubridate,
     mccf1,
-    MuMIn,
     precrec,
     PresenceAbsence,
     purrr,
@@ -54,9 +52,7 @@ Imports:
     terra (>= 1.6-3),
     tibble,
     tidyr (>= 1.2.1),
-    tidyverse,
     units,
-    unmarked,
     viridis
 Encoding: UTF-8
 RoxygenNote: 7.2.3
