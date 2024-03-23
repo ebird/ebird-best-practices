@@ -396,11 +396,12 @@ During the process of training a random forests model, some variables are remove
 ```{r}
 #| label:  encounter-habitat-pi
 # extract predictor importance from the random forest model object
-pi <- er_model$variable.importance
-pi <- data.frame(predictor = names(pi), importance = pi) |> 
+pred_imp <- er_model$variable.importance
+pred_imp <- data.frame(predictor = names(pred_imp), 
+                       importance = pred_imp) |> 
   arrange(desc(importance))
 # plot importance of top 20 predictors
-ggplot(head(pi, 20)) + 
+ggplot(head(pred_imp, 20)) + 
   aes(x = reorder(predictor, importance), y = importance) +
   geom_col() +
   geom_hline(yintercept = 0, linewidth = 2, colour = "#555555") +
@@ -482,7 +483,7 @@ Now we'll use this function to calculate partial dependence for the top 6 predic
 #| out-height: 600px
 # calculate partial dependence for each of the top 6 predictors
 pd <- NULL
-for (predictor in head(pi$predictor)) {
+for (predictor in head(pred_imp$predictor)) {
   pd <- calculate_pd(predictor, 
                      er_model = er_model, 
                      calibration_model = calibration_model,
