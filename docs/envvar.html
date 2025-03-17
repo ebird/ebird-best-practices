@@ -430,7 +430,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 </div>
 </div>
 <p>We’ll start by finding the full set of unique checklists locations for each year in the eBird data and buffer the points by 1.5km to generate 3 km diameter circular neighborhoods centered on each checklist location. Note that the MODIS landcover data are not available for 2023, so we use the 2022 layer for 2023 checklists.</p>
-<div class="cell" data-layout-align="center" data-cahce-path="cache">
+<div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ebird checklist locations</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>checklists <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/checklists-zf_woothr_jun_us-ga.csv"</span>) <span class="sc">|&gt;</span> </span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># landcover data not availble for the full period, so we use the closest year</span></span>

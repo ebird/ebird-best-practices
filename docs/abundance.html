@@ -364,7 +364,7 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                          <span class="at">gamma =</span> <span class="dv">2</span>,</span>
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                          <span class="at">data =</span> obs_pred)</span>
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  mccf1_metric best_threshold</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         0.397          0.585</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         0.403          0.512</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="sec-abundance-hurdle-count" class="level3" data-number="5.2.2">
@@ -480,19 +480,19 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">count_spearman</td>
-<td style="text-align: right;">0.225</td>
+<td style="text-align: right;">0.283</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">log_count_pearson</td>
-<td style="text-align: right;">0.290</td>
+<td style="text-align: right;">0.405</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">abundance_spearman</td>
-<td style="text-align: right;">0.309</td>
+<td style="text-align: right;">0.326</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">log_abundance_pearson</td>
-<td style="text-align: right;">0.405</td>
+<td style="text-align: right;">0.458</td>
 </tr>
 </tbody>
 </table>
@@ -562,13 +562,13 @@ gtag('config', 'G-0QV88WCBNB', { 'anonymize_ip': true});
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(r_pred)</span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; class       : SpatRaster </span></span>
 <span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; dimensions  : 171, 148, 4  (nrow, ncol, nlyr)</span></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; resolution  : 3000, 3000  (x, y)</span></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; extent      : -175612, 268388, -312494, 200506  (xmin, xmax, ymin, ymax)</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; resolution  : 2991, 3005  (x, y)</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; extent      : -175612, 267066, -312494, 201374  (xmin, xmax, ymin, ymax)</span></span>
 <span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; coord. ref. : +proj=laea +lat_0=33.2 +lon_0=-83.7 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs </span></span>
 <span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; source(s)   : memory</span></span>
 <span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; names       : in_range, encounter_rate, count, abundance </span></span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; min values  :        0,           0.00, 0.133,      0.00 </span></span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; max values  :        1,           0.72, 1.944,      1.22</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; min values  :        0,          0.000, 0.079,      0.00 </span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; max values  :        1,          0.641, 1.913,      1.13</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Finally we’ll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 km, 1 hour traveling count starting at about 6:37AM on June 15, 2023. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it’s difficult to say how much higher.</p>
 <p>Prior to mapping the relative abundance, we’ll multiple by the <code>in_range</code> layer, which will produce a map showing zero relative abundance where the model predicts that Wood Thrush does not occur.</p>

@@ -189,6 +189,7 @@ Although few goodness-of-fit tests exist for occupancy models, we demonstrate ho
 ```{r}
 #| label: occupancy-model-assess
 #| cache: true
+#| cache-path: "cache/"
 occ_gof <- mb.gof.test(occ_model, nsim = 100, plot.hist = FALSE)
 # hide the chisq table to give simpler output
 occ_gof$chisq.table <- NULL
@@ -204,6 +205,7 @@ So far, we have a single global model that includes all of the covariates we bel
 ```{r}
 #| label: occupancy-model-select-dredge
 #| cache: true
+#| cache-path: "cache/"
 # dredge all possible combinations of the occupancy covariates
 occ_dredge <- dredge(occ_model)
 
@@ -268,6 +270,7 @@ In this section, we'll estimate the distribution of Wood Thrush in Georgia. Simi
 ```{r}
 #| label: occupancy-predict-predict
 #| cache: true
+#| cache-path: "cache/"
 # note: the code below can take up to an hour to run!
 occ_pred <- predict(occ_avg, 
                     newdata = as.data.frame(pred_grid), 

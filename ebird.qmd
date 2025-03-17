@@ -242,7 +242,7 @@ observations <- observations |>
          month(observation_date) == 6)
 ```
 
-The data we requested for Georgia using the Custom Download form will include checklists falling in the ocean off the coast of Georgia. Although these oceanic checklists are typically rare, it's usually best to remove them when modeling a terrestrial species like Wood Thrush. We'll using a boundary polygon for Georgia in the `data/gis-data.gpkg` file, buffered by 1 km, to filter our checklist data. A similar approach can be used if you're interested in a custom region, for example, a national park for which you may have a shapefile defining the boundary.
+The data we requested for Georgia using the Custom Download form will include checklists falling in the ocean off the coast of Georgia. Although these oceanic checklists are typically rare, it's usually best to remove them when modeling a terrestrial species like Wood Thrush. We'll use the boundary polygon for Georgia from the `data/gis-data.gpkg` file, buffered by 1 km, to filter our checklist data. A similar approach can be used if you're interested in a custom region, for example, a national park for which you may have a shapefile defining the boundary.
 
 ```{r}
 #| label: ebird-filter-region
@@ -253,9 +253,12 @@ checklists_sf <- checklists |>
 
 # boundary of study region, buffered by 1 km
 study_region_buffered <- read_sf("data/gis-data.gpkg", layer = "ne_states") |>
+  # sf does not properly buffer complex polygons in lat/lng coordinates
+  # so we temporarily project the data to a planar coordinate system
+  st_transform(crs = 8857) |>
   filter(state_code == "US-GA") |>
-  st_transform(crs = st_crs(checklists_sf)) |>
-  st_buffer(dist = 1000)
+  st_buffer(dist = 1000) |> 
+  st_transform(crs = st_crs(checklists_sf))
 
 # spatially subset the checklists to those in the study region
 in_region <- checklists_sf[study_region_buffered, ]

@@ -101,7 +101,7 @@ We'll start by finding the full set of unique checklists locations for each year
 ```{r}
 #| label: envvar-landcover-buffer
 #| cache: true
-#| cahce-path: "cache"
+#| cache-path: "cache/"
 # ebird checklist locations
 checklists <- read_csv("data/checklists-zf_woothr_jun_us-ga.csv") |> 
   # landcover data not availble for the full period, so we use the closest year
@@ -121,6 +121,7 @@ Next, for each location, we crop and mask the landcover layer corresponding to t
 ```{r}
 #| label: envvar-landcover-lsm
 #| cache: true
+#| cache-path: "cache/"
 lsm <- NULL
 for (i in seq_len(nrow(buffers))) {
   buffer_i <- st_transform(buffers[i, ], crs = crs(landcover))
@@ -249,6 +250,7 @@ Next, we extract the coordinates of the cell centers from the raster we just cre
 ```{r}
 #| label: envvar-pred-buffer
 #| cache: true
+#| cache-path: "cache/"
 # generate neighborhoods for the prediction grid cell centers
 buffers_pg <- as.data.frame(r, cells = TRUE, xy = TRUE) |> 
   select(cell_id = cell, x, y) |> 
@@ -262,6 +264,7 @@ Now we can calculate the landcover and elevation variables exactly as we did for
 ```{r}
 #| label: envvar-pred-lsm
 #| cache: true
+#| cache-path: "cache/"
 # estimate landscape metrics for each cell in the prediction grid
 lsm_pg <- NULL
 for (i in seq_len(nrow(buffers_pg))) {
