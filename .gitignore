@@ -11,7 +11,9 @@
 *cache/
 data-figures-prep/
 data-raw/ebd_*
-workshop/data-raw/ebd_*
-workshop/ebird-downloads/
-workshop/*.zip
-workshop/data/environmental-variables_checklists_jan-dec_pa.csv
+workshops/*/data-raw/ebd_*
+workshops/*/ebird-downloads/
+workshops/*/ebirdst-data/
+workshops/*/*.zip
+workshops/*/data/environmental-variables_checklists_jan-dec_pa.csv
+workshops/*/feature-assignment.r
