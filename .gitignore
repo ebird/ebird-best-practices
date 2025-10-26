@@ -11,9 +11,11 @@
 *cache/
 data-figures-prep/
 data-raw/ebd_*
-workshops/*/data-raw/ebd_*
+workshops/*/data/
+workshops/*/data-raw/
 workshops/*/ebird-downloads/
 workshops/*/ebirdst-data/
 workshops/*/*.zip
 workshops/*/data/environmental-variables_checklists_jan-dec_pa.csv
 workshops/*/feature-assignment.r
+workshops/taiwan-2025/data/

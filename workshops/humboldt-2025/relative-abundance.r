@@ -1,0 +1,469 @@
+library(auk)
+library(arrow)
+library(dplyr)
+library(ebirdst)
+library(fields)
+library(ggplot2)
+library(glue)
+library(gridExtra)
+library(lubridate)
+library(ranger)
+library(readr)
+library(scam)
+library(sf)
+library(terra)
+library(tidyr)
+
+# set random number seed for reproducibility
+set.seed(1)
+
+
+# Load data ----
+
+species <- "pnbfin1"
+species_name <- ebird_species(species, type = "scientific")
+
+# environmental variables
+env_vars <- read_parquet("data/environmental-variables_checklists_co.parquet")
+# zero-filled ebird data
+checklists <- read_csv(glue("data/checklists-zf_{species}_co.csv"))
+# combine ebird data and environmental variables
+
+
+# prediction grid
+pred_grid <- read_parquet("data/prediction-grid_co.parquet")
+
+# convert mountain variable to factor
+
+# use the same levels in the prediction grid
+
+
+# raster template for the grid
+
+# get the coordinate reference system of the prediction grid
+
+
+# load gis data for making maps
+land <- read_sf("data/gis-data.gpkg", "land") |>
+  st_transform(crs = crs) |>
+  st_geometry()
+country_lines <- read_sf("data/gis-data.gpkg", "country_lines") |>
+  st_transform(crs = crs) |>
+  st_geometry()
+region_boundary <- read_sf("data/gis-data.gpkg", "region") |>
+  st_transform(crs = crs) |>
+  st_geometry()
+
+# subset prediction grid to region
+
+
+
+# Spatiotemporal subsampling ----
+
+# sample one checklist per 3km x 3km x 1 week grid for each year
+# sample detection/non-detection independently
+# stratify by factor variables: mountain and type
+
+
+# EXERCISE: Compare the full set of eBird checklists to the set of checklists
+# remaining after subsampling. What was the change in sampled size and how did
+# the subsampling impact the prevalence of detections compared to
+# non-detections?
+
+
+# Relative abundance model ----
+
+# filter to training data, select only the columns to be used in the model
+checklists_train <- checklists_ss |>
+  filter(type == "train") |>
+  select(species_observed, observation_count,
+         year, day_of_year, hours_of_day,
+         effort_hours, effort_distance_km, effort_speed_kmph,
+         number_observers,
+         elevation_30m_median, elevation_30m_sd,
+         northness_90m_median, northness_90m_sd,
+         eastness_90m_median, eastness_90m_sd,
+         mountain,
+         starts_with("landcover"),
+         starts_with("road"))
+
+# calculate detection frequency and number of detections
+
+
+
+# ├ Range ----
+
+# train a balanced binary classification forest for range boundary
+# remove observation_count prior to training model
+
+
+# ├ Encounter rate ----
+
+# train a balanced probability forest for encounter rate
+
+
+
+# ├ Calibration ----
+
+# predicted encounter rate based on out of bag samples
+
+# observed detection, converted back from factor
+
+# construct a data frame to train the scam model
+
+
+# train calibration model
+
+
+# calibration plot
+# group the predicted encounter rate into bins of width 0.02
+# then calculate the mean observed encounter rates in each bin
+er_breaks <- seq(0, 1, by = 0.02)
+mean_er <- obs_pred |>
+  mutate(er_bin = cut(pred, breaks = er_breaks, include.lowest = TRUE)) |>
+  group_by(er_bin) |>
+  summarise(n_checklists = n(),
+            pred = mean(pred),
+            obs = mean(obs),
+            .groups = "drop")
+# make predictions from the calibration model
+calibration_curve <- data.frame(pred = er_breaks)
+cal_pred <- predict(calibration_model, calibration_curve, type = "response")
+calibration_curve$calibrated <- cal_pred
+# compared binned mean encounter rates to calibration model
+ggplot(calibration_curve) +
+  aes(x = pred, y = calibrated) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  geom_line(color = "blue") +
+  geom_point(data = mean_er,
+             aes(x = pred, y = obs),
+             size = 2, alpha = 0.6,
+             show.legend = FALSE) +
+  labs(x = "Estimated encounter rate",
+       y = "Observed encounter rate",
+       title = "Calibration model") +
+  coord_equal(xlim = c(0, 1), ylim = c(0, 1))
+
+
+# ├ Count ----
+
+# hurdle: subset to detections only for the count model
+
+
+# plugin: add predicted encounter rate as an additional covariate
+
+
+# train a regression forest for count
+
+
+
+# Prediction ----
+
+# add standardized effort covariates to prediction grid
+# 6:30am on 2024-10-15
+# 2 km, 1 hour traveling checklist with 1 observer
+
+
+# estimate range
+
+# estimate encounter rate
+
+# apply calibration
+
+# constrain to 0-1
+
+# estimate count
+
+
+# combine predictions with cell id and coordinates from prediction grid
+
+# abundance within range
+
+
+
+# ├ Rasterize predictions ----
+
+# insert predictions into the raster template
+
+
+
+# ├ Mapping ----
+
+# map encounter rate
+par(mar = c(3, 0.25, 0.25, 0.25))
+# set up plot area
+plot(region_boundary, col = NA, border = NA)
+plot(land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
+
+# define quantile breaks
+brks <- global(r_pred[["encounter_rate"]], fun = quantile,
+               probs = seq(0, 1, 0.1), na.rm = TRUE) |>
+  as.numeric() |>
+  unique()
+# label the bottom, middle, and top value
+lbls <- round(c(min(brks), median(brks), max(brks)), 2)
+# ebird status and trends color palette
+pal <- ebirdst_palettes(length(brks) - 1)
+plot(r_pred[["encounter_rate"]],
+     col = pal, breaks = brks,
+     maxpixels = ncell(r_pred),
+     legend = FALSE, axes = FALSE, bty = "n",
+     add = TRUE)
+
+# borders
+plot(country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
+plot(region_boundary, border = "#000000", col = NA, lwd = 1, add = TRUE)
+box()
+
+# legend
+par(new = TRUE, mar = c(0, 0, 0, 0))
+title <- glue("{species_name} encounter rate (Oct 2024)")
+image.plot(zlim = c(0, 1), legend.only = TRUE,
+           col = pal, breaks = seq(0, 1, length.out = length(brks)),
+           smallplot = c(0.25, 0.75, 0.09, 0.12),
+           horizontal = TRUE,
+           axis.args = list(at = c(0, 0.5, 1), labels = lbls,
+                            fg = "black", col.axis = "black",
+                            cex.axis = 0.75, lwd.ticks = 0.5,
+                            padj = -1.5),
+           legend.args = list(text = title,
+                              side = 3, col = "black",
+                              cex = 1, line = 0.1))
+
+
+# map relative abundance in range
+par(mar = c(3, 0.25, 0.25, 0.25))
+# set up plot area
+plot(region_boundary, col = NA, border = NA)
+plot(land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
+
+# define quantile breaks, excluding zeros
+brks <- ifel(r_pred[["abd_range"]] > 0, r_pred[["abd_range"]], NA) |>
+  global(fun = quantile,
+         probs = seq(0, 1, 0.1), na.rm = TRUE) |>
+  as.numeric() |>
+  unique()
+# label the bottom, middle, and top value
+lbls <- round(c(min(brks), median(brks), max(brks)), 2)
+# ebird status and trends color palette
+pal <- ebirdst_palettes(length(brks) - 1)
+plot(r_pred[["abundance"]],
+     col = c("#e6e6e6", pal), breaks = c(0, brks),
+     maxpixels = ncell(r_pred),
+     legend = FALSE, axes = FALSE, bty = "n",
+     add = TRUE)
+
+# borders
+plot(country_lines, col = "#ffffff", lwd = 1.5, add = TRUE)
+plot(region_boundary, border = "#000000", col = NA, lwd = 1, add = TRUE)
+box()
+
+# legend
+par(new = TRUE, mar = c(0, 0, 0, 0))
+title <- glue("{species_name} relative abundance (Oct 2024)")
+image.plot(zlim = c(0, 1), legend.only = TRUE,
+           col = pal, breaks = seq(0, 1, length.out = length(brks)),
+           smallplot = c(0.25, 0.75, 0.09, 0.12),
+           horizontal = TRUE,
+           axis.args = list(at = c(0, 0.5, 1), labels = lbls,
+                            fg = "black", col.axis = "black",
+                            cex.axis = 0.75, lwd.ticks = 0.5,
+                            padj = -1.5),
+           legend.args = list(text = title,
+                              side = 3, col = "black",
+                              cex = 1, line = 0.1))
+
+
+# Assessment ----
+
+# ├ Predict to test data ----
+
+# get the test set held out from training
+# only consider checklists with counts
+
+# estimate range
+
+# estimate encounter rate
+
+# apply calibration
+
+# constrain to 0-1
+
+# add predicted encounter rate required for count estimates
+
+# estimate count
+
+
+# combine observations and estimates
+obs_pred_test <- data.frame(
+  checklist_id = checklists_test$checklist_id,
+  # actual detection/non-detection
+  obs_detected = checklists_test$species_observed,
+  obs_count = checklists_test$observation_count,
+  # model estimates
+  pred_binary = pred_range,
+  pred_er = pred_er_cal,
+  pred_count = pred_count,
+  pred_abundance = pred_er_cal * pred_count
+)
+
+
+# ├ Encounter rate PPMs ----
+
+# mean squared error (mse)
+
+
+# precision-recall auc
+
+
+# calculate metrics for binary prediction: sensitivity, specificity
+
+
+# combine ppms together
+er_ppms <- data.frame(
+  mse = mse,
+  sensitivity = pa_metrics$sensitivity,
+  specificity = pa_metrics$specificity,
+  pr_auc = pr_auc
+)
+print(er_ppms)
+
+
+# ├ Count PPMs ----
+
+# subset to only those checklists where detect occurred
+
+
+# count metrics, based only on checklists where detect occurred
+
+
+# abundance metrics, based on all checklists
+
+
+# combine ppms together
+count_abd_ppms <- data.frame(
+  count_spearman = count_spearman,
+  log_count_pearson = log_count_pearson,
+  abundance_spearman = abundance_spearman,
+  log_abundance_pearson = log_abundance_pearson
+)
+print(count_abd_ppms)
+
+
+# Habitat associations ----
+
+# ├ Predictor importance ----
+
+# extract predictor importance from the random forest model objects
+# encounter rate
+
+# count
+
+# plot predictor importance for top 20 encounter rate predictors
+gg_er <- ggplot(head(pi_er, 20)) +
+  aes(x = reorder(predictor, importance), y = importance) +
+  geom_col() +
+  geom_hline(yintercept = 0, linewidth = 2, colour = "#555555") +
+  scale_y_continuous(expand = c(0, 0)) +
+  coord_flip() +
+  labs(x = NULL,
+       y = "Predictor Importance",
+       title = "Predictor importance for encounter rate model") +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        panel.grid.major.x = element_line(colour = "#cccccc", linewidth = 0.5))
+# plot predictor importance for top 20 count predictors
+gg_count <- ggplot(head(pi_count, 20)) +
+  aes(x = reorder(predictor, importance), y = importance) +
+  geom_col() +
+  geom_hline(yintercept = 0, linewidth = 2, colour = "#555555") +
+  scale_y_continuous(expand = c(0, 0)) +
+  coord_flip() +
+  labs(x = NULL,
+       y = "Predictor Importance",
+       title = "Predictor importance for count model") +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        panel.grid.major.x = element_line(colour = "#cccccc", linewidth = 0.5))
+grid.arrange(gg_er, gg_count, nrow = 1)
+
+
+# ├ Partial dependence ----
+
+# function to calculate partial dependence for a given predictor
+calculate_pd <- function(predictor,
+                         er_model, calibration_model,
+                         data, x_res = 25, n = 1000) {
+  # create prediction grid using quantiles based on detections
+  detections <- data[data$species_observed, ]
+  x_grid <- quantile(detections[[predictor]],
+                     probs = seq(from = 0, to = 1, length = x_res),
+                     na.rm = TRUE)
+
+  # remove duplicates
+  x_grid <- x_grid[!duplicated(signif(x_grid, 8))]
+  x_grid <- unname(unique(x_grid))
+  grid <- data.frame(predictor = predictor, x = x_grid)
+  names(grid) <- c("predictor", predictor)
+
+  # subsample training data
+  n <- min(n, nrow(data))
+  data <- data[sample(seq.int(nrow(data)), size = n, replace = FALSE), ]
+
+  # drop focal predictor from data
+  data <- data[names(data) != predictor]
+  grid <- merge(grid, data, all = TRUE)
+
+  # estimate encounter rate
+  pred_er <- predict(er_model, data = grid, type = "response")
+  pred_er <- pred_er$predictions[, "TRUE"]
+  # apply calibration
+  pred_er_cal <- predict(calibration_model,
+                         data.frame(pred = pred_er),
+                         type = "response") |>
+    as.numeric()
+  # constrain to 0-1
+  pred_er_cal[pred_er_cal < 0] <- 0
+  pred_er_cal[pred_er_cal > 1] <- 1
+
+  # summarize
+  pd <- grid[, c("predictor", predictor)]
+  names(pd) <- c("predictor", "x")
+  pd$encounter_rate <- pred_er_cal
+  pd <- dplyr::group_by(pd, predictor, x)
+  pd <- dplyr::summarise(pd,
+                         encounter_rate = mean(encounter_rate, na.rm = TRUE),
+                         .groups = "drop")
+
+  return(pd)
+}
+
+# calculate partial dependence for elevation
+
+# plot partial dependence
+ggplot(pd_elevation) +
+  aes(x = x, y = encounter_rate) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Elevation [m]", y = "Encounter Rate")
+
+# calculate abundance partial dependence for each of the top 6 predictors
+# exclude mountain since it is categorical
+
+# plot partial dependence
+ggplot(pd) +
+  aes(x = x, y = encounter_rate) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ factor(predictor, levels = rev(unique(predictor))),
+             ncol = 2, scales = "free") +
+  labs(x = NULL, y = "Encouter Rate") +
+  theme_minimal() +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        axis.line = element_line(color = "grey60"),
+        axis.ticks  = element_line(color = "grey60"))
+
+# EXERCISE: Produce the partial dependence plot for the checklist start time.
+# How can this be used to help choose an optimal time of day for the
+# standardized checklist that we predicted to prior to mapping?

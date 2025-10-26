@@ -210,4 +210,3 @@ library(viridis)
 #| label: intro-info
 devtools::session_info()
 ```
-
