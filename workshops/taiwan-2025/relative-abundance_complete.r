@@ -18,9 +18,7 @@ library(tidyr)
 set.seed(1)
 
 # define species, region, and season
-# species <- "taibar1"
-# species <- "taiscb1"
-species <- "whesib1"
+species <- "taibar1"
 species_name <- ebird_species(species, type = "common")
 
 
