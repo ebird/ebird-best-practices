@@ -1,5 +1,4 @@
 library(dplyr)
-library(exactextractr)
 library(fs)
 library(ggplot2)
 library(lubridate)
@@ -8,7 +7,6 @@ library(sf)
 library(terra)
 library(ebirdst)
 extract <- terra::extract
-Sys.setenv(EBIRDST_DATA_DIR = "ebirdst-data")
 
 
 # Data access ----

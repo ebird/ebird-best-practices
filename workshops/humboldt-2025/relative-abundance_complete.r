@@ -78,10 +78,6 @@ checklists_ss <- grid_sample_stratified(checklists_env,
                                         case_control = TRUE,
                                         sample_by = c("type", "mountain"))
 
-# EXERCISE: Compare the full set of eBird checklists to the set of checklists
-# remaining after subsampling. What was the change in sampled size and how did
-# the subsampling impact the prevalence of detections compared to
-# non-detections?
 # original data
 nrow(checklists_env)
 count(checklists_env, species_observed) |>

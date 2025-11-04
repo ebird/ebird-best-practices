@@ -1,5 +1,4 @@
 library(dplyr)
-library(exactextractr)
 library(fs)
 library(ggplot2)
 library(lubridate)
@@ -233,8 +232,8 @@ plot(richness, axes = FALSE)
 prop_pop <- list()
 for (species in species_list) {
   # download seasonal proportion of population at 3km
-  ebirdst_download_status(species,
-                          pattern = "proportion-population_seasonal_mean_3km")
+  # ebirdst_download_status(species,
+  #                         pattern = "proportion-population_seasonal_mean_3km")
 
   # load non-breeding season proportion of population
   pp <- load_raster(species,
@@ -291,7 +290,7 @@ abd_nonbreeding <- load_raster("brhthr1",
                                period = "seasonal",
                                resolution = "27km") |>
   subset("nonbreeding")
-# convert to range
+# convert relative abundance to range
 range_nonbreeding <- ifel(abd_nonbreeding > 0, 1, NA)
 # mask
 bern_dev_masked <- mask(bern_dev_nonbreeding, range_nonbreeding)

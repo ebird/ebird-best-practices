@@ -25,13 +25,14 @@ species_name <- ebird_species(species, type = "common")
 # eBird data ----
 
 # checklist data
-
+checklists_all <- read_parquet("data/erd_checklists_1km_tw.paquet")
 
 # observation data
+observations_all <- read_parquet("data/erd_observations_tw.parquet")
 
 # notice that some observations have counts of NA, these indicate the species
 # was observed but no count was reported, i.e. an "X" on the checklist
-
+filter(observations_all, is.na(observation_count))
 
 # join checklists and observations and "zero-fill"
 
@@ -60,17 +61,20 @@ ggplot(zf) +
 # also filter to observations from the main island from the last 10 years
 region <- c(lat_min = 21.7, lat_max = 25.4,
             lon_min = 119.1, lon_max = 122.4)
-
+zf_filtered <- zf |>
+  filter(between(latitude, region["lat_min"], region["lat_max"]),
+         between(longitude, region["lon_min"], region["lon_max"]),
+         )
 
 # number of checklists before and after filtering
-
 
 
 
 # ├ Test-train split ----
 
 # split checklists into 20/80 test/train
-
+zf_filtered$type <- if_else(runif(nrow(zf_filtered)) <= 0.8, "train", "test")
+table(zf_filtered$type) / nrow(zf_filtered)
 
 
 # ├ Mapping ----
@@ -118,10 +122,15 @@ box()
 # stratify by type (test/train)
 
 
-# EXERCISE: Compare the full set of eBird checklists to the set of checklists
-# remaining after subsampling. What was the change in sampled size and how did
-# the subsampling impact the prevalence of detections compared to
-# non-detections?
+# explore impact of sampling
+# original data
+nrow(zf_filtered)
+count(zf_filtered, species_observed) |>
+  mutate(percent = n / sum(n))
+# after sampling
+nrow(checklists_ss)
+count(checklists_ss, species_observed) |>
+  mutate(percent = n / sum(n))
 
 
 
@@ -189,11 +198,11 @@ checklists_train <- checklists_ss |>
 # ├ Calibration ----
 
 # predicted encounter rate based on out of bag samples
-
+er_pred <- rf_er$predictions[, "TRUE"]
 # observed detection, converted back from factor
-
+det_obs <- as.integer(checklists_train$species_observed == "TRUE")
 # construct a data frame to train the scam model
-
+obs_pred <- data.frame(obs = det_obs, pred = er_pred)
 
 # train calibration model
 
@@ -245,7 +254,15 @@ ggplot(calibration_curve) +
 # add standardized effort covariates to prediction grid
 # 6am on 2024-05-15
 # 2 km, 1 hour traveling checklist with 1 observer
-
+pred_grid_eff <- pred_grid |>
+  mutate(observation_date = ymd("2024-05-15"),
+         year = year(observation_date),
+         day_of_year = yday(observation_date),
+         hours_of_day = 6,
+         effort_distance_km = 2,
+         effort_hours = 1,
+         effort_speed_kmph = 2,
+         number_observers = 1)
 
 # estimate range
 
@@ -254,12 +271,20 @@ ggplot(calibration_curve) +
 # apply calibration
 
 # constrain to 0-1
-
+# constrain to 0-1
+pred_er_cal[pred_er_cal < 0] <- 0
+pred_er_cal[pred_er_cal > 1] <- 1
 # estimate count
 
 
 # combine predictions with cell id and coordinates from prediction grid
-
+predictions <- data.frame(cell_id = pred_grid_eff$cell_id,
+                          x = pred_grid_eff$x,
+                          y = pred_grid_eff$y,
+                          range = pred_range,
+                          encounter_rate = pred_er_cal,
+                          count = pred_count,
+                          abundance = pred_range * pred_er_cal * pred_count)
 
 
 # ├ Rasterize predictions ----
@@ -275,7 +300,7 @@ tw_boundary <- filter(countries_proj, name == "Taiwan") |>
   st_geometry()
 
 # map encounter rate
-par(mar = c(3, 0.25, 0.25, 0.25))
+par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
 plot(tw_boundary, col = NA, border = NA)
 plot(countries_proj, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
@@ -302,7 +327,7 @@ par(new = TRUE, mar = c(0, 0, 0, 0))
 title <- glue("{species_name} encounter rate (Oct 2024)")
 image.plot(zlim = c(0, 1), legend.only = TRUE,
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
-           smallplot = c(0.25, 0.75, 0.09, 0.12),
+           smallplot = c(0.15, 0.85, 0.05, 0.08),
            horizontal = TRUE,
            axis.args = list(at = c(0, 0.5, 1), labels = lbls,
                             fg = "black", col.axis = "black",
@@ -314,7 +339,7 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
 
 
 # map relative abundance in range
-par(mar = c(3, 0.25, 0.25, 0.25))
+par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
 plot(tw_boundary, col = NA, border = NA)
 plot(countries_proj, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
@@ -341,7 +366,7 @@ par(new = TRUE, mar = c(0, 0, 0, 0))
 title <- glue("{species_name} relative abundance (Oct 2024)")
 image.plot(zlim = c(0, 1), legend.only = TRUE,
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
-           smallplot = c(0.25, 0.75, 0.09, 0.12),
+           smallplot = c(0.15, 0.85, 0.05, 0.08),
            horizontal = TRUE,
            axis.args = list(at = c(0, 0.5, 1), labels = lbls,
                             fg = "black", col.axis = "black",
@@ -359,18 +384,26 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
 # get the test set held out from training
 # only consider checklists with counts
 
+
 # estimate range
-
+pred_range <- predict(rf_range, data = checklists_test, type = "response")
+pred_range <- as.integer(pred_range$predictions == "TRUE")
 # estimate encounter rate
-
+pred_er <- predict(rf_er, data = checklists_test, type = "response")
+pred_er <- pred_er$predictions[, "TRUE"]
 # apply calibration
-
+pred_er_cal <- predict(calibration_model,
+                       data.frame(pred = pred_er),
+                       type = "response") |>
+  as.numeric()
 # constrain to 0-1
-
+pred_er_cal[pred_er_cal < 0] <- 0
+pred_er_cal[pred_er_cal > 1] <- 1
 # add predicted encounter rate required for count estimates
-
+checklists_test$predicted_er <- pred_er
 # estimate count
-
+pred_count <- predict(rf_count, data = checklists_test, type = "response")
+pred_count <- pred_count$predictions
 
 # combine observations and estimates
 obs_pred_test <- data.frame(
@@ -389,13 +422,19 @@ obs_pred_test <- data.frame(
 # ├ Encounter rate PPMs ----
 
 # mean squared error (mse)
-
+mse <- mean((obs_pred_test$obs_detected - obs_pred_test$pred_er)^2)
 
 # precision-recall auc
-
+em <- precrec::evalmod(scores = obs_pred_test$pred_binary,
+                       labels = obs_pred_test$obs_detected)
+pr_auc <- precrec::auc(em) |>
+  filter(curvetypes == "PRC") |>
+  pull(aucs)
 
 # calculate metrics for binary prediction: sensitivity, specificity
-
+pa_metrics <- obs_pred_test |>
+  select(checklist_id, obs_detected, pred_binary) |>
+  PresenceAbsence::presence.absence.accuracy(na.rm = TRUE, st.dev = FALSE)
 
 # combine ppms together
 er_ppms <- data.frame(
@@ -410,13 +449,23 @@ print(er_ppms)
 # ├ Count PPMs ----
 
 # subset to only those checklists where detect occurred
-
+detections_test <- filter(obs_pred_test, obs_detected > 0)
 
 # count metrics, based only on checklists where detect occurred
-
+count_spearman <- cor(detections_test$pred_count,
+                      detections_test$obs_count,
+                      method = "spearman")
+log_count_pearson <- cor(log(detections_test$pred_count),
+                         log(detections_test$obs_count),
+                         method = "pearson")
 
 # abundance metrics, based on all checklists
-
+abundance_spearman <- cor(obs_pred_test$pred_abundance,
+                          obs_pred_test$obs_count,
+                          method = "spearman")
+log_abundance_pearson <- cor(log(obs_pred_test$pred_abundance + 1),
+                             log(obs_pred_test$obs_count + 1),
+                             method = "pearson")
 
 # combine ppms together
 count_abd_ppms <- data.frame(
@@ -432,13 +481,10 @@ print(count_abd_ppms)
 
 # ├ Predictor importance ----
 
-# extract partial dependence from the random forest model objects
-# encounter rate
+# extract partial dependence from the encounter rate random forest
 
-# count
-
-# plot predictor importance for top 20 encounter rate predictors
-gg_er <- ggplot(head(pi_er, 20)) +
+# plot predictor importance for top 15 encounter rate predictors
+ggplot(head(pi_er, 15)) +
   aes(x = reorder(predictor, importance), y = importance) +
   geom_col() +
   geom_hline(yintercept = 0, linewidth = 2, colour = "#555555") +
@@ -450,20 +496,6 @@ gg_er <- ggplot(head(pi_er, 20)) +
   theme_minimal() +
   theme(panel.grid = element_blank(),
         panel.grid.major.x = element_line(colour = "#cccccc", linewidth = 0.5))
-# plot predictor importance for top 20 count predictors
-gg_count <- ggplot(head(pi_count, 20)) +
-  aes(x = reorder(predictor, importance), y = importance) +
-  geom_col() +
-  geom_hline(yintercept = 0, linewidth = 2, colour = "#555555") +
-  scale_y_continuous(expand = c(0, 0)) +
-  coord_flip() +
-  labs(x = NULL,
-       y = "Predictor Importance",
-       title = "Predictor importance for count model") +
-  theme_minimal() +
-  theme(panel.grid = element_blank(),
-        panel.grid.major.x = element_line(colour = "#cccccc", linewidth = 0.5))
-grid.arrange(gg_er, gg_count, nrow = 1)
 
 
 # ├ Partial dependence ----

@@ -1,5 +1,4 @@
 library(dplyr)
-library(exactextractr)
 library(fs)
 library(ggplot2)
 library(lubridate)
@@ -51,8 +50,8 @@ dir_copy(dirs, path(ebirdst_dir, basename(dirs)), overwrite = TRUE)
 
 
 # load confidence intervals
-
-
+abd_lower <- load_raster("brhthr1", product = "abundance", metric = "lower")
+abd_upper <- load_raster("brhthr1", product = "abundance", metric = "upper")
 
 # EXERCISE: Try loading the weekly proportion of population cube at 27 km
 # resolution.
@@ -64,13 +63,17 @@ dir_copy(dirs, path(ebirdst_dir, basename(dirs)), overwrite = TRUE)
 
 
 # load full year maximum relative abundance
-
+abd_yr_max <- load_raster("brhthr1",
+                          product = "abundance",
+                          period = "full-year",
+                          metric = "max")
 
 
 # ├ working with raster data ----
 
 # load weekly and seasonal relative abundance at 9km resolution
-
+abd_weekly <- load_raster("brhthr1", )
+abd_seasonal <- load_raster("brhthr1", )
 
 # subset to a single week or season
 
@@ -97,7 +100,9 @@ bounding_box <- read_sf("data/gis-data.gpkg", layer = "bounding_box") |>
 
 
 # seasonal proportion of population
-
+prop_pop_seasonal <- load_raster("taibar1",
+                                 product = "proportion-population",
+                                 period = "seasonal")
 
 # national park boundaries from world database of protected areas
 np_boundaries <- read_sf("data/gis-data.gpkg", layer = "national_parks") |>
@@ -112,7 +117,9 @@ np_boundaries <- read_sf("data/gis-data.gpkg", layer = "national_parks") |>
 # proportion of population in Taiwan for Brown-headed Thrush.
 
 # load the median weekly relative abundance and lower/upper confidence limits
-
+abd_median <- load_raster("brhthr1", product = "abundance", metric = "median")
+abd_lower <- load_raster("brhthr1", product = "abundance", metric = "lower")
+abd_upper <- load_raster("brhthr1", product = "abundance", metric = "upper")
 
 # boundary of Taiwan
 taiwan_boundary <- read_sf("data/gis-data.gpkg", layer = "countries") |>
@@ -130,6 +137,9 @@ chronology <- data.frame(week = as.Date(names(abd_median)),
 
 # convert to percent of population by dividing by total abundance globally
 
+chronology$median <- chronology$median / total_abd
+chronology$lower <- chronology$lower / total_abd
+chronology$upper <- chronology$upper / total_abd
 
 # plot chronology
 ggplot(chronology) +
@@ -228,13 +238,21 @@ plot(importance, axes = FALSE, legend = FALSE, add = TRUE)
 
 
 # seasonal dates
+seasonal_dates <- ebirdst_runs |>
+  filter(species_code == "brhthr1") |>
+  select(start = nonbreeding_start, end = nonbreeding_end)
+weeks <- paste0("2023-", names(bern_dev))
 
 # subset to non-breeding weeks and average
 
 
 # mask to within range
-
-# convert to range
+abd_nonbreeding <- load_raster("brhthr1",
+                               product = "abundance",
+                               period = "seasonal",
+                               resolution = "27km") |>
+  subset("nonbreeding")
+# convert relative abundance to range
 
 # mask
 
@@ -244,7 +262,8 @@ plot(importance, axes = FALSE, legend = FALSE, add = TRUE)
 # define a diverging color ramp
 ppm_cols <- rev(scico(20, palette = "vik"))
 # get the maximum value
-
+max_val <- global(abs(bern_dev_masked), fun = max, na.rm = TRUE) |>
+  as.numeric()
 
 # map
 land <- read_sf("data/gis-data.gpkg", layer = "land") |>

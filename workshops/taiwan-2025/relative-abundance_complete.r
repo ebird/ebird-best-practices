@@ -46,6 +46,7 @@ zf <- left_join(checklists_all, observations, by = "checklist_id") |>
 # number of detections
 sum(zf$species_observed)
 
+
 # ├ Apply effort filters ----
 
 # this dataset has been pre-filtered for 3 km status and trends modeling:
@@ -69,17 +70,16 @@ ggplot(zf) +
 region <- c(lat_min = 21.7, lat_max = 25.4,
             lon_min = 119.1, lon_max = 122.4)
 zf_filtered <- zf |>
-  filter(effort_hours <= 8,
+  filter(between(latitude, region["lat_min"], region["lat_max"]),
+         between(longitude, region["lon_min"], region["lon_max"]),
+         between(year, 2015, 2024),
+         effort_hours <= 8,
          effort_distance_km <= 1.5,
          effort_speed_kmph <= 100,
-         number_observers <= 10,
-         between(latitude, region["lat_min"], region["lat_max"]),
-         between(longitude, region["lon_min"], region["lon_max"]),
-         between(year, 2015, 2024))
+         number_observers <= 10)
 
 # number of checklists before and after filtering
 nrow(zf_filtered) / nrow(zf)
-
 
 
 # ├ Test-train split ----
@@ -102,10 +102,10 @@ checklists_sf <- zf_filtered |>
   select(species_observed)
 
 # map
-par(mar = c(0.25, 0.25, 4, 0.25))
+par(mar = c(0.25, 0.25, 0.25, 0.25))
 # set up plot area
 plot(st_geometry(checklists_sf),
-     main = glue("{species_name} eBird observations\n 2015-2024"),
+     #main = glue("{species_name} eBird observations\n 2015-2024"),
      col = NA, border = NA)
 # country boundaries
 plot(countries, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
@@ -139,10 +139,7 @@ checklists_ss <- grid_sample_stratified(zf_filtered,
                                         case_control = TRUE,
                                         sample_by = "type")
 
-# EXERCISE: Compare the full set of eBird checklists to the set of checklists
-# remaining after subsampling. What was the change in sampled size and how did
-# the subsampling impact the prevalence of detections compared to
-# non-detections?
+# explore impact of sampling
 # original data
 nrow(zf_filtered)
 count(zf_filtered, species_observed) |>
@@ -358,7 +355,7 @@ tw_boundary <- filter(countries_proj, name == "Taiwan") |>
   st_geometry()
 
 # map encounter rate
-par(mar = c(3, 0.25, 0.25, 0.25))
+par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
 plot(tw_boundary, col = NA, border = NA)
 plot(countries_proj, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
@@ -385,7 +382,7 @@ par(new = TRUE, mar = c(0, 0, 0, 0))
 title <- glue("{species_name} encounter rate (Oct 2024)")
 image.plot(zlim = c(0, 1), legend.only = TRUE,
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
-           smallplot = c(0.25, 0.75, 0.09, 0.12),
+           smallplot = c(0.15, 0.85, 0.05, 0.08),
            horizontal = TRUE,
            axis.args = list(at = c(0, 0.5, 1), labels = lbls,
                             fg = "black", col.axis = "black",
@@ -395,9 +392,8 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
                               side = 3, col = "black",
                               cex = 1, line = 0.1))
 
-
 # map relative abundance in range
-par(mar = c(3, 0.25, 0.25, 0.25))
+par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
 plot(tw_boundary, col = NA, border = NA)
 plot(countries_proj, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
@@ -424,7 +420,7 @@ par(new = TRUE, mar = c(0, 0, 0, 0))
 title <- glue("{species_name} relative abundance (Oct 2024)")
 image.plot(zlim = c(0, 1), legend.only = TRUE,
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
-           smallplot = c(0.25, 0.75, 0.09, 0.12),
+           smallplot = c(0.15, 0.85, 0.05, 0.08),
            horizontal = TRUE,
            axis.args = list(at = c(0, 0.5, 1), labels = lbls,
                             fg = "black", col.axis = "black",
@@ -444,6 +440,7 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
 checklists_test <- checklists_ss |>
   filter(type == "test", !is.na(observation_count)) |>
   mutate(species_observed = as.integer(species_observed))
+
 # estimate range
 pred_range <- predict(rf_range, data = checklists_test, type = "response")
 pred_range <- as.integer(pred_range$predictions == "TRUE")
@@ -540,21 +537,14 @@ print(count_abd_ppms)
 
 # ├ Predictor importance ----
 
-# extract partial dependence from the random forest model objects
-# encounter rate
+# extract partial dependence from the encounter rate random forest
 pi_er <- rf_er$variable.importance
 pi_er <- data.frame(predictor = names(pi_er), importance = pi_er) |>
   # scale so importances sum to 1
   mutate(importance = importance / sum(importance)) |>
   arrange(desc(importance))
-# count
-pi_count <- rf_count$variable.importance
-pi_count <- data.frame(predictor = names(pi_count), importance = pi_count) |>
-  # scale so importances sum to 1
-  mutate(importance = importance / sum(importance)) |>
-  arrange(desc(importance))
-# plot predictor importance for top 20 encounter rate predictors
-gg_er <- ggplot(head(pi_er, 20)) +
+# plot predictor importance for top 15 encounter rate predictors
+ggplot(head(pi_er, 15)) +
   aes(x = reorder(predictor, importance), y = importance) +
   geom_col() +
   geom_hline(yintercept = 0, linewidth = 2, colour = "#555555") +
@@ -566,20 +556,6 @@ gg_er <- ggplot(head(pi_er, 20)) +
   theme_minimal() +
   theme(panel.grid = element_blank(),
         panel.grid.major.x = element_line(colour = "#cccccc", linewidth = 0.5))
-# plot predictor importance for top 20 count predictors
-gg_count <- ggplot(head(pi_count, 20)) +
-  aes(x = reorder(predictor, importance), y = importance) +
-  geom_col() +
-  geom_hline(yintercept = 0, linewidth = 2, colour = "#555555") +
-  scale_y_continuous(expand = c(0, 0)) +
-  coord_flip() +
-  labs(x = NULL,
-       y = "Predictor Importance",
-       title = "Predictor importance for count model") +
-  theme_minimal() +
-  theme(panel.grid = element_blank(),
-        panel.grid.major.x = element_line(colour = "#cccccc", linewidth = 0.5))
-grid.arrange(gg_er, gg_count, nrow = 1)
 
 
 # ├ Partial dependence ----

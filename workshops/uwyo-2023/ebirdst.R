@@ -1,5 +1,4 @@
 library(dplyr)
-library(exactextractr)
 library(fs)
 library(ggplot2)
 library(lubridate)

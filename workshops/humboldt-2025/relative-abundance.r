@@ -28,20 +28,25 @@ env_vars <- read_parquet("data/environmental-variables_checklists_co.parquet")
 # zero-filled ebird data
 checklists <- read_csv(glue("data/checklists-zf_{species}_co.csv"))
 # combine ebird data and environmental variables
-
+checklists_env <- inner_join(checklists, env_vars,
+                             by = c("locality_id", "year"))
 
 # prediction grid
 pred_grid <- read_parquet("data/prediction-grid_co.parquet")
 
 # convert mountain variable to factor
-
+checklists_env$mountain <- factor(checklists_env$mountain)
 # use the same levels in the prediction grid
+pred_grid$mountain <- factor(pred_grid$mountain,
+                             levels = levels(checklists_env$mountain))
+pred_grid <- filter(pred_grid, !is.na(mountain))
 
 
 # raster template for the grid
-
+r <- rast("data/prediction-grid_co.tif") |>
+  rast()
 # get the coordinate reference system of the prediction grid
-
+crs <- st_crs(r)
 
 # load gis data for making maps
 land <- read_sf("data/gis-data.gpkg", "land") |>
@@ -65,10 +70,14 @@ region_boundary <- read_sf("data/gis-data.gpkg", "region") |>
 # stratify by factor variables: mountain and type
 
 
-# EXERCISE: Compare the full set of eBird checklists to the set of checklists
-# remaining after subsampling. What was the change in sampled size and how did
-# the subsampling impact the prevalence of detections compared to
-# non-detections?
+# original data
+nrow(checklists_env)
+count(checklists_env, species_observed) |>
+  mutate(percent = n / sum(n))
+# after sampling
+nrow(checklists_ss)
+count(checklists_ss, species_observed) |>
+  mutate(percent = n / sum(n))
 
 
 # Relative abundance model ----
@@ -106,11 +115,11 @@ checklists_train <- checklists_ss |>
 # ├ Calibration ----
 
 # predicted encounter rate based on out of bag samples
-
+er_pred <- rf_er$predictions[, "TRUE"]
 # observed detection, converted back from factor
-
+det_obs <- as.integer(checklists_train$species_observed == "TRUE")
 # construct a data frame to train the scam model
-
+obs_pred <- data.frame(obs = det_obs, pred = er_pred)
 
 # train calibration model
 
@@ -162,7 +171,15 @@ ggplot(calibration_curve) +
 # add standardized effort covariates to prediction grid
 # 6:30am on 2024-10-15
 # 2 km, 1 hour traveling checklist with 1 observer
-
+pred_grid_eff <- pred_grid |>
+  mutate(observation_date = ymd("2024-10-15"),
+         year = year(observation_date),
+         day_of_year = yday(observation_date),
+         hours_of_day = 6.5,
+         effort_distance_km = 2,
+         effort_hours = 1,
+         effort_speed_kmph = 2,
+         number_observers = 1)
 
 # estimate range
 
@@ -171,12 +188,19 @@ ggplot(calibration_curve) +
 # apply calibration
 
 # constrain to 0-1
-
+pred_er_cal[pred_er_cal < 0] <- 0
+pred_er_cal[pred_er_cal > 1] <- 1
 # estimate count
 
 
 # combine predictions with cell id and coordinates from prediction grid
-
+predictions <- data.frame(cell_id = pred_grid_eff$cell_id,
+                          x = pred_grid_eff$x,
+                          y = pred_grid_eff$y,
+                          range = pred_range,
+                          encounter_rate = pred_er_cal,
+                          count = pred_count,
+                          abundance = pred_er_cal * pred_count)
 # abundance within range
 
 
@@ -282,17 +306,24 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
 # only consider checklists with counts
 
 # estimate range
-
+pred_range <- predict(rf_range, data = checklists_test, type = "response")
+pred_range <- as.integer(pred_range$predictions == "TRUE")
 # estimate encounter rate
-
+pred_er <- predict(rf_er, data = checklists_test, type = "response")
+pred_er <- pred_er$predictions[, "TRUE"]
 # apply calibration
-
+pred_er_cal <- predict(calibration_model,
+                       data.frame(pred = pred_er),
+                       type = "response") |>
+  as.numeric()
 # constrain to 0-1
-
+pred_er_cal[pred_er_cal < 0] <- 0
+pred_er_cal[pred_er_cal > 1] <- 1
 # add predicted encounter rate required for count estimates
-
+checklists_test$predicted_er <- pred_er
 # estimate count
-
+pred_count <- predict(rf_count, data = checklists_test, type = "response")
+pred_count <- pred_count$predictions
 
 # combine observations and estimates
 obs_pred_test <- data.frame(
