@@ -9,58 +9,48 @@ library(ebirdst)
 extract <- terra::extract
 
 
-# Data access ----
-
-# get an ebirdst access key https://ebird.org/st/request
-# store it using set_ebirdst_access_key("XXXXXXXXX")
-# run the following to test the access key
-ebirdst_download_status("taibar1",
-                        pattern = "abundance_median_27km_2023",
-                        force = TRUE)
-
-# copy pre-downloaded data to ebirdst data download location
-# ONLY TO BE USED FOR WORKSHOP, DELETE THIS AFTER YOU RUN IT!
-ebirdst_dir <- path(ebirdst_data_dir(), "2023")
-dir_create(ebirdst_dir)
-dirs <- dir_ls("ebirdst-data/2023/")
-dir_copy(dirs, path(ebirdst_dir, basename(dirs)), overwrite = TRUE)
-
-
 # Status results ----
 
 # ebirdst_runs contains all species for which status data products exist
-
+View(ebirdst_runs)
 
 # EXERCISE: Look up one migratory species and one resident species of interest
 # to you. Identify the seasonal dates and the review quality ratings.
-
+ebirdst_runs |>
+  filter(common_name %in% c("Taiwan Barbet", "Brown-headed Thrush")) |>
+  View()
 
 
 # ├ Downloading status data ----
 
 # download data for Brown-headed Thrush
-
+ebirdst_download_status("Brown-headed Thrush")
 
 
 # ├ Loading raster estimates ----
 
 # load weekly relative abundance
-
+abd_median <- load_raster("brhthr1", product = "abundance")
 # identify weeks corresponding to each layer
-
+names(abd_median)
 
 # load confidence intervals
 abd_lower <- load_raster("brhthr1", product = "abundance", metric = "lower")
 abd_upper <- load_raster("brhthr1", product = "abundance", metric = "upper")
 
+
 # EXERCISE: Try loading the weekly proportion of population cube at 27 km
 # resolution.
-
+prop_pop <- load_raster("brhthr1", product = "proportion-population",
+                        resolution = "27km")
 
 # load seasonal relative abundance
-
+abd_seasonal_mean <- load_raster("brhthr1",
+                                 product = "abundance",
+                                 period = "seasonal",
+                                 metric = "mean")
 # identify seasons corresponding to each layer
-
+names(abd_seasonal_mean)
 
 # load full year maximum relative abundance
 abd_yr_max <- load_raster("brhthr1",
@@ -72,24 +62,27 @@ abd_yr_max <- load_raster("brhthr1",
 # ├ working with raster data ----
 
 # load weekly and seasonal relative abundance at 9km resolution
-abd_weekly <- load_raster("brhthr1", )
-abd_seasonal <- load_raster("brhthr1", )
+abd_weekly <- load_raster("brhthr1", product = "abundance", resolution = "9km")
+abd_seasonal <- load_raster("brhthr1", product = "abundance",
+                            period = "seasonal", resolution = "9km")
 
 # subset to a single week or season
-
+abd_median[["2023-12-27"]]
+abd_seasonal[["nonbreeding"]]
 
 # subset to all weeks in december and average
-
+in_dec <- month(names(abd_median)) == 12
+abd_dec <- mean(abd_weekly[[in_dec]], na.rm = TRUE)
 
 # make a map
-
+plot(abd_dec)
 
 # crop to the island of Taiwan
 bounding_box <- read_sf("data/gis-data.gpkg", layer = "bounding_box") |>
   st_transform(crs = st_crs(abd_dec))
-
+abd_dec_tw <- crop(abd_dec, bounding_box)
 # map
-
+plot(abd_dec_tw, axes = FALSE)
 
 
 # Application: proportions of population within regions ----
@@ -97,7 +90,8 @@ bounding_box <- read_sf("data/gis-data.gpkg", layer = "bounding_box") |>
 # of the national parks of Taiwan.
 
 # download just the 3km seasonal proportion of population
-
+ebirdst_download_status("taibar1",
+                        pattern = "proportion-population_seasonal_mean_3km")
 
 # seasonal proportion of population
 prop_pop_seasonal <- load_raster("taibar1",
@@ -109,7 +103,13 @@ np_boundaries <- read_sf("data/gis-data.gpkg", layer = "national_parks") |>
   st_transform(st_crs(prop_pop_seasonal))
 
 # sum proportion of population within national parks
-
+prop_pop_np <- extract(prop_pop_seasonal,
+                       np_boundaries,
+                       fun = "sum", na.rm = TRUE, weights = TRUE,
+                       bind = TRUE) |>
+  as.data.frame() |>
+  arrange(desc(resident))
+print(prop_pop_np)
 
 
 # Application: migration chronology ----
@@ -127,7 +127,12 @@ taiwan_boundary <- read_sf("data/gis-data.gpkg", layer = "countries") |>
   st_transform(st_crs(abd_median))
 
 # extract values within region and calculate total abundance
-
+abd_median_region <- extract(abd_median, taiwan_boundary,
+                             fun = "sum", na.rm = TRUE, ID = FALSE)
+abd_lower_region <- extract(abd_lower, taiwan_boundary,
+                            fun = "sum", na.rm = TRUE, ID = FALSE)
+abd_upper_region <- extract(abd_upper, taiwan_boundary,
+                            fun = "sum", na.rm = TRUE, ID = FALSE)
 
 # transform to data frame format with rows corresponding to weeks
 chronology <- data.frame(week = as.Date(names(abd_median)),
@@ -136,7 +141,8 @@ chronology <- data.frame(week = as.Date(names(abd_median)),
                          upper = as.numeric(abd_upper_region))
 
 # convert to percent of population by dividing by total abundance globally
-
+total_abd <- global(abd_median, sum, na.rm = TRUE)
+total_abd <- total_abd$sum
 chronology$median <- chronology$median / total_abd
 chronology$lower <- chronology$lower / total_abd
 chronology$upper <- chronology$upper / total_abd
@@ -182,12 +188,24 @@ taiwan_boundary <- st_buffer(taiwan_boundary, dist = 3000)
 # ├ Richness ----
 
 # calculate richness at 3km resolution for this group
+range_rasters <- list()
+for (species in species_list) {
+  # download seasonal abundance at 3km
+  ebirdst_download_status(species, pattern = "abundance_seasonal_mean_3km")
 
+  # load non-breeding season relative abundance
+  abd <- load_raster(species, period = "seasonal") |>
+    subset("nonbreeding")
+  # crop and mask to region
+  abd_masked <- mask(crop(abd, taiwan_boundary), taiwan_boundary)
+  # convert to binary, presence-absence
+  range_rasters[[species]] <- abd_masked > 0
+}
 # sum across species to calculate richness
-
+richness <- sum(rast(range_rasters), na.rm = TRUE)
 
 # map richness
-
+plot(richness, axes = FALSE)
 
 
 # ├ Importance ----
@@ -196,8 +214,8 @@ taiwan_boundary <- st_buffer(taiwan_boundary, dist = 3000)
 prop_pop <- list()
 for (species in species_list) {
   # download seasonal proportion of population at 3km
-  ebirdst_download_status(species,
-                          pattern = "proportion-population_seasonal_mean_3km")
+  # ebirdst_download_status(species,
+  #                         pattern = "proportion-population_seasonal_mean_3km")
 
   # load non-breeding season proportion of population
   pp <- load_raster(species,
@@ -208,18 +226,18 @@ for (species in species_list) {
   prop_pop[[species]] <- mask(crop(pp, taiwan_boundary), taiwan_boundary)
 }
 # take mean across species
-
+importance <- mean(rast(prop_pop), na.rm = TRUE)
 
 # map areas of importance
-
+plot(importance, axes = FALSE)
 
 # drop zeros
-
+importance <- ifel(importance == 0, NA, importance)
 # convert to percentile ranks
 convert_to_pct_rank <- function(x) {
   rank(x, na.last = "keep", ties.method = "max") / length(na.omit(x))
 }
-
+importance <- app(importance, convert_to_pct_rank)
 
 # make a simple map
 plot(importance, main = "Important areas for migratory shorebirds", axes = FALSE)
@@ -232,10 +250,10 @@ plot(importance, axes = FALSE, legend = FALSE, add = TRUE)
 # Thrush during the non-breeding season.
 
 # download the spatial predictive performance metrics (ppms)
-
+ebirdst_download_status("brhthr1", download_ppms = TRUE)
 
 # load the raster for proportion of bernoulli deviance explained
-
+bern_dev <- load_ppm("brhthr1", ppm = "occ_bernoulli_dev")
 
 # seasonal dates
 seasonal_dates <- ebirdst_runs |>
@@ -244,7 +262,9 @@ seasonal_dates <- ebirdst_runs |>
 weeks <- paste0("2023-", names(bern_dev))
 
 # subset to non-breeding weeks and average
-
+in_nonbreeding <- weeks >= seasonal_dates$start | weeks <= seasonal_dates$end
+bern_dev_nonbreeding <- bern_dev[[in_nonbreeding]] |>
+  mean(na.rm = TRUE)
 
 # mask to within range
 abd_nonbreeding <- load_raster("brhthr1",
@@ -253,11 +273,11 @@ abd_nonbreeding <- load_raster("brhthr1",
                                resolution = "27km") |>
   subset("nonbreeding")
 # convert relative abundance to range
-
+range_nonbreeding <- ifel(abd_nonbreeding > 0, 1, NA)
 # mask
-
+bern_dev_masked <- mask(bern_dev_nonbreeding, range_nonbreeding)
 # trim to remove areas with no data
-
+bern_dev_masked <- trim(bern_dev_masked)
 
 # define a diverging color ramp
 ppm_cols <- rev(scico(20, palette = "vik"))

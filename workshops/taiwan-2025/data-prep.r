@@ -1,6 +1,7 @@
 library(arrow)
 library(dplyr)
 library(fs)
+library(glue)
 library(jsonlite)
 library(rnaturalearth)
 library(sf)
@@ -15,24 +16,80 @@ dir_create(outputs_dir)
 
 cov_def <- read_json("~/stem_hwf/erd/assign_covars/covariate-definitions.json",
                      simplifyVector = TRUE)
-
-crs <- crs("epsg:8857")
 start_year <- 2005
 end_year <- 2024
+crs <- crs("epsg:8857")
 
 # region boundary
 region <- ne_countries(scale = 10, country = "Taiwan") |>
   st_set_precision(1e6) |>
   st_make_valid() |>
-  st_union() |>
-  st_buffer(10000, max_cells = 1e5)
+  st_union()
 region_proj <- st_transform(region, crs) |> vect()
-bb <- st_bbox(region) |>
-  as.list()
+
+
+# erd checklists ----
+
+checklists <- path(erd_dir, "erd_checklists.parquet") |>
+  open_dataset() |>
+  filter(between(year, start_year, end_year),
+         country_code == "TW",
+         cci_es >= 0.9, effort_distance_km < 10,
+         is_primary_observer, all_obs_reported) |>
+  select(checklist_id, observer_id,
+         loc_id, latitude, longitude,
+         obs_dt, year, day_of_year,
+         hours_of_day, solar_noon_diff,
+         circular_day_of_year_sin, circular_day_of_year_cos,
+         circular_solar_noon_diff_sin, circular_solar_noon_diff_cos,
+         effort_hours = effort_hrs,
+         effort_distance_km, effort_speed_kmph,
+         number_observers = num_observers) |>
+  collect()
+f_pq <- path(outputs_dir, "erd_checklists_tw.parquet")
+write_parquet(checklists, f_pq)
+
+# inputs for feature assignment
+# static
+erd_static_pq <- path(inputs_dir, "erd_tw_static.parquet")
+erd_static <- checklists |>
+  group_by(row_id = loc_id) |>
+  summarize(latitude_sd = sd(latitude), longitude_sd = sd(longitude),
+            latitude = mean(latitude), longitude = mean(longitude),
+            .groups = "drop")
+problems <- erd_static |>
+  filter(latitude_sd > 0.001 | longitude_sd > 0.001)
+stopifnot(nrow(problems) == 0)
+erd_static |>
+  select(row_id, latitude, longitude) |>
+  write_parquet(erd_static_pq)
+# yearly
+erd_year_pq <- path(inputs_dir, "erd_tw_year.parquet")
+erd_year <- checklists |>
+  group_by(row_id = loc_id, year) |>
+  summarize(latitude_sd = sd(latitude), longitude_sd = sd(longitude),
+            latitude = mean(latitude), longitude = mean(longitude),
+            .groups = "drop")
+problems <- erd_year |>
+  filter(latitude_sd > 0.001 | longitude_sd > 0.001)
+stopifnot(nrow(problems) == 0)
+erd_year |>
+  select(row_id, year, latitude, longitude) |>
+  write_parquet(erd_year_pq)
 
 
 # 1 km raster template ----
 
+# extent
+checklists_sf <- checklists |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+  st_combine() |>
+  st_transform(crs)
+bb <- c(checklists_sf, st_transform(region, crs)) |>
+  st_bbox() |>
+  ext()
+
+# srd template
 f_tif <- path(outputs_dir, "prediction-grid_1km_tw.tif")
 srd3km <- path(base_dir, "stem_hwf", "ERD2024_inputs", "srd_templates",
               "srd_3km_mask_land.tif") |>
@@ -80,56 +137,6 @@ srd_pts |>
   mutate(row_id = srd_id, year, latitude, longitude, .keep = "none") |>
   write_parquet(srd_year_pq)
 
-
-# erd checklists ----
-
-checklists <- path(erd_dir, "erd_checklists.parquet") |>
-  open_dataset() |>
-  filter(between(latitude, bb$ymin, bb$ymax),
-         between(longitude, bb$xmin, bb$xmax),
-         between(year, start_year, end_year),
-         country_code == "TW",
-         cci_es >= 0.9, effort_distance_km < 10,
-         is_primary_observer, all_obs_reported) |>
-  select(checklist_id, observer_id,
-         loc_id, latitude, longitude,
-         obs_dt, year, day_of_year, hours_of_day, solar_noon_diff,
-         effort_hours = effort_hrs,
-         effort_distance_km, effort_speed_kmph,
-         number_observers = num_observers) |>
-  collect()
-f_pq <- path(outputs_dir, "erd_checklists_tw.parquet")
-write_parquet(checklists, f_pq)
-
-# inputs for feature assignment
-# static
-erd_static_pq <- path(inputs_dir, "erd_tw_static.parquet")
-erd_static <- checklists |>
-  group_by(row_id = loc_id) |>
-  summarize(latitude_sd = sd(latitude), longitude_sd = sd(longitude),
-            latitude = mean(latitude), longitude = mean(longitude),
-            .groups = "drop")
-problems <- erd_static |>
-  filter(latitude_sd > 0.001 | longitude_sd > 0.001)
-stopifnot(nrow(problems) == 0)
-erd_static |>
-  select(row_id, latitude, longitude) |>
-  write_parquet(erd_static_pq)
-# yearly
-erd_year_pq <- path(inputs_dir, "erd_tw_year.parquet")
-erd_year <- checklists |>
-  group_by(row_id = loc_id, year) |>
-  summarize(latitude_sd = sd(latitude), longitude_sd = sd(longitude),
-            latitude = mean(latitude), longitude = mean(longitude),
-            .groups = "drop")
-problems <- erd_year |>
-  filter(latitude_sd > 0.001 | longitude_sd > 0.001)
-stopifnot(nrow(problems) == 0)
-erd_year |>
-  select(row_id, year, latitude, longitude) |>
-  write_parquet(erd_year_pq)
-
-
 # erd observations ----
 
 obs_pq <- path(erd_dir, "erd_obs.parquet") |>
@@ -153,31 +160,12 @@ while (id < max(checklists$checklist_id)) {
 f_pq <- path(outputs_dir, "erd_observations_tw.parquet")
 write_parquet(obs, f_pq)
 
-# transform to wide format
-obs_wide <- obs |>
-  mutate(obs_count = case_when(
-    only_slash_reported == 1 | valid == 0 ~ -1L,
-    only_presence_reported == 1 ~ -2L,
-    .default = as.integer(obs_count)
-  )) |>
-  select(checklist_id, species_code, obs_count) |>
-  group_by(species_code) |>
-  filter(n() > 100) |>
-  ungroup() |>
-  arrange(species_code, checklist_id) |>
-  pivot_wider(names_from = "species_code",
-              values_from = "obs_count",
-              values_fill = 0) |>
-  mutate(across(-checklist_id, ~ ifelse(.x == -2, NA_integer_, .x)))
-f_pq <- path(outputs_dir, "erd_tw_observations_wide.parquet")
-write_parquet(obs_wide, f_pq)
-
 
 # run assignments on bridges2 ----
 
 # crop elevation, run locally
 # sinu_crs <- crs("+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +R=6371007.181 +units=m +no_defs")
-# e <- project(r, sinu_crs) |> ext() |> as.list()
+# e <- rast("prediction-grid_1km_tw.tif") |> project(sinu_crs) |> ext() |> as.list()
 # elev_dir <- "/ocean/projects/deb200005p/sligocki/erd_prep/covariates/elevation"
 # glue("gdal_translate -projwin {e$xmin} {e$ymax} {e$xmax} {e$ymin} ",
 #      "{elev_dir}/astgtm_sinu_full.tif {elev_dir}/astgtm_sinu.tif")
@@ -233,11 +221,12 @@ for (cov in covs) {
 }
 stopifnot(complete.cases(srd))
 srd <- srd |>
-  filter(is_on_land) |>
   select(cell_id = srd_id, x, y, latitude, longitude,
+         is_on_land,
+         elevation_30m_median, elevation_30m_sd,
+         bathymetry_elevation_median, bathymetry_elevation_sd,
          eastness_90m_median, eastness_90m_sd,
          northness_90m_median, northness_90m_sd,
-         elevation_30m_median, elevation_30m_sd,
          astwbd_c1_ed, astwbd_c1_pland,
          astwbd_c2_ed, astwbd_c2_pland,
          gsw_c2_pland, gsw_c2_ed,
@@ -277,7 +266,7 @@ srd <- srd |>
          river_logqavg_mean, river_logqavg_sd,
          river_logqvar_mean, river_logqvar_sd,
          river_power_mean, river_power_sd, river_density)
-write_parquet(srd, path(outputs_dir, "prediction-grid_1km_tw.paquet"))
+write_parquet(srd, path(outputs_dir, "prediction-grid_1km_tw.parquet"))
 
 
 # merge features into erd ----
@@ -299,14 +288,15 @@ for (cov in covs) {
 }
 stopifnot(complete.cases(erd))
 erd <- erd |>
-  filter(is_on_land) |>
   select(checklist_id, observer_id,
          loc_id, latitude, longitude,
          obs_dt, year, day_of_year, hours_of_day, solar_noon_diff,
          effort_hours, effort_distance_km, effort_speed_kmph, number_observers,
+         is_on_land,
+         elevation_30m_median, elevation_30m_sd,
+         bathymetry_elevation_median, bathymetry_elevation_sd,
          eastness_90m_median, eastness_90m_sd,
          northness_90m_median, northness_90m_sd,
-         elevation_30m_median, elevation_30m_sd,
          astwbd_c1_ed, astwbd_c1_pland,
          astwbd_c2_ed, astwbd_c2_pland,
          gsw_c2_pland, gsw_c2_ed,
@@ -346,7 +336,7 @@ erd <- erd |>
          river_logqavg_mean, river_logqavg_sd,
          river_logqvar_mean, river_logqvar_sd,
          river_power_mean, river_power_sd, river_density)
-write_parquet(erd, path(outputs_dir, "erd_checklists_1km_tw.paquet"))
+write_parquet(erd, path(outputs_dir, "erd_checklists_1km_tw.parquet"))
 
 # filter obs
 f_obs <- path(outputs_dir, "erd_observations_tw.parquet")

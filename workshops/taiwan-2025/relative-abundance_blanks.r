@@ -26,25 +26,17 @@ species_name <- ebird_species(species, type = "common")
 
 # checklist data
 checklists_all <- read_parquet("data/erd_checklists_1km_tw.paquet")
-glimpse(checklists_all)
 
 # observation data
 observations_all <- read_parquet("data/erd_observations_tw.parquet")
-glimpse(observations_all)
+
 # notice that some observations have counts of NA, these indicate the species
 # was observed but no count was reported, i.e. an "X" on the checklist
 filter(observations_all, is.na(observation_count))
 
 # join checklists and observations and "zero-fill"
-observations <- observations_all |>
-  filter(species_code == species) |>
-  # add a binary variable for detection
-  mutate(species_observed = TRUE)
-zf <- left_join(checklists_all, observations, by = "checklist_id") |>
-  mutate(species_observed = coalesce(species_observed, FALSE),
-         observation_count = ifelse(species_observed, observation_count, 0))
+
 # number of detections
-sum(zf$species_observed)
 
 
 # ├ Apply effort filters ----
@@ -72,14 +64,10 @@ region <- c(lat_min = 21.7, lat_max = 25.4,
 zf_filtered <- zf |>
   filter(between(latitude, region["lat_min"], region["lat_max"]),
          between(longitude, region["lon_min"], region["lon_max"]),
-         between(year, 2015, 2024),
-         effort_hours <= 8,
-         effort_distance_km <= 1.5,
-         effort_speed_kmph <= 100,
-         number_observers <= 10)
+         )
 
 # number of checklists before and after filtering
-nrow(zf_filtered) / nrow(zf)
+
 
 
 # ├ Test-train split ----
@@ -102,10 +90,10 @@ checklists_sf <- zf_filtered |>
   select(species_observed)
 
 # map
-par(mar = c(0.25, 0.25, 0.25, 0.25))
+par(mar = c(0.25, 0.25, 4, 0.25))
 # set up plot area
 plot(st_geometry(checklists_sf),
-     #main = glue("{species_name} eBird observations\n 2015-2024"),
+     main = glue("{species_name} eBird observations\n 2015-2024"),
      col = NA, border = NA)
 # country boundaries
 plot(countries, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
@@ -132,12 +120,7 @@ box()
 # sample one checklist per 1 km x 1 km x 1 week grid for each year
 # sample detection/non-detection independently
 # stratify by type (test/train)
-checklists_ss <- grid_sample_stratified(zf_filtered,
-                                        res = c(1000, 1000, 7),
-                                        obs_column = "species_observed",
-                                        by_year = TRUE,
-                                        case_control = TRUE,
-                                        sample_by = "type")
+
 
 # explore impact of sampling
 # original data
@@ -148,6 +131,7 @@ count(zf_filtered, species_observed) |>
 nrow(checklists_ss)
 count(checklists_ss, species_observed) |>
   mutate(percent = n / sum(n))
+
 
 
 # Prediction surface ----
@@ -165,11 +149,7 @@ r <- rast("data/prediction-grid_1km_tw.tif") |>
 # https://docs.google.com/spreadsheets/d/1-_fmNGraFkkiLdycrQFYOz_j7OPBhG0hv4xKA_HPtaE
 
 # insert elevation values into the raster
-elevation <- pred_grid |>
-  # convert to spatial features
-  st_as_sf(coords = c("x", "y"), crs = crs(r)) |>
-  # rasterize points
-  rasterize(r, field = "elevation_30m_median")
+
 
 # make a map of elevation
 plot(elevation,
@@ -199,35 +179,20 @@ checklists_train <- checklists_ss |>
          ntl_mean, ntl_sd)
 
 # calculate detection frequency
-detection_freq <- mean(checklists_train$species_observed)
-n_detections <- sum(checklists_train$species_observed)
+
 
 
 # ├ Range ----
 
 # train a balanced binary classification forest for range boundary
 # remove observation_count prior to training model
-train_er <- select(checklists_train, -observation_count)
-train_er$species_observed <- factor(train_er$species_observed)
-rf_range <- ranger(
-  formula = species_observed ~ .,
-  data = train_er,
-  importance = "impurity",
-  sample.fraction = c(detection_freq, detection_freq)
-)
+
 
 
 # ├ Encounter rate ----
 
 # train a balanced probability forest for encounter rate
-rf_er <- ranger(
-  formula = species_observed ~ .,
-  data = train_er,
-  importance = "impurity",
-  probability = TRUE,
-  sample.fraction = c(detection_freq, detection_freq),
-  min.node.size = ceiling(n_detections * 0.02)
-)
+
 
 
 # ├ Calibration ----
@@ -240,9 +205,7 @@ det_obs <- as.integer(checklists_train$species_observed == "TRUE")
 obs_pred <- data.frame(obs = det_obs, pred = er_pred)
 
 # train calibration model
-calibration_model <- scam(obs ~ s(pred, k = 6, bs = "mpi"),
-                          gamma = 2,
-                          data = obs_pred)
+
 
 # calibration plot
 # group the predicted encounter rate into bins of width 0.02
@@ -277,21 +240,13 @@ ggplot(calibration_curve) +
 # ├ Count ----
 
 # hurdle: subset to detections only for the count model
-train_count <- checklists_train |>
-  filter(!is.na(observation_count), species_observed) |>
-  select(-species_observed)
+
 
 # plugin: add predicted encounter rate as an additional covariate
-predicted_er <- predict(rf_er, data = train_count, type = "response")
-predicted_er <- predicted_er$predictions[, "TRUE"]
-train_count$predicted_er <- predicted_er
+
 
 # train a regression forest for count
-rf_count <- ranger(
-  formula = observation_count ~ .,
-  data = train_count,
-  importance = "impurity"
-)
+
 
 
 # Prediction ----
@@ -310,23 +265,17 @@ pred_grid_eff <- pred_grid |>
          number_observers = 1)
 
 # estimate range
-pred_range <- predict(rf_range, data = pred_grid_eff, type = "response")
-pred_range <- as.integer(pred_range$predictions == "TRUE")
+
 # estimate encounter rate
-pred_er <- predict(rf_er, data = pred_grid_eff, type = "response")
-pred_er <- pred_er$predictions[, "TRUE"]
+
 # apply calibration
-pred_er_cal <- predict(calibration_model,
-                       data.frame(pred = pred_er),
-                       type = "response") |>
-  as.numeric()
+
+# constrain to 0-1
 # constrain to 0-1
 pred_er_cal[pred_er_cal < 0] <- 0
 pred_er_cal[pred_er_cal > 1] <- 1
 # estimate count
-pred_grid_eff$predicted_er <- pred_er
-pred_count <- predict(rf_count, data = pred_grid_eff, type = "response")
-pred_count <- pred_count$predictions
+
 
 # combine predictions with cell id and coordinates from prediction grid
 predictions <- data.frame(cell_id = pred_grid_eff$cell_id,
@@ -341,11 +290,7 @@ predictions <- data.frame(cell_id = pred_grid_eff$cell_id,
 # ├ Rasterize predictions ----
 
 # insert predictions into the raster template
-r_pred <- predictions |>
-  # convert to spatial features
-  st_as_sf(coords = c("x", "y"), crs = st_crs(r)) |>
-  # rasterize
-  rasterize(r, field = c("range", "encounter_rate", "count", "abundance"))
+
 
 
 # ├ Mapping ----
@@ -392,6 +337,7 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
                               side = 3, col = "black",
                               cex = 1, line = 0.1))
 
+
 # map relative abundance in range
 par(mar = c(4, 0.25, 0.25, 0.25))
 # set up plot area
@@ -437,9 +383,7 @@ image.plot(zlim = c(0, 1), legend.only = TRUE,
 
 # get the test set held out from training
 # only consider checklists with counts
-checklists_test <- checklists_ss |>
-  filter(type == "test", !is.na(observation_count)) |>
-  mutate(species_observed = as.integer(species_observed))
+
 
 # estimate range
 pred_range <- predict(rf_range, data = checklists_test, type = "response")
@@ -538,11 +482,7 @@ print(count_abd_ppms)
 # ├ Predictor importance ----
 
 # extract partial dependence from the encounter rate random forest
-pi_er <- rf_er$variable.importance
-pi_er <- data.frame(predictor = names(pi_er), importance = pi_er) |>
-  # scale so importances sum to 1
-  mutate(importance = importance / sum(importance)) |>
-  arrange(desc(importance))
+
 # plot predictor importance for top 15 encounter rate predictors
 ggplot(head(pi_er, 15)) +
   aes(x = reorder(predictor, importance), y = importance) +
@@ -608,10 +548,7 @@ calculate_pd <- function(predictor,
 }
 
 # calculate partial dependence for elevation
-pd_elevation <- calculate_pd("elevation_30m_median",
-                             er_model = rf_er,
-                             calibration_model = calibration_model,
-                             data = checklists_train)
+
 # plot partial dependence
 ggplot(pd_elevation) +
   aes(x = x, y = encounter_rate) +
@@ -620,14 +557,7 @@ ggplot(pd_elevation) +
   labs(x = "Elevation [m]", y = "Encounter Rate")
 
 # calculate abundance partial dependence for each of the top 6 predictors
-pd <- NULL
-for (predictor in head(pi_er$predictor)) {
-  pd <- calculate_pd(predictor,
-                     er_model = rf_er,
-                     calibration_model = calibration_model,
-                     data = checklists_train) |>
-    bind_rows(pd)
-}
+
 # plot partial dependence
 ggplot(pd) +
   aes(x = x, y = encounter_rate) +
@@ -645,14 +575,4 @@ ggplot(pd) +
 # EXERCISE: Produce the partial dependence plot for the checklist start time.
 # How can this be used to help choose an optimal time of day for the
 # standardized checklist that we predicted to prior to mapping?
-pd_time <- calculate_pd("hours_of_day",
-                        er_model = rf_er,
-                        calibration_model = calibration_model,
-                        data = checklists_train)
-ggplot(pd_time) +
-  aes(x = x, y = encounter_rate) +
-  geom_line() +
-  geom_point() +
-  scale_x_continuous(breaks = seq(0, 24, by = 1)) +
-  labs(x = "Checklist start time [hours since midnight]",
-       y = "Encounter Rate")
+
