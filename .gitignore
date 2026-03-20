@@ -19,3 +19,7 @@ workshops/*/*.zip
 workshops/*/data/environmental-variables_checklists_jan-dec_pa.csv
 workshops/*/feature-assignment.r
 workshops/taiwan-2025/data/
+
+**/*.quarto_ipynb
+
+CLAUDE.md

@@ -26,16 +26,16 @@ We use the terms **detection** and **non-detection** rather than the more common
 
 ## Challenges associated with eBird data {#sec-ebird-challenges}
 
-Despite the strengths of eBird data, species observations collected through citizen science projects present a number of challenges that are not found in conventional scientific data. The following are some of the primary challenges associated these data; challenges that will be addressed throughout this guide:
+Despite the strengths of eBird data, species observations collected through citizen science projects present a number of challenges that are not found in conventional scientific data. The following are some of the primary challenges associated with these data; challenges that will be addressed throughout this guide:
 
 -   **Taxonomic bias:** participants often have preferences for certain species, which may lead to preferential recording of some species over others [@greenwoodCitizensScienceBird2007; @tullochBehaviouralEcologyApproach2012]. Restricting analyses to complete checklists largely mitigates this issue.
 -   **Spatial bias:** most participants in citizen science surveys sample near their homes [@luckAlleviatingSpatialConflict2004], in easily accessible areas such as roadsides [@kadmonEffectRoadsideBias2004], or in areas and habitats of known high biodiversity [@prendergastCorrectingVariationRecording1993]. A simple method to reduce the spatial bias that we describe is to create an equal area grid over the region of interest, and sample a given number of checklists from within each grid cell.
 -   **Temporal bias:** participants preferentially sample when they are available, such as weekends [@courterWeekendBiasCitizen2013], and at times of year when they expect to observe more birds, notably in the United States there is a large increase in eBird submissions during spring migration [@sullivanEBirdEnterpriseIntegrated2014]. Furthermore, eBird has steadily increased in popularity over time, leading a strong bias towards more data in recent years. To address the weekend bias, we recommend using a temporal scale of a week or multiple weeks for most analyses. Temporal biases at longer time scales can be addressed by subsampling the data to produce a more even temporal distribution.
--   **Class imbalance:** bird species that are rare or hard to detect may have data with high class imbalance, with many more checklists with non-detections than detections. For these species, a distribution model predicting that the species is absent everywhere will have high accuracy, but no ecological value. We'll follow the methods for addressing class imbalance proposed by Robinson et al. [-@robinsonUsingCitizenScience2018], sampling the data to artifically increase the prevalence of detections prior to modeling.
+-   **Class imbalance:** bird species that are rare or hard to detect may have data with high class imbalance, with many more checklists with non-detections than detections. For these species, a distribution model predicting that the species is absent everywhere will have high accuracy, but no ecological value. We'll follow the methods for addressing class imbalance proposed by Robinson et al. [-@robinsonUsingCitizenScience2018], sampling the data to artificially increase the prevalence of detections prior to modeling.
 -   **Spatial precision:** the spatial location of an eBird checklist is given as a single latitude-longitude point; however, this may not be precise for two main reasons. First, for traveling checklists, this location represents just one point on the journey. Second, eBird checklists are often assigned to a **hotspot** (a common location for all birders visiting a popular birding site) rather than their true location. For these reasons, it's not appropriate to align the eBird locations with very precise habitat variables, and we recommend summarizing variables within a neighborhood around the checklist location.
 -   **Variation in detectability/effort:** detectability describes the probability of a species that is present in an area being detected and identified. Detectability varies by season, habitat, and species [@johnstonSpeciesTraitsExplain2014; @johnstonEstimatesObserverExpertise2018]. Furthermore, eBird data are collected with high variation in effort, time of day, number of observers, and external conditions such as weather, all of which can affect the detectability of species [@ellisEffectsWeatherTime2018; @oliveiraObservationDiurnalSoaring2018]. Therefore, detectability is particularly important to consider when comparing between seasons, habitats or species. Since eBird uses a semi-structured protocol, that collects data on the observation process, we'll be able to account for a larger proportion of this variation in our analyses.
 
-The remainder of this guide will demonstrate how to address these challenges using real data from eBird to produce reliable estimates of species distributions. In general, we'll take a two-pronged approach to dealing with unstructured data and maximizing the value of citizen science data: imposing more structure onto the data via data filtering and including predictor variables describing the obsservation process in our models to account for the remaining variation.
+The remainder of this guide will demonstrate how to address these challenges using real data from eBird to produce reliable estimates of species distributions. In general, we'll take a two-pronged approach to dealing with unstructured data and maximizing the value of citizen science data: imposing more structure onto the data via data filtering and including predictor variables describing the observation process in our models to account for the remaining variation.
 
 ## Downloading data {#sec-ebird-download}
 
@@ -151,7 +151,7 @@ checklists_shared |>
 ::: callout-tip
 ## Tip
 
-Sometimes it's useful to inspect an eBird checklist online. You can view a checklist on the eBird website by appending the `sampling_event_identifier` to the URL `https://ebird.org/checklist/`. For example, to look at the checklist with ID `S133864820`, visit [https://ebird.org/checklist/S19814680](https://ebird.org/checklist/S133864820).
+Sometimes it's useful to inspect an eBird checklist online. You can view a checklist on the eBird website by appending the `sampling_event_identifier` to the URL `https://ebird.org/checklist/`. For example, to look at the checklist with ID `S133864820`, visit [https://ebird.org/checklist/S133864820](https://ebird.org/checklist/S133864820).
 :::
 
 Checklists with the same `group_identifier` provide duplicate information on the same birding event in the eBird database. For most analyses, it's important to collapse these shared checklists down into a single checklist to avoid pseudoreplication. This can be accomplished with the function [`auk_unique()`](https://cornelllabofornithology.github.io/auk/reference/auk_unique.html), which retains only one independent copy of each checklist.
@@ -188,7 +188,7 @@ checklists_unique |>
 
 eBird observations can be made at levels below species (e.g. subspecies) or above species (e.g. a bird that was identified as a duck, but the species could not be determined); however, for most uses we'll want observations at the species level. This is especially true if we want to produce detection/non-detection data from complete checklists because "complete" only applies at the species level.
 
-In the example dataset used for this workshop, these taxonomic issues don't apply. We have specifically requested Wood Thrush observations, so we haven't received any observations for taxa above species, and Wood Thrush only no subspecies reportable in eBird. However, in many other situations, these taxonomic issues can be important. For example, [this checklist](https://ebird.org/checklist/S100099262) has 10 Yellow-rumped Warblers, 5 each of two Yellow-rumped Warbler subspecies, and one hybrid between the two subspecies.
+In the example dataset used for this workshop, these taxonomic issues don't apply. We have specifically requested Wood Thrush observations, so we haven't received any observations for taxa above species, and Wood Thrush has no subspecies reportable in eBird. However, in many other situations, these taxonomic issues can be important. For example, [this checklist](https://ebird.org/checklist/S100099262) has 10 Yellow-rumped Warblers, 5 each of two Yellow-rumped Warbler subspecies, and one hybrid between the two subspecies.
 
 The function [`auk_rollup()`](https://cornelllabofornithology.github.io/auk/reference/auk_rollup.html) drops all observations not identifiable to a species and "rolls up" all observations reported below species to the species level.
 
@@ -459,7 +459,7 @@ zf_filtered <- zf |>
          number_observers <= 10)
 ```
 
-Note that these filtering parameters are based on making predictions at weekly spatial resolution and 3 km spatial resolution. For applications requiring higher spatial precision, stricter filtering on `effort_distance_km` should be used.
+Note that these filtering parameters are based on making predictions at weekly temporal resolution and 3 km spatial resolution. For applications requiring higher spatial precision, stricter filtering on `effort_distance_km` should be used.
 
 ::: {.callout-caution icon="false"}
 ## Exercise
@@ -534,7 +534,7 @@ If you'd like to ensure you're using exactly the same data as was used to genera
 
 ## Exploratory analysis and visualization {#sec-ebird-explore}
 
-Before proceeding to training species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/master/data-raw/ebird-best-practices-data.zip). Unzip this data package and place the contents in your RStudio project folder.
+Before proceeding to training species distribution models with these data, it's worth exploring the dataset to see what we're working with. Let's start by making a simple map of the observations. This map uses GIS data available for [download in the data package](https://github.com/ebird/ebird-best-practices/raw/main/data-raw/ebird-best-practices-data.zip). Unzip this data package and place the contents in your RStudio project folder.
 
 ```{r}
 #| label: ebird-explore-map
@@ -740,7 +740,7 @@ As with duration, the majority of observations are from short checklists (less t
 
 ### Number of observers {#sec-ebird-explore-observers}
 
-Finally, let's consider the number of observers whose observation are being reported in each checklist. We expect that at least up to some number of observers, reporting rates will increase; however, in working with these data we have found cases of declining detection rates for very large groups. With this in mind we have already restricted checklists to those with 30 or fewer observers, thus removing the very largest groups (prior to filtering, some checklists had as many as 180 observers!).
+Finally, let's consider the number of observers whose observation are being reported in each checklist. We expect that at least up to some number of observers, reporting rates will increase; however, in working with these data we have found cases of declining detection rates for very large groups. With this in mind we have already restricted checklists to those with 10 or fewer observers, thus removing the very largest groups (prior to filtering, some checklists had as many as 180 observers!).
 
 ```{r}
 #| label: ebird-explore-observers

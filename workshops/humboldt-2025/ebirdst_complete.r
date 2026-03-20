@@ -97,7 +97,7 @@ plot(abd_dec)
 
 # crop and mask to Colombia
 boundary <- read_sf("data/gis-data.gpkg", layer = "countries") |>
-  filter(code == "CO") |>
+  filter(name == "Colombia") |>
   st_transform(crs = st_crs(abd_dec))
 abd_dec_co <- abd_dec |>
   crop(boundary) |>
@@ -143,7 +143,7 @@ abd_upper <- load_raster("babwar", product = "abundance", metric = "upper")
 
 # Colombia boundary
 region_boundary <- read_sf("data/gis-data.gpkg", layer = "countries") |>
-  filter(code == "CO") |>
+  filter(name == "Colombia") |>
   st_transform(crs = st_crs(abd_median))
 
 # extract values within region and calculate total abundance

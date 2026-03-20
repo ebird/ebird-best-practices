@@ -673,8 +673,7 @@ ggplot(pd) +
   geom_point() +
   facet_wrap(~ factor(predictor, levels = rev(unique(predictor))),
              ncol = 2, scales = "free") +
-  labs(x = NULL, y = "Encouter Rate") +
-  theme_minimal() +
+  labs(x = NULL, y = "Encounter Rate") +
   theme_minimal() +
   theme(panel.grid = element_blank(),
         axis.line = element_line(color = "grey60"),

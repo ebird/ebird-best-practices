@@ -25,7 +25,7 @@ species_name <- ebird_species(species, type = "common")
 # eBird data ----
 
 # checklist data
-checklists_all <- read_parquet("data/erd_checklists_1km_tw.paquet")
+checklists_all <- read_parquet("data/erd_checklists_1km_tw.parquet")
 
 # observation data
 observations_all <- read_parquet("data/erd_observations_tw.parquet")
@@ -137,7 +137,7 @@ count(checklists_ss, species_observed) |>
 # Prediction surface ----
 
 # load the prediction surface environmental variables
-pred_grid <- read_parquet("data/prediction-grid_1km_tw.paquet") |>
+pred_grid <- read_parquet("data/prediction-grid_1km_tw.parquet") |>
   filter(between(latitude, region["lat_min"], region["lat_max"]),
          between(longitude, region["lon_min"], region["lon_max"]))
 
@@ -163,7 +163,7 @@ plot(elevation,
 checklists_train <- checklists_ss |>
   filter(type == "train") |>
   select(species_observed, observation_count,
-         year, day_of_year, hours_of_day,
+         year, day_of_year, solar_noon_diff,
          effort_hours, effort_distance_km, effort_speed_kmph,
          number_observers,
          eastness_90m_median, eastness_90m_sd,
@@ -258,7 +258,7 @@ pred_grid_eff <- pred_grid |>
   mutate(observation_date = ymd("2024-05-15"),
          year = year(observation_date),
          day_of_year = yday(observation_date),
-         hours_of_day = 6,
+         solar_noon_diff = -5,
          effort_distance_km = 2,
          effort_hours = 1,
          effort_speed_kmph = 2,
@@ -324,7 +324,7 @@ box()
 
 # legend
 par(new = TRUE, mar = c(0, 0, 0, 0))
-title <- glue("{species_name} encounter rate (Oct 2024)")
+title <- glue("{species_name} encounter rate (May 2024)")
 image.plot(zlim = c(0, 1), legend.only = TRUE,
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
            smallplot = c(0.15, 0.85, 0.05, 0.08),
@@ -363,7 +363,7 @@ box()
 
 # legend
 par(new = TRUE, mar = c(0, 0, 0, 0))
-title <- glue("{species_name} relative abundance (Oct 2024)")
+title <- glue("{species_name} relative abundance (May 2024)")
 image.plot(zlim = c(0, 1), legend.only = TRUE,
            col = pal, breaks = seq(0, 1, length.out = length(brks)),
            smallplot = c(0.15, 0.85, 0.05, 0.08),
@@ -425,8 +425,9 @@ obs_pred_test <- data.frame(
 mse <- mean((obs_pred_test$obs_detected - obs_pred_test$pred_er)^2)
 
 # precision-recall auc
-em <- precrec::evalmod(scores = obs_pred_test$pred_binary,
-                       labels = obs_pred_test$obs_detected)
+in_range <- obs_pred_test$pred_binary == 1
+em <- precrec::evalmod(scores = obs_pred_test$pred_er[in_range],
+                       labels = obs_pred_test$obs_detected[in_range])
 pr_auc <- precrec::auc(em) |>
   filter(curvetypes == "PRC") |>
   pull(aucs)
@@ -565,8 +566,7 @@ ggplot(pd) +
   geom_point() +
   facet_wrap(~ factor(predictor, levels = rev(unique(predictor))),
              ncol = 2, scales = "free") +
-  labs(x = NULL, y = "Encouter Rate") +
-  theme_minimal() +
+  labs(x = NULL, y = "Encounter Rate") +
   theme_minimal() +
   theme(panel.grid = element_blank(),
         axis.line = element_line(color = "grey60"),

@@ -49,7 +49,7 @@ summarize(
 )
 ```
 
-Once you become familiar with the pipe operator, we believe you'll find the the above example using the pipe the easiest of the three to read and interpret.
+Once you become familiar with the pipe operator, we believe you'll find the above example using the pipe the easiest of the three to read and interpret.
 
 ::: {.callout-caution icon="false"}
 ## Exercise
@@ -164,7 +164,7 @@ ne_state_lines <- ne_download(scale = 50, category = "cultural",
                               type = "admin_1_states_provinces_lines",
                               returnclass = "sf") |>
   filter(ADM0_A3 %in% c("USA", "CAN")) |>
-  mutate(iso_a2 = recode(ADM0_A3, USA = "US", CAN = "CAN")) |> 
+  mutate(iso_a2 = recode(ADM0_A3, USA = "US", CAN = "CA")) |> 
   select(country = ADM0_NAME, country_code = iso_a2)
 
 # save all layers to a geopackage

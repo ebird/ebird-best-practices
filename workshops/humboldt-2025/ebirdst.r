@@ -85,7 +85,7 @@ dir_copy(dirs, path(ebirdst_dir, basename(dirs)), overwrite = TRUE)
 
 # crop and mask to Colombia
 boundary <- read_sf("data/gis-data.gpkg", layer = "countries") |>
-  filter(code == "CO") |>
+  filter(name == "Colombia") |>
   st_transform(crs = st_crs(abd_dec))
 
 # map
@@ -115,7 +115,7 @@ departments <- read_sf("data/gis-data.gpkg", layer = "departments") |>
 
 # Colombia boundary
 region_boundary <- read_sf("data/gis-data.gpkg", layer = "countries") |>
-  filter(code == "CO") |>
+  filter(name == "Colombia") |>
   st_transform(crs = st_crs(abd_median))
 
 # extract values within region and calculate total abundance

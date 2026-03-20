@@ -56,7 +56,7 @@ buffers_pg <- knitr::load_cache("envvar-pred-buffer", object = "buffers_pg")
 lsm_pg <- knitr::load_cache("envvar-pred-lsm", object = "lsm_pg")
 ```
 
-We've also included a lookup table in the data package (`data-raw/mcd12q1_fao_classes.csv`) that provides descriptions of each of these classes.
+We've also included a lookup table in the data package (`data-raw/mcd12q1_umd_classes.csv`) that provides descriptions of each of these classes.
 
 ```{r}
 #| label: envvar-landcover-lookup
@@ -256,7 +256,7 @@ buffers_pg <- as.data.frame(r, cells = TRUE, xy = TRUE) |>
   select(cell_id = cell, x, y) |> 
   st_as_sf(coords = c("x", "y"), crs = laea_crs, remove = FALSE) |> 
   st_transform(crs = 4326) |> 
-  st_buffer(set_units(3, "km"))
+  st_buffer(set_units(1.5, "km"))
 ```
 
 Now we can calculate the landcover and elevation variables exactly as we did for the eBird checklists in the previous two sections. First, the landscape metrics `pland` and `ed` from the landcover data. Note that we use the most recent year of landcover data (i.e. 2022) in this case.

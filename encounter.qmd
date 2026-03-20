@@ -137,7 +137,7 @@ count(checklists_ss, species_observed) |>
 ```
 :::
 
-This increase in the prevalence of detections will help the random forests model distinguish where birds are being observed; however, as s a result of this increase, the estimated encounter rate based on these subsampled data will be larger than the true encounter rate. When examining the outputs from the models it will be important to recall that we altered the prevalence rate at this stage. Now let's look at how the subsampling affects the spatial distribution of the training observations.
+This increase in the prevalence of detections will help the random forests model distinguish where birds are being observed; however, as a result of this increase, the estimated encounter rate based on these subsampled data will be larger than the true encounter rate. When examining the outputs from the models it will be important to recall that we altered the prevalence rate at this stage. Now let's look at how the subsampling affects the spatial distribution of the training observations.
 
 ```{r}
 #| label: encounter-sss-map
@@ -322,7 +322,7 @@ This threshold essentially defines the range boundary of the species: areas wher
 
 To assess the quality of the calibrated random forest model, we'll validate the model's ability to predict the observed patterns of detection using independent validation data (i.e. the 20% test data set). We'll use a range of predictive performance metrics (PPMs) to compare the predictions to the actual observations. A majority of the metrics measure the ability of the model to correctly predict binary detection/non-detection, including: [sensitivity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity), [specificity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity), [Precision-Recall AUC](https://machinelearningmastery.com/roc-curves-and-precision-recall-curves-for-imbalanced-classification/), [F1 score](https://en.wikipedia.org/wiki/F-score), and [MCC](https://en.wikipedia.org/wiki/Phi_coefficient). [Mean squared error (MSE)](https://en.wikipedia.org/wiki/Mean_squared_error) applies to the calibrated encounter rate estimates.
 
-To ensure bias in the test data set doesn't impact the predictive performance metrics, it's important that we apply spatiotemporal grid sampling to the test data just as we did to the training data. We already performed this [grid sampling above](ebird.qmd#sec-encounter-sss) when we created the `checklist_ss` data frame, so we use that data frame here to calculate the PPMs.
+To ensure bias in the test data set doesn't impact the predictive performance metrics, it's important that we apply spatiotemporal grid sampling to the test data just as we did to the training data. We already performed this [grid sampling above](#sec-encounter-sss) when we created the `checklists_ss` data frame, so we use that data frame here to calculate the PPMs.
 
 ```{r}
 #| label: encounter-rf-assess
@@ -348,7 +348,7 @@ pred_calibrated[pred_calibrated > 1] <- 1
 obs_pred_test <- data.frame(id = seq_along(pred_calibrated),
                             # actual detection/non-detection
                             obs = as.integer(checklists_test$species_observed),
-                            # binary detection/on-detection prediction
+                            # binary detection/non-detection prediction
                             pred_binary = pred_binary,
                             # calibrated encounter rate
                             pred_calibrated = pred_calibrated)
@@ -357,7 +357,7 @@ obs_pred_test <- data.frame(id = seq_along(pred_calibrated),
 mse <- mean((obs_pred_test$obs - obs_pred_test$pred_calibrated)^2, na.rm = TRUE)
 
 # precision-recall auc
-em <- precrec::evalmod(scores = obs_pred_test$pred_binary, 
+em <- precrec::evalmod(scores = obs_pred_test$pred_calibrated,
                        labels = obs_pred_test$obs)
 pr_auc <- precrec::auc(em) |> 
   filter(curvetypes == "PRC") |> 
@@ -422,7 +422,7 @@ The most important predictors of detection/non-detection are often effort variab
 
 -   `predictor`: the name of the predictor to calculate partial dependence for
 -   `er_model`: the encounter rate model object
--   `calibartion_model`: the calibration model object
+-   `calibration_model`: the calibration model object
 -   `data`: the original data used to train the model
 -   `x_res`: the resolution of the grid over which to calculate the partial dependence, i.e. the number of points between the minimum and maximum values of the predictor to evaluate partial dependence at
 -   `n`: number of points to subsample from the training data
@@ -501,7 +501,6 @@ ggplot(pd) +
              ncol = 2, scales = "free") +
   labs(x = NULL, y = "Encounter Rate") +
   theme_minimal() +
-  theme_minimal() +
   theme(panel.grid = element_blank(),
         axis.line = element_line(color = "grey60"),
         axis.ticks  = element_line(color = "grey60"))
@@ -542,7 +541,6 @@ ggplot(pd_woody_savanna) +
   geom_line() +
   geom_point() +
   labs(x = NULL, y = "Encounter Rate") +
-  theme_minimal() +
   theme_minimal() +
   theme(panel.grid = element_blank(),
         axis.line = element_line(color = "grey60"),
@@ -613,7 +611,7 @@ human_time <- glue::glue("{h}:{m} {ap}",
                          h = floor(t_peak),
                          m = stringr::str_pad(round((t_peak %% 1) * 60), 2, 
                                               pad = "0"),
-                         ap = ifelse(t_peak > 12, "PM", "AM"))
+                         ap = ifelse(t_peak >= 12, "PM", "AM"))
 ```
 
 Based on this analysis, the best time for detecting Wood Thrush is at `r human_time`. We'll use this time to make predictions. This is equivalent to many eBirders all conducting a checklist within different grid cells on June 15 at `r human_time`. We also add the other effort variables to the prediction grid dataset at this time.

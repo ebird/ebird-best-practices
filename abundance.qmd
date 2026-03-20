@@ -12,7 +12,7 @@ To motivate this chapter, we will focus on the specific goal of estimating a map
 
 The relative abundance model presented here is similar to and a natural extension of the encounter rate model of [Chapter -@sec-encounter]. In particular, we use a two-step hurdle model following Keyser et al. [-@keyserSnowCoverDynamics2023]. In the first step, we estimate encounter rate using exactly the same method as in [Chapter -@sec-encounter]. In the second step, we estimate the expected count of individuals on eBird checklists where the species was detected. Finally, we multiply encounter rate by median count to produce an estimate of relative abundance. We use random forests for both steps of the hurdle.
 
-## Data preparation {#sec-encounter-data}
+## Data preparation {#sec-abundance-data}
 
 Let's get started by loading the necessary packages and data. If you worked through the previous chapters, you should have all the data required for this chapter. However, you may want to [download the data package](https://github.com/ebird/ebird-best-practices/raw/main/data-raw/ebird-best-practices-data.zip), and unzip it to your project directory, to ensure you're working with exactly the same data as was used in the creation of this guide.
 
@@ -98,7 +98,7 @@ For this two-step hurdle model, we'll start by training exactly the same encount
 
 ### Step 1: Encounter rate {#sec-abundance-hurdle-er}
 
-If you haven't done so, read [Chapter @sec-encounter] for details on the calibrated encounter rate model. Here we repeat the process of modeling encounter rate in a compressed form.
+If you haven't done so, read [Chapter -@sec-encounter] for details on the calibrated encounter rate model. Here we repeat the process of modeling encounter rate in a compressed form.
 
 ```{r}
 #| label: abundance-hurdle-er
@@ -227,12 +227,12 @@ log_count_pearson <- cor(log(detections_test$pred_count + 1),
                          log(detections_test$obs_count + 1),
                          method = "pearson")
 
-# abundance metrics
-abundance_spearman <- cor(detections_test$pred_abundance, 
-                          detections_test$obs_count,
+# abundance metrics, based on all checklists
+abundance_spearman <- cor(obs_pred_test$pred_abundance,
+                          obs_pred_test$obs_count,
                           method = "spearman")
-log_abundance_pearson <- cor(log(detections_test$pred_abundance + 1),
-                             log(detections_test$obs_count + 1),
+log_abundance_pearson <- cor(log(obs_pred_test$pred_abundance + 1),
+                             log(obs_pred_test$obs_count + 1),
                              method = "pearson")
 
 # combine ppms together
@@ -318,7 +318,7 @@ print(r_pred)
 
 Finally we'll produce a map of relative abundance. The values shown on this map are the expected number of Wood Thrush seen by an average eBirder conducting a 2 km, 1 hour traveling count starting at about 6:37AM on June 15, 2023. Since detectability is not perfect, we expect true Wood Thrush abundance to be higher than these values, but without estimating the detection rate directly it's difficult to say how much higher.
 
-Prior to mapping the relative abundance, we'll multiple by the `in_range` layer, which will produce a map showing zero relative abundance where the model predicts that Wood Thrush does not occur.
+Prior to mapping the relative abundance, we'll multiply by the `in_range` layer, which will produce a map showing zero relative abundance where the model predicts that Wood Thrush does not occur.
 
 ```{r}
 #| label: abundance-predict-map
@@ -329,7 +329,8 @@ plot(study_region, col = NA, border = NA)
 plot(ne_land, col = "#cfcfcf", border = "#888888", lwd = 0.5, add = TRUE)
 
 # define quantile breaks, excluding zeros
-brks <- ifel(r_pred[["abundance"]] > 0, r_pred[["abundance"]], NA) |> 
+abd_in_range <- r_pred[["abundance"]] * r_pred[["in_range"]]
+brks <- ifel(abd_in_range > 0, abd_in_range, NA) |> 
   global(fun = quantile, 
          probs = seq(0, 1, 0.1), na.rm = TRUE) |> 
   as.numeric() |> 
@@ -338,7 +339,7 @@ brks <- ifel(r_pred[["abundance"]] > 0, r_pred[["abundance"]], NA) |>
 lbls <- round(c(min(brks), median(brks), max(brks)), 2)
 # ebird status and trends color palette
 pal <- ebirdst_palettes(length(brks) - 1)
-plot(r_pred[["abundance"]], 
+plot(abd_in_range, 
      col = c("#e6e6e6", pal), breaks = c(0, brks), 
      maxpixels = ncell(r_pred),
      legend = FALSE, axes = FALSE, bty = "n",
