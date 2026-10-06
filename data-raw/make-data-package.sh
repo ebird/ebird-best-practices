@@ -15,7 +15,8 @@ cp ${PROJECT_DIR}/data/prediction-grid_us-ga.tif ${PKG_DIR}/data/
 cp ${PROJECT_DIR}/data-raw/elevation_gmted_1km_us-ga.tif ${PKG_DIR}/data-raw/
 cp ${PROJECT_DIR}/data-raw/landcover_mcd12q1_umd_us-ga_2014-2022.tif ${PKG_DIR}/data-raw/
 cp ${PROJECT_DIR}/data-raw/mcd12q1_umd_classes.csv ${PKG_DIR}/data-raw/
-
+cp ${PROJECT_DIR}/data-raw/ebd_US-GA_woothr_smp_relOct-2023_sampling.txt ${PKG_DIR}/data-raw/
+cp ${PROJECT_DIR}/data-raw/ebd_US-GA_woothr_smp_relOct-2023.txt ${PKG_DIR}/data-raw/
 # compress
 cd $PROJECT_DIR
 zip -rv ebird-best-practices-data.zip ebird-best-practices-data/  -x "*/.*" ".*"

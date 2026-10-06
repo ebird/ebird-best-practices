@@ -126,6 +126,13 @@ rf_range <- ranger(
   min.node.size = 1
 )
 
+# ranger requires a factor response to do classification
+er_model <- ranger(formula =  as.factor(species_observed) ~ .,
+                   data = checklists_train,
+                   importance = "impurity",
+                   replace = TRUE,
+                   sample.fraction = c(detection_freq, detection_freq),
+                   min.node.size = 1)
 
 # ├ Encounter rate ----
 
